@@ -20,4 +20,43 @@ public class DoctorManagement {
         this.specialization = specialization;
     }
     
+    public String getDoctorID(){
+        return this.doctorID;
+    }
+    
+    public String getDoctorName(){
+        return this.doctorName;
+    }
+    
+    public String getContactNo(){
+        return this.contactNo;
+    }
+    
+    public String getEmail(){
+        return this.email;
+    }
+    
+    public String getSpecialization(){
+        return this.specialization;
+    }
+    
+    public void setDoctorID(String doctorID){
+        this.doctorID = doctorID;
+    }
+    
+    public void setDoctorName(String doctorName){
+        this.doctorName = doctorName;
+    }
+    
+    public void setContactNo(String contactNo){
+        this.contactNo = contactNo;
+    }
+    
+    public void setEmail(String email){
+        this.email = email;
+    }
+    
+    public void setSpecialization(String specialization){
+        this.specialization = specialization;
+    }
 }
