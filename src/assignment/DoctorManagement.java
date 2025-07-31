@@ -59,4 +59,6 @@ public class DoctorManagement {
     public void setSpecialization(String specialization){
         this.specialization = specialization;
     }
+    
+    // 2 reporting summary
 }
