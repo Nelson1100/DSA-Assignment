@@ -1,4 +1,4 @@
-package assignment;
+package main;
 
 public class Assignment {
 

@@ -1,4 +1,4 @@
-package assignment;
+package adt;
 
 public class ADT {
 
