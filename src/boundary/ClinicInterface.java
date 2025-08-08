@@ -1,4 +1,4 @@
-package assignment;
+package boundary;
 
 public interface ClinicInterface {
     
