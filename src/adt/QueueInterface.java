@@ -7,4 +7,5 @@ public interface QueueInterface<T> {
     public boolean isEmpty();
     public void clear();
     public int size();
+    QueueIterator<T> getIterator();
 }
