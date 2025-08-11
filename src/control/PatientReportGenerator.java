@@ -1,6 +1,5 @@
 package control;
 
-import entity.Patient;
 import entity.VisitType;
 import entity.Gender;
 
