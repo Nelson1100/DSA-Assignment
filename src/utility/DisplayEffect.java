@@ -16,12 +16,8 @@ public final class DisplayEffect {
     private DisplayEffect() {} // prevent instantiation of this utility class
     
     public static void clearScreen() {
-        try {
-            System.out.print("\\033[H\\033[2J"); // ANSI clear screen
-        } catch (Exception e) {
-            for (int i = 0; i < 60; i++)
-                System.out.println();
-        }
+        for (int i = 0; i < 50; i++)
+            System.out.println();
     }
     
     public static void printHeader(String title) {
@@ -41,11 +37,11 @@ public final class DisplayEffect {
     }
     
     /* ---------- Private Helpers ---------- */
-    
+        
     private static String center(String s, int width) {
         if (s.length() >= width)
             return s;
-        int pad = (width = s.length()) / 2;
+        int pad = (width - s.length()) / 2;
         return repeat(" ", pad) + s;
     }
     
