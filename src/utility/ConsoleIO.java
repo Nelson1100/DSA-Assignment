@@ -20,15 +20,14 @@ public final class ConsoleIO {
         
         return val;
     }
-    
-    // if no use this jiu delete ler
+
     public static int readIntInRange(Scanner sc, String prompt, int min, int max) {
         int v;
         
         do {
             v = readInt(sc, prompt);
             if (v < min || v > max)
-                System.out.printf("Enter &d-%d.%n", min, max);
+                System.out.printf("Enter %d-%d.%n", min, max);
         } while (v < min || v > max);
         
         return v;
