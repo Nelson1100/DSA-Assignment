@@ -60,5 +60,21 @@ public class DoctorManagement {
         this.specialization = specialization;
     }
     
-    // 2 reporting summary
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DoctorManagement)) return false;
+        DoctorManagement other = (DoctorManagement) o;
+        return this.doctorID != null && this.doctorID.equals(other.doctorID);
+    }
+
+    @Override
+    public int hashCode() {
+        return (doctorID == null) ? 0 : doctorID.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "#" + doctorID + " " + doctorName + " (" + specialization + ") " + contactNo + ", " + email;
+    }
 }
