@@ -28,7 +28,7 @@ public class PatientReportUI {
             DisplayEffect.clearScreen();
             DisplayEffect.printHeader("Patient Reports");
             printMenu();
-            choice = ConsoleIO.readInt(sc, "Choice: ");
+            choice = ConsoleIO.readInt(sc, "Enter your choice: ");
             
             switch (choice) {
                 case 1:
@@ -36,28 +36,34 @@ public class PatientReportUI {
                     DisplayEffect.printHeader("Visit Type Summary");
                     showVisitTypeSummary();
                     ConsoleIO.pause(sc);
+                    break;
                 case 2:
                     DisplayEffect.clearScreen();
                     DisplayEffect.printHeader("Average Waiting Time");
                     showAverageWaitNow();
                     ConsoleIO.pause(sc);
+                    break;
                 case 3:
                     DisplayEffect.clearScreen();
                     DisplayEffect.printHeader("Gender Breakdown");
                     showGenderBreakdown();
                     ConsoleIO.pause(sc);
+                    break;
                 case 4:
                     DisplayEffect.clearScreen();
                     DisplayEffect.printHeader("Preview Next Patients");
                     previewNextN();
                     ConsoleIO.pause(sc);
+                    break;
                 case 5:
                     DisplayEffect.clearScreen();
                     DisplayEffect.printHeader("All Reports");
                     showAllReports();
                     ConsoleIO.pause(sc);
+                    break;
                 case 0:
                     System.out.println("Back to main menu...");
+                    break;
                 default:
                     System.out.println("Invalid choice");
                     ConsoleIO.pause(sc);
@@ -133,7 +139,7 @@ public class PatientReportUI {
         System.out.println("3. Gender Breakdown");
         System.out.println("4. Preview Next N Patients");
         System.out.println("5. Print All Reports");
-        System.out.println();
         System.out.println("0. Back");
+        System.out.println();
     }
 }
