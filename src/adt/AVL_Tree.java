@@ -14,6 +14,19 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         root = delete(data, root);
         return this;
     }
+    
+    @Override
+    public T find(T data) {
+        Node<T> current = root;
+        while (current != null) {
+            int c = data.compareTo(current.getKey());
+            if (c == 0) 
+                return current.getKey();
+            
+            current = (c < 0) ? current.getLeft() : current.getRight();
+        }
+        return null;
+    }
 
     private void updateHeight(Node<T> node){
         int maxHeight = Math.max(height(node.getLeft()), height(node.getRight()));
@@ -205,8 +218,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         AvlCheck L = checkAVL(n.getLeft());
         AvlCheck R = checkAVL(n.getRight());
         if (!L.ok || !R.ok) return new AvlCheck(false, 0);
-
-        // BST ordering relative to children
+        
         boolean orderedLeft  = (n.getLeft()  == null) || (n.getLeft().getKey().compareTo(n.getKey())  < 0);
         boolean orderedRight = (n.getRight() == null) || (n.getRight().getKey().compareTo(n.getKey()) > 0);
         if (!orderedLeft || !orderedRight) return new AvlCheck(false, 0);
