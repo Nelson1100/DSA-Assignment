@@ -14,6 +14,6 @@ public class testing {
         String doctorID = JOptionPane.showInputDialog("Enter doctor's ID:");
         dm.updateDoctorInfo(doctorID);
         
-        dm.viewDoctorInfo("S0001");
+        dm.viewDoctorInfo("", "", "", "");
     }
 }
