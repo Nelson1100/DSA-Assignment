@@ -8,30 +8,49 @@ import entity.Doctor;
 import javax.swing.JOptionPane;
 
 public class DoctorManagement {
-    
     AVL_Implementation<Doctor> doctorTree = new AVL_Tree<>();
     
-    public boolean validName(String name){
+    // Validation for attributes
+    private boolean validName(String name){
         return name.matches("[A-Za-z ]+");
     }
     
-    public boolean validPhone(String phone){
+    private boolean validPhone(String phone){
         return phone.matches("^011[0-9]{8}$|^01(0|2|3|4|5|6|7|8|9)[0-9]{7}$");
     }
     
-    public boolean validEmail(String email){
+    private boolean validEmail(String email){
         return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
     }
     
-    public boolean validSpecialization(String specialization){
+    private boolean validSpecialization(String specialization){
         return specialization.matches("^[A-Za-z ]+$") && specialization.length() >= 3 && specialization.length() <= 50;
     }
     
+    // Abstract Classes
     public void registerDoctor(Doctor doctor){
         String result = doctorRegistration(doctor);
         JOptionPane.showMessageDialog(null, result, "Doctor Registration", JOptionPane.INFORMATION_MESSAGE);
     }
     
+    public void viewDoctorInfo(String doctorID){
+        String result = showDoctorInfo(doctorID);
+        
+        if (result.startsWith("No doctor"))
+            JOptionPane.showMessageDialog(null, result, "Doctor Information", JOptionPane.ERROR_MESSAGE);
+        else
+            JOptionPane.showMessageDialog(null, result, "Doctor Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    public void updateDoctorInfo(String doctorID){
+        doctorInfoModification(doctorID);
+    }
+    
+//    public void loginDoctor(Doctor doctor){
+//        doctorAuthentication(doctor);
+//    }
+    
+    // Implementation Classes
     private String doctorRegistration(Doctor doctor){
         String phone = doctor.getContactNo().replaceAll("[-\\s]", "");
         
@@ -62,15 +81,6 @@ public class DoctorManagement {
         return "Ensure all fields are properly filled before proceeding.";
     }
     
-    public void viewDoctorInfo(String doctorID){
-        String result = showDoctorInfo(doctorID);
-        
-        if (result.startsWith("No doctor"))
-            JOptionPane.showMessageDialog(null, result, "Doctor Information", JOptionPane.ERROR_MESSAGE);
-        else
-            JOptionPane.showMessageDialog(null, result, "Doctor Information", JOptionPane.INFORMATION_MESSAGE);
-    }
-    
     private String showDoctorInfo(String doctorID){
         if (doctorID == null || doctorID.isEmpty())
             return "Invalid DoctorID Entered.";
@@ -84,7 +94,7 @@ public class DoctorManagement {
             return found.toString();
     }
     
-    public void updateDoctorInfo(String doctorID){
+    private int doctorInfoModification(String doctorID){
         Doctor searchKey = new Doctor(doctorID, "", "", "", "");
         Doctor doctor = doctorTree.find(searchKey);
         String dividerLine = "-".repeat(50);
@@ -114,8 +124,12 @@ public class DoctorManagement {
                     JOptionPane.showMessageDialog(null, "Please enter a valid choice.", "Invalid Option Selected", JOptionPane.ERROR_MESSAGE);
             }
         }
+        return 0;
     }
     
+//    private boolean doctorAuthentication(Doctor doctor){
+//        
+//    }
 //    public boolean RemoveDoctor(){
 //        return false;
 //    }
