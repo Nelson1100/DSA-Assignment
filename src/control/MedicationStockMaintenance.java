@@ -17,7 +17,7 @@ public class MedicationStockMaintenance {
     }
    
     // add 
-    public boolean addStockBatch(String medicineID, int quantity, LocalDate expiryDate){
+    //public boolean addStockBatch(String medicineID, int quantity, LocalDate expiryDate){
         
     }
     
@@ -26,4 +26,4 @@ public class MedicationStockMaintenance {
     //update
     
     //report
-}
+//}
