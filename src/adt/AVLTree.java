@@ -14,6 +14,19 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
         root = delete(data, root);
         return this;
     }
+    
+    @Override
+    public T find(T data) {
+        AVLNode<T> current = root;
+        while (current != null) {
+            int c = data.compareTo(current.getKey());
+            if (c == 0) 
+                return current.getKey();
+            
+            current = (c < 0) ? current.getLeft() : current.getRight();
+        }
+        return null;
+    }
 
     private void updateHeight(AVLNode<T> node){
         int maxHeight = Math.max(height(node.getLeft()), height(node.getRight()));

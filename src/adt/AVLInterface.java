@@ -3,6 +3,7 @@ package adt;
 public interface AVLInterface<T extends Comparable<T>> {
     AVLInterface<T> insert(T data);
     AVLInterface<T> delete(T data);
+    T find(T data);
     void traverse();
     T getMax();
     T getMin();
