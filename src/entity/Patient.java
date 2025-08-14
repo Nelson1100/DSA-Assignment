@@ -135,5 +135,5 @@ public class Patient {
     @Override
     public int hashCode() {
         return patientID != null ? patientID.hashCode() : 0;
-    }
+    } 
 }
