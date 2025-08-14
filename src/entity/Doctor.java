@@ -1,6 +1,6 @@
 package entity;
 
-public class DoctorManagement {
+public class Doctor implements Comparable<Doctor> {
 
     private String doctorID;
     private String doctorName;
@@ -8,11 +8,11 @@ public class DoctorManagement {
     private String email;
     private String specialization;
     
-    public DoctorManagement(){
+    public Doctor(){
         this("","","","","");
     }
     
-    public DoctorManagement(String doctorID, String doctorName, String contactNo, String email, String specialization){
+    public Doctor(String doctorID, String doctorName, String contactNo, String email, String specialization){
         this.doctorID = doctorID;
         this.doctorName = doctorName;
         this.contactNo = contactNo;
@@ -60,5 +60,30 @@ public class DoctorManagement {
         this.specialization = specialization;
     }
     
-    // 2 reporting summary
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Doctor)) return false;
+        Doctor other = (Doctor) o;
+        return this.doctorID != null && this.doctorID.equals(other.doctorID);
+    }
+
+    @Override
+    public int hashCode() {
+        return (doctorID == null) ? 0 : doctorID.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "Doctor ID: " + doctorID + "\n" +
+               "Doctor Name: " + doctorName + "\n" +
+               "Contact No: " + contactNo + "\n" +
+               "Email Address: " + email + "\n" +
+               "Specialization: " + specialization;
+    }
+
+    @Override
+    public int compareTo(Doctor o) {
+        return this.doctorID.compareTo(o.doctorID);
+    }
 }

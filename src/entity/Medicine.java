@@ -61,8 +61,9 @@ public class Medicine {
     
     @Override
     public String toString() {
-        return String.format("Medicine{id=%s, name=%s, category=%s, price=%.2f, reorder=%d}",
-                medicineID, medicineName, category, unitPrice, reorderLevel);
+        return "Medicine{id=" + medicineID + ", name=" + medicineName +
+               ", category=" + category + ", price=" + unitPrice +
+               ", reorderLevel=" + reorderLevel + "}";
     }
     
 }
