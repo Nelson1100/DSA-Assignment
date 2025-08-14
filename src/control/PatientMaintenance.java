@@ -4,6 +4,8 @@ import adt.*;
 import entity.Patient;
 import entity.VisitType;
 import entity.Gender;
+import entity.keys.PatientByID;
+import entity.keys.PatientByName;
 import dao.PatientInitializer;
 
 import java.time.LocalTime;
@@ -11,18 +13,43 @@ import java.time.temporal.ChronoUnit;
 
 public class PatientMaintenance {
     private QueueInterface<Patient> patientQueue;
+    private final AVLTree<PatientByID> idxByID = new AVLTree<>();
+    private final AVLTree<PatientByName> idxByName = new AVLTree<>();
     
     public PatientMaintenance() {
         patientQueue = new LinkedQueue<>();
         PatientInitializer.initialize(patientQueue); // Pre-load test data
+        // rebuildIndexesFromQueue();
+    }
+    
+    private void rebuildIndexesFromQueue() {
+        QueueIterator<Patient> it = getIterator();
+        
+        while (it.hasNext()) {
+            Patient p = it.getNext();
+            idxByID.insert(new PatientByID(p.getPatientID(), p));
+            idxByName.insert(new PatientByName(p.getPatientName(), p.getPatientID(), p));
+        }
     }
     
     public void registerPatient(Patient patient) {
+        if (patient == null || existsByID(patient.getPatientID())) 
+            return;
+        
         patientQueue.enqueue(patient);
+        idxByID.insert(new PatientByID(patient.getPatientID(), patient));
+        idxByName.insert(new PatientByName(patient.getPatientName(), patient.getPatientID(), patient));
     }
     
     public Patient serveNextPatient() {
-        return patientQueue.isEmpty() ? null : patientQueue.dequeue();
+        if (patientQueue.isEmpty())
+            return null;
+        
+        Patient served = patientQueue.dequeue();
+        idxByID.delete(new PatientByID(served.getPatientID(), null));
+        idxByName.delete(new PatientByName(served.getPatientName(), served.getPatientID(), null));
+        
+        return served;
     }
     
     public boolean isEmpty() {
@@ -35,8 +62,10 @@ public class PatientMaintenance {
     
     public void viewAllPatients() {
         QueueIterator<Patient> it = getIterator();
+        int i = 1;
+        
         while (it.hasNext()) {
-            System.out.println(it.getNext());
+            System.out.printf("%2d) %s%n", i++, it.getNext());
         }
     }
     
@@ -97,7 +126,7 @@ public class PatientMaintenance {
     }
     
     public boolean removeByID(String id) {
-        if (patientQueue.isEmpty())
+        if (id == null || patientQueue.isEmpty())
             return false;
         
         QueueInterface<Patient> temp = new LinkedQueue<>();
@@ -105,8 +134,10 @@ public class PatientMaintenance {
         
         while (!patientQueue.isEmpty()) {
             Patient patient = patientQueue.dequeue();
-            if (!removed && patient.getPatientID().equals(id)) {
+            if (!removed && id.equals(patient.getPatientID())) {
                 removed = true;
+                idxByID.delete(new PatientByID(patient.getPatientID(), null));
+                idxByName.delete(new PatientByName(patient.getPatientName(), patient.getPatientID(), null));
             } else {
                 temp.enqueue(patient);
             }
@@ -117,6 +148,10 @@ public class PatientMaintenance {
         }
         
         return removed;
+    }
+    
+    public boolean existsByID(String id) {
+        return id != null && idxByID.contains(new PatientByID(id, null));
     }
     
     /* ---------- OPTIONAL ---------- */
@@ -136,6 +171,46 @@ public class PatientMaintenance {
         }
         
         return out;
+    }
+    
+    public String reportSortedByID() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Patient Sorted by ID\n");
+        sb.append("----------------------");
+        PatientByID[] nodes = idxByID.toArrayInorder();
+        
+        if (nodes.length == 0)
+            sb.append("(none)\n");
+        else {
+            for (int i = 0; i < nodes.length; i++) {
+                Patient p = nodes[i].ref;
+                sb.append(String.format("%2d) %s%n", i + 1, p));
+            }
+        }
+        sb.append("\nAVL(ID) height=").append(idxByID.height())
+          .append("  valid=").append(idxByID.isValidAVL()).append("\n");
+        
+        return sb.toString();
+    }
+    
+    public String reportSortedByName() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Patients Sorted by Name (A–Z)\n");
+        sb.append("------------------------------\n");
+        PatientByName[] nodes = idxByName.toArrayInorder();
+        
+        if (nodes.length == 0) 
+            sb.append("(none)\n");
+        else {
+            for (int i = 0; i < nodes.length; i++) {
+                Patient p = nodes[i].ref;
+                sb.append(String.format("%2d) %s%n", i + 1, p));
+            }
+        }
+        sb.append("\nAVL(Name) height=").append(idxByName.height())
+          .append("  valid=").append(idxByName.isValidAVL()).append('\n');
+        
+        return sb.toString();
     }
     
     // findByID, findByEmail, containID

@@ -1,6 +1,6 @@
 package boundary;
 
-public class Testing {
+public class PatientTesting {
     public static void main(String[] args) {
         new PatientUI().start();
     }

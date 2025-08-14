@@ -101,7 +101,6 @@ public class Patient {
 //        return String.format("Patient ID: %s | Name: %s | Gender: %s | Age: %d | Email: %s | Contact: %s | Visit Type: %s | Arrival: %s",
 //                patientID, patientName, gender, age, email, contactNo, visitType, arrivalTime);
         return String.format(
-            "----------------------------------------%n" +
             "Patient ID : %s%n" +
             "Name       : %s%n" +
             "Gender     : %s%n" +
@@ -109,8 +108,7 @@ public class Patient {
             "Email      : %s%n" +
             "Contact    : %s%n" +
             "Visit Type : %s%n" +
-            "Arrival    : %s%n" +
-            "----------------------------------------",
+            "Arrival    : %s%n",
             patientID,
             patientName,
             gender,

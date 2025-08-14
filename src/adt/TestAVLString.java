@@ -2,7 +2,7 @@ package adt;
 
 public class TestAVLString {
     public static void main(String[] args) {
-        AVL_Implementation<String> tree = new AVL_Tree<>();
+        AVLInterface<String> tree = new AVLTree<>();
 
         // Insert some strings
         tree.insert("Banana")
@@ -20,7 +20,7 @@ public class TestAVLString {
         System.out.println("Max = " + tree.getMax()); // Mango
 
         // If helpers exist in interface:
-        if (tree instanceof AVL_Tree<String> avl) {
+        if (tree instanceof AVLTree<String> avl) {
             System.out.println("Contains 'Cherry'? " + avl.contains("Cherry")); // true
             System.out.println("Contains 'Durian'? " + avl.contains("Durian")); // false
             System.out.println("Size = " + avl.size());             

@@ -94,7 +94,8 @@ public class PatientUI {
         
         pm.registerPatient(p);
         DisplayEffect.printDivider();
-        System.out.println("Registered: " + p);
+        DisplayEffect.printSubheader("Registered Patient");
+        System.out.println(p);
         System.out.println("Queue size is now: " + pm.getQueueSize());
         DisplayEffect.printDivider();
     }

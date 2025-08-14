@@ -1,21 +1,21 @@
 package adt;
 
-public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> {
-    private Node<T> root;
+public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
+    private AVLNode<T> root;
     
     @Override
-    public AVL_Implementation<T> insert(T data){
+    public AVLInterface<T> insert(T data){
         root = insert(data, root);
         return this;
     }
     
     @Override
-    public AVL_Implementation<T> delete(T data){
+    public AVLInterface<T> delete(T data){
         root = delete(data, root);
         return this;
     }
 
-    private void updateHeight(Node<T> node){
+    private void updateHeight(AVLNode<T> node){
         int maxHeight = Math.max(height(node.getLeft()), height(node.getRight()));
         node.setHeight(maxHeight + 1);
     }
@@ -24,7 +24,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         return height(root);
     }
 
-    private int height(Node<T> node){
+    private int height(AVLNode<T> node){
         return node != null ? node.getHeight() : 0;
     }
     
@@ -32,17 +32,17 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         return size(root);
     }
     
-    private int size(Node<T> n){
+    private int size(AVLNode<T> n){
         return n == null ? 0 : 1 + size(n.getLeft()) + size(n.getRight());
     }
     
-    private int balance(Node<T> node){
+    private int balance(AVLNode<T> node){
         return node == null ? 0 : height(node.getLeft()) - height(node.getRight());
     }
     
-    private Node<T> insert(T data, Node<T> node) {
+    private AVLNode<T> insert(T data, AVLNode<T> node) {
         if (node == null)
-            return new Node<>(data);
+            return new AVLNode<>(data);
         
         if (data.compareTo(node.getKey()) < 0)
             node.setLeft(insert(data, node.getLeft()));
@@ -55,7 +55,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         return applyRotation(node);
     }
     
-    private Node<T> delete(T data, Node<T> node){
+    private AVLNode<T> delete(T data, AVLNode<T> node){
         if (node == null)
             return null;
         
@@ -76,9 +76,9 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         return applyRotation(node);
     }
 
-    private Node<T> rotateRight(Node<T> node){
-        Node<T> leftNode = node.getLeft();
-        Node<T> centerNode = leftNode.getRight();
+    private AVLNode<T> rotateRight(AVLNode<T> node){
+        AVLNode<T> leftNode = node.getLeft();
+        AVLNode<T> centerNode = leftNode.getRight();
         leftNode.setRight(node);
         node.setLeft(centerNode);
         updateHeight(node);
@@ -86,9 +86,9 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         return leftNode;
     }
     
-    private Node<T> rotateLeft(Node<T> node){
-        Node<T> rightNode = node.getRight();
-        Node<T> centerNode = rightNode.getLeft();
+    private AVLNode<T> rotateLeft(AVLNode<T> node){
+        AVLNode<T> rightNode = node.getRight();
+        AVLNode<T> centerNode = rightNode.getLeft();
         rightNode.setLeft(node);
         node.setRight(centerNode);
         updateHeight(node);
@@ -96,7 +96,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         return rightNode;
     }
     
-    private Node<T> applyRotation(Node<T> node){
+    private AVLNode<T> applyRotation(AVLNode<T> node){
         int balance = balance(node);
         
         if (balance > 1){
@@ -115,7 +115,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
     
     @Override
     public boolean contains(T data) {
-        Node<T> cur = root;
+        AVLNode<T> cur = root;
         while (cur != null) {
             int c = data.compareTo(cur.getKey());
             if (c == 0) return true;
@@ -130,7 +130,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         System.out.println();
     }
 
-    private void inorder(Node<T> node){
+    private void inorder(AVLNode<T> node){
         if (node == null) return;
         inorder(node.getLeft());
         System.out.print(node.getKey() + " ");
@@ -140,7 +140,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
     @Override
     public T getMax() {
         if (root == null) return null;
-        Node<T> cur = root;
+        AVLNode<T> cur = root;
         while (cur.getRight() != null) cur = cur.getRight();
         return cur.getKey();
     }
@@ -148,7 +148,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
     @Override
     public T getMin() {
         if (root == null) return null;
-        Node<T> cur = root;
+        AVLNode<T> cur = root;
         while (cur.getLeft() != null) cur = cur.getLeft();
         return cur.getKey();
     }
@@ -159,36 +159,55 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
     }
 
     // ---- Helpers used internally ----
-    private T getMax(Node<T> node){
-        Node<T> cur = node;
+    private T getMax(AVLNode<T> node){
+        AVLNode<T> cur = node;
         while (cur.getRight() != null) cur = cur.getRight();
         return cur.getKey();
     }
 
     @SuppressWarnings("unused")
-    private T getMin(Node<T> node){
-        Node<T> cur = node;
+    private T getMin(AVLNode<T> node){
+        AVLNode<T> cur = node;
         while (cur.getLeft() != null) cur = cur.getLeft();
         return cur.getKey();
     }
     
+    @Override
     public void clear() {
         root = null;
     }
     
-    public java.util.List<T> toListInorder() {
-        java.util.List<T> out = new java.util.ArrayList<>();
-        toListInorder(root, out);
-        return out;
-    }
-    private void toListInorder(Node<T> n, java.util.List<T> out){
-        if (n == null) return;
-        toListInorder(n.getLeft(), out);
-        out.add(n.getKey());
-        toListInorder(n.getRight(), out);
-    }
+//    public java.util.List<T> toListInorder() {
+//        java.util.List<T> out = new java.util.ArrayList<>();
+//        toListInorder(root, out);
+//        return out;
+//    }
+//    private void toListInorder(AVLNode<T> n, java.util.List<T> out){
+//        if (n == null) return;
+//        toListInorder(n.getLeft(), out);
+//        out.add(n.getKey());
+//        toListInorder(n.getRight(), out);
+//    }
 
+    @Override
+    public T[] toArrayInorder() {
+        int size = size();
+        @SuppressWarnings("unchecked")
+        T[] arr = (T[]) new Comparable[size];
+        fillInorder(root, arr, new int[]{0});
+        return arr;
+    }
     
+    private void fillInorder(AVLNode<T> n, T[] arr, int[] idx) {
+        if (n == null)
+            return;
+        
+        fillInorder(n.getLeft(), arr, idx);
+        arr[idx[0]++] = n.getKey();
+        fillInorder(n.getRight(), arr, idx);
+    }
+    
+    @Override
     public boolean isValidAVL() {
         return checkAVL(root).ok;
     }
@@ -199,7 +218,7 @@ public class AVL_Tree<T extends Comparable<T>> implements AVL_Implementation<T> 
         AvlCheck(boolean ok, int height){ this.ok = ok; this.height = height; }
     }
 
-    private AvlCheck checkAVL(Node<T> n){
+    private AvlCheck checkAVL(AVLNode<T> n){
         if (n == null) return new AvlCheck(true, 0);
 
         AvlCheck L = checkAVL(n.getLeft());
