@@ -1,11 +1,11 @@
 package adt;
 
-public class Node<T extends Comparable<T>> {
+public class AVLNode<T extends Comparable<T>> {
     private T key;
     private int height = 1;
-    private Node<T> left;
-    private Node<T> right;
-    Node(T key) {
+    private AVLNode<T> left;
+    private AVLNode<T> right;
+    AVLNode(T key) {
         this.key = key;
     }
     
@@ -17,11 +17,11 @@ public class Node<T extends Comparable<T>> {
         this.height = height;
     }
     
-    public void setLeft(Node<T> left){
+    public void setLeft(AVLNode<T> left){
         this.left = left;
     }
     
-    public void setRight(Node<T> right){
+    public void setRight(AVLNode<T> right){
         this.right = right;
     }
     
@@ -33,11 +33,11 @@ public class Node<T extends Comparable<T>> {
         return height;
     }
     
-    public Node<T> getLeft(){
+    public AVLNode<T> getLeft(){
         return left;
     }
     
-    public Node<T> getRight(){
+    public AVLNode<T> getRight(){
         return right;
     }
 }

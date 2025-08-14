@@ -2,13 +2,13 @@ package control;
 
 // Manage doctor information, duty schedules and availability tracking.
 
-import adt.AVL_Implementation;
-import adt.AVL_Tree;
+import adt.AVLInterface;
+import adt.AVLTree;
 import entity.Doctor;
 import javax.swing.JOptionPane;
 
 public class DoctorManagement {
-    AVL_Implementation<Doctor> doctorTree = new AVL_Tree<>();
+    AVLInterface<Doctor> doctorTree = new AVLTree<>();
     
     // Validation for attributes
     private boolean validName(String name){
