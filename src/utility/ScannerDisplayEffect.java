@@ -1,6 +1,6 @@
 package utility;
 
-public final class DisplayEffect {
+public final class ScannerDisplayEffect {
 //    public static void clearScreen(){
 //        Scanner sc = new Scanner(System.in);
 //        System.out.println("Press Enter to continue...");
@@ -13,7 +13,7 @@ public final class DisplayEffect {
 //        System.out.println("=========================================");
 //    }
     
-    private DisplayEffect() {} // prevent instantiation of this utility class
+    private ScannerDisplayEffect() {} // prevent instantiation of this utility class
     
     public static void clearScreen() {
         for (int i = 0; i < 50; i++)
