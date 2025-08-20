@@ -12,6 +12,10 @@ public class PatientByName implements Comparable<PatientByName> {
         this.ref = ref;
     }
     
+    public Patient getPatient() {
+        return ref;
+    }
+    
     @Override
     public int compareTo(PatientByName o) {
         if (o == null)

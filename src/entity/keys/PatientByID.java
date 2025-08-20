@@ -11,6 +11,10 @@ public class PatientByID implements Comparable<PatientByID>{
         this.ref = ref;
     }
     
+    public Patient getPatient() {
+        return ref;
+    }
+    
     @Override
     public int compareTo(PatientByID o) {
         if (o == null)
