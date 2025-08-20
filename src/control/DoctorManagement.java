@@ -66,9 +66,14 @@ public class DoctorManagement {
         }
     }
     
-//    public void removeDoctor(String doctorID, int contactNo){
-//        
-//    }
+    public void removeDoctor(String doctorID, String contactNo){
+        boolean result = doctorRemover(doctorID, contactNo);
+        
+        if (result == true)
+            JOptionPane.showMessageDialog(null, "Doctor (" + doctorID + ") is successfully removed.", "Doctor Removed", JOptionPane.INFORMATION_MESSAGE);
+        else
+            JOptionPane.showMessageDialog(null, "Please retry again.", "Doctor Remove Unsuccessful", JOptionPane.ERROR_MESSAGE);
+    }
     
     // Implementation Classes
     private String doctorRegistration(Doctor doctor){
@@ -205,8 +210,15 @@ public class DoctorManagement {
         return result;
     }
     
-//    public boolean doctorRemover(String doctorID, int contactNo){
-//        if (== doctorID)
-//        return false;
-//    }
+    public boolean doctorRemover(String doctorID, String contactNo){
+        Doctor searchKey = new Doctor (doctorID, "", contactNo, "", "");
+        Doctor found = doctorTree.find(searchKey);
+        
+        if (found == null)
+            return false;
+        else {
+            doctorTree.delete(found);
+            return true;
+        }
+    }
 }
