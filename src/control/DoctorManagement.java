@@ -6,26 +6,11 @@ import adt.AVLInterface;
 import adt.AVLTree;
 import entity.Doctor;
 import javax.swing.JOptionPane;
+import utility.Validation;
 
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
-    
-    // Formatting and Validation
-    private boolean validName(String name){
-        return name.matches("[A-Za-z ]+");
-    }
-    
-    private boolean validPhone(String phone){
-        return phone.matches("^011[0-9]{8}$|^01(0|2|3|4|5|6|7|8|9)[0-9]{7}$");
-    }
-    
-    private boolean validEmail(String email){
-        return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
-    }
-    
-    private boolean validSpecialization(String specialization){
-        return specialization.matches("^[A-Za-z ]+$") && specialization.length() >= 3 && specialization.length() <= 50;
-    }
+    Validation validate = new Validation();
     
     // Abstract Classes
     public void registerDoctor(Doctor doctor){
@@ -82,12 +67,12 @@ public class DoctorManagement {
         if (!doctor.getDoctorID().isEmpty() && !doctor.getDoctorName().isEmpty() &&
             !doctor.getContactNo().isEmpty() && !doctor.getEmail().isEmpty() &&
             !doctor.getSpecialization().isEmpty()){
-            if (validName(doctor.getDoctorName())) {
-                if (validPhone(phone)){
+            if (validate.validName(doctor.getDoctorName())) {
+                if (validate.validPhone(phone)){
                     phone = phone.substring(0, 3) + "-" + phone.substring(3);
                     doctor.setContactNo(phone);
-                    if (validEmail(doctor.getEmail())) {
-                        if (validSpecialization(doctor.getSpecialization())) {
+                    if (validate.validEmail(doctor.getEmail())) {
+                        if (validate.validSpecialization(doctor.getSpecialization())) {
                             doctorTree.insert(doctor);
                             return "Doctor (" + doctor.getDoctorID() + ") is successfully registered.";
                         }
@@ -155,7 +140,7 @@ public class DoctorManagement {
                     while (!valid) {
                         String newName = JOptionPane.showInputDialog(null, "Enter new name: ", "New Doctor Name", JOptionPane.INFORMATION_MESSAGE);
 
-                        if (validName(newName)) {
+                        if (validate.validName(newName)) {
                             doctor.setDoctorName(newName);
                             valid = true;
                         }
@@ -168,7 +153,7 @@ public class DoctorManagement {
                     while (!valid) {
                         String newContact = JOptionPane.showInputDialog(null, "Enter new contact number: ", "New Contact Number", JOptionPane.INFORMATION_MESSAGE);
                         
-                        if (validPhone(newContact)) {
+                        if (validate.validPhone(newContact)) {
                             doctor.setContactNo(newContact);
                             valid = true;
                         }
@@ -181,7 +166,7 @@ public class DoctorManagement {
                     while (!valid) {
                         String newEmail = JOptionPane.showInputDialog(null, "Enter new email address: ", "New Email Address", JOptionPane.INFORMATION_MESSAGE);
                         
-                        if (validEmail(newEmail)) {
+                        if (validate.validEmail(newEmail)) {
                             doctor.setEmail(newEmail);
                             valid = true;
                         }
@@ -194,7 +179,7 @@ public class DoctorManagement {
                     while (!valid) {
                         String newSpecialization = JOptionPane.showInputDialog(null, "Enter new specialization: ", "New Specialization", JOptionPane.INFORMATION_MESSAGE);
                         
-                        if (validSpecialization(newSpecialization)) {
+                        if (validate.validSpecialization(newSpecialization)) {
                             doctor.setSpecialization(newSpecialization);
                             valid = true;
                         }
