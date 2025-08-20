@@ -1,15 +1,18 @@
 package entity;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class DispenseRecord {
     private String recordID;
     private String consultationID;
     private String medicineID;
     private int quantity;
-    private MyDate dispenseDate;
-    private MyTime dispenseTime; // Optional
+    private LocalDate dispenseDate;
+    private LocalTime dispenseTime;
 
     public DispenseRecord(String recordID, String consultationID, String medicineID,
-                            int quantity, MyDate dispenseDate, MyTime dispenseTime) {
+                            int quantity, LocalDate dispenseDate, LocalTime dispenseTime) {
         this.recordID = recordID;
         this.consultationID = consultationID;
         this.medicineID = medicineID;
@@ -18,12 +21,29 @@ public class DispenseRecord {
         this.dispenseTime = dispenseTime;
     }
 
-    public String getRecordID() { return recordID; }
-    public String getConsultationID() { return consultationID; }
-    public String getMedicineID() { return medicineID; }
-    public int getQuantity() { return quantity; }
-    public MyDate getDispenseDate() { return dispenseDate; }
-    public MyTime getDispenseTime() { return dispenseTime; }
+    public String getRecordID() { 
+        return recordID; 
+    }
+    
+    public String getConsultationID() { 
+        return consultationID; 
+    }
+    
+    public String getMedicineID() { 
+        return medicineID; 
+    }
+    
+    public int getQuantity() { 
+        return quantity; 
+    }
+    
+    public LocalDate getDispenseDate() { 
+        return dispenseDate; 
+    }
+    
+    public LocalTime getDispenseTime() { 
+        return dispenseTime; 
+    }
 
     @Override
     public String toString() {

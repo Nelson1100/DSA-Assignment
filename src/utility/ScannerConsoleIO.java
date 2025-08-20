@@ -2,8 +2,8 @@ package utility;
 
 import java.util.Scanner;
 
-public final class ConsoleIO {
-    private ConsoleIO () {} // prevent instantiation of this utility class
+public final class ScannerConsoleIO {
+    private ScannerConsoleIO () {} // prevent instantiation of this utility class
     
     /* ---------- Basic Reads ---------- */
     

@@ -1,22 +1,20 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package entity;
 
-public class Medicine {
+import adt.LinkedQueue;
+
+public class Medicine implements Comparable<Medicine>{
     private String medicineID;
     private String medicineName;
-    private String category;
-    private double unitPrice;
-    private int reorderLevel;
+    private String medicineDescription;
+    private int totalStock;
+    private LinkedQueue<StockBatch> stockBatches;
     
-    public Medicine (String medicineID, String medicineName, String category, double unitPrice, int reorderLevel){
+    public Medicine (String medicineID, String medicineName, String medicineDescription, int totalStock){
         this.medicineID = medicineID;
         this.medicineName = medicineName;
-        this.category = category;
-        this.unitPrice = unitPrice;
-        this.reorderLevel = reorderLevel;
+        this.medicineDescription = medicineDescription;
+        this.totalStock = 0;
+        this.stockBatches = new LinkedQueue<>();
     }
     
     public String getMedicineID(){
@@ -27,16 +25,12 @@ public class Medicine {
         return medicineName;
     }
     
-    public String getCategory(){
-        return category;
+    public String getMedicineDescription(){
+        return medicineDescription;
     }
     
-    public double getUnitPrice(){
-        return unitPrice;
-    }
-    
-    public int getReorderLevel(){
-        return reorderLevel;
+    public int getTotalStock(){
+        return totalStock;
     }
     
     public void setMedicineID(String medicineID){
@@ -47,23 +41,30 @@ public class Medicine {
         this.medicineName= medicineName;
     }
     
-    public void setCategory(String category){
-        this.category= category;
+    public void setTotalStock(int totalStock) {
+        this.totalStock = totalStock;
     }
-    
-    public void setUnitPrice(double unitPrice){
-        this.unitPrice = unitPrice;
-    }
-    
-    public void setReorderLevel(int reorderLevel){
-        this.reorderLevel = reorderLevel;
+     
+    public LinkedQueue<StockBatch> getStockBatches() {
+        return stockBatches;
     }
     
     @Override
+    public int compareTo(Medicine other) {
+        return this.medicineID.compareTo(other.medicineID);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Medicine)) return false;
+        Medicine other = (Medicine) o;
+        return medicineID.equals(other.medicineID);
+    }
+    @Override
     public String toString() {
-        return "Medicine{id=" + medicineID + ", name=" + medicineName +
-               ", category=" + category + ", price=" + unitPrice +
-               ", reorderLevel=" + reorderLevel + "}";
+        return String.format("Medicine[ID=%s, Name=%s, Desc=%s, Stock=%d]", 
+                medicineID, medicineName, medicineDescription, totalStock);
     }
     
 }

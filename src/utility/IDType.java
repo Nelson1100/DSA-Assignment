@@ -3,6 +3,7 @@ package utility;
 public enum IDType {
     PATIENT("P"),
     DOCTOR("D"),
+    PHARMACIST("PH"),
     APPOINTMENT("APT"),
     CONSULTATION("C"),
     TREATMENT("T"),
