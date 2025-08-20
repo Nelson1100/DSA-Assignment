@@ -1,7 +1,5 @@
 package entity;
 
-import java.time.LocalTime;
-
 public class Patient {
     private String patientID;
     private String patientName;

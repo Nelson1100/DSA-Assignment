@@ -3,7 +3,7 @@ package control;
 import entity.VisitType;
 import entity.Gender;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public class PatientReportGenerator {
     private final PatientMaintenance pm;
@@ -30,7 +30,7 @@ public class PatientReportGenerator {
     
     /* ---------- Report 2: Average Waiting Time (minutes) for all patients currently in queue ---------- */
     
-    public String averageWait(LocalTime now) {
+    public String averageWait(LocalDateTime now) {
         double avg = pm.avgWaitMinutes(now);
         
         return String.format(
@@ -65,7 +65,7 @@ public class PatientReportGenerator {
         );
     }
     
-    public entity.Patient[] previewNext(int n) {
-        return pm.peekNextN(n);
-    }
+//    public entity.Patient[] previewNext(int n) {
+//        return pm.peekNextN(n);
+//    }
 }

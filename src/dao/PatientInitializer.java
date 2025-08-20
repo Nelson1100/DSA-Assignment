@@ -3,7 +3,7 @@ package dao;
 import adt.*;
 import entity.*;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 /**
  *                           ONLY NEEDED WHEN USING FILES
@@ -17,11 +17,11 @@ public class PatientInitializer {
         Patient drake  = new Patient("P004", "Drake",  "0172223344", "drake@email.com",     Gender.MALE,   38);
         
         // Simulated visits (same different patients)
-        visitQueue.enqueue(new PatientVisit(bryant, VisitType.WALK_IN,     LocalTime.of(9, 0)));
-        visitQueue.enqueue(new PatientVisit(clairo, VisitType.APPOINTMENT, LocalTime.of(9, 15)));
-        visitQueue.enqueue(new PatientVisit(bryant, VisitType.APPOINTMENT, LocalTime.of(10, 30))); // revisit
-        visitQueue.enqueue(new PatientVisit(travis, VisitType.WALK_IN,     LocalTime.of(10, 45)));
-        visitQueue.enqueue(new PatientVisit(clairo, VisitType.WALK_IN,     LocalTime.of(11, 10))); // revisit
-        visitQueue.enqueue(new PatientVisit(drake,  VisitType.WALK_IN,     LocalTime.of(11, 25)));
+        visitQueue.enqueue(new PatientVisit(bryant, VisitType.WALK_IN,     LocalDateTime.of(2025, 8, 19, 9, 0)));
+        visitQueue.enqueue(new PatientVisit(clairo, VisitType.APPOINTMENT, LocalDateTime.of(2025, 8, 19, 9, 15)));
+        visitQueue.enqueue(new PatientVisit(bryant, VisitType.APPOINTMENT, LocalDateTime.of(2025, 8, 20, 10, 30))); // revisit
+        visitQueue.enqueue(new PatientVisit(travis, VisitType.WALK_IN,     LocalDateTime.of(2025, 8, 20, 10, 45)));
+        visitQueue.enqueue(new PatientVisit(clairo, VisitType.WALK_IN,     LocalDateTime.of(2025, 8, 20, 11, 10))); // revisit
+        visitQueue.enqueue(new PatientVisit(drake,  VisitType.WALK_IN,     LocalDateTime.of(2025, 8, 21, 11, 25)));
     }
 }

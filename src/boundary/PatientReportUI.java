@@ -5,7 +5,7 @@ import entity.Patient;
 import utility.ScannerConsoleIO;
 import utility.ScannerDisplayEffect;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class PatientReportUI {
@@ -52,7 +52,7 @@ public class PatientReportUI {
                 case 4:
                     ScannerDisplayEffect.clearScreen();
                     ScannerDisplayEffect.printHeader("Preview Next Patients");
-                    previewNextN();
+//                    previewNextN();
                     ScannerConsoleIO.pause(sc);
                     break;
                 case 5:
@@ -85,7 +85,7 @@ public class PatientReportUI {
         System.out.println(report.queueHeadline());
         System.out.println();
         ScannerDisplayEffect.printSubheader("Average Waiting Time");
-        System.out.println(report.averageWait(LocalTime.now()));
+        System.out.println(report.averageWait(LocalDateTime.now()));
         ScannerDisplayEffect.printDivider();
     }
 
@@ -97,20 +97,20 @@ public class PatientReportUI {
         ScannerDisplayEffect.printDivider();
     }
 
-    private void previewNextN() {
-        int n = ScannerConsoleIO.readInt(sc, "Preview how many patients? ");
-        System.out.println();
-        ScannerDisplayEffect.printSubheader("Next Patients");
-        Patient[] next = report.previewNext(n);
-        if (next.length == 0) {
-            System.out.println("(none)");
-        } else {
-            for (int i = 0; i < next.length; i++) {
-                System.out.printf("%d) %s%n", i + 1, next[i]);
-            }
-        }
-        ScannerDisplayEffect.printDivider();
-    }
+//    private void previewNextN() {
+//        int n = ScannerConsoleIO.readInt(sc, "Preview how many patients? ");
+//        System.out.println();
+//        ScannerDisplayEffect.printSubheader("Next Patients");
+//        Patient[] next = report.previewNext(n);
+//        if (next.length == 0) {
+//            System.out.println("(none)");
+//        } else {
+//            for (int i = 0; i < next.length; i++) {
+//                System.out.printf("%d) %s%n", i + 1, next[i]);
+//            }
+//        }
+//        ScannerDisplayEffect.printDivider();
+//    }
 
     private void showAllReports() {
         System.out.println(report.queueHeadline());
@@ -122,7 +122,7 @@ public class PatientReportUI {
         System.out.println();
 
         ScannerDisplayEffect.printSubheader("Average Waiting Time");
-        System.out.println(report.averageWait(LocalTime.now()));
+        System.out.println(report.averageWait(LocalDateTime.now()));
         ScannerDisplayEffect.printDivider();
         System.out.println();
 
