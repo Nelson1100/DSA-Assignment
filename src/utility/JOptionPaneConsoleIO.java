@@ -14,7 +14,7 @@ public final class JOptionPaneConsoleIO {
             input = JOptionPane.showInputDialog(null, prompt, "Input Required", JOptionPane.QUESTION_MESSAGE);
             
             if (input == null)
-                return ""; // User clicked Cancel
+                return null; // User clicked Cancel
             
             input = input.trim();
             
@@ -66,6 +66,19 @@ public final class JOptionPaneConsoleIO {
         }
         
         return value;
+    }
+    
+    public static int readOption(String prompt, String title, String[] options) {
+        return JOptionPane.showOptionDialog(
+                null,
+                prompt,
+                title,
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
     }
     
     // Reads an enum value via dropdown
