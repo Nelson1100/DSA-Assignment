@@ -1,8 +1,8 @@
 package adt;
 
 public interface AVLInterface<T extends Comparable<T>> {
-    AVLInterface<T> insert(T data);
-    AVLInterface<T> delete(T data);
+    boolean insert(T data);
+    boolean delete(T data);
     T find(T data);
     void traverse();
     T getMax();
@@ -12,6 +12,6 @@ public interface AVLInterface<T extends Comparable<T>> {
     int size();
     int height();
     void clear();
-    T[] toArrayInorder();
+    T[] toArrayInorder(T[] arr);
     boolean isValidAVL();
 }

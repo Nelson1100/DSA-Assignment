@@ -2,17 +2,62 @@ package adt;
 
 public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
     private AVLNode<T> root;
+    private boolean insertionSuccess;
+    private boolean deletionSuccess;
     
     @Override
-    public AVLInterface<T> insert(T data){
+    public boolean insert(T data) {
+        insertionSuccess = false;
         root = insert(data, root);
-        return this;
+        return insertionSuccess;
+    }
+
+    private AVLNode<T> insert(T data, AVLNode<T> node) {
+        if (node == null) {
+            insertionSuccess = true;
+            return new AVLNode<>(data);
+        }
+
+        if (data.compareTo(node.getKey()) < 0)
+            node.setLeft(insert(data, node.getLeft()));
+        else if (data.compareTo(node.getKey()) > 0)
+            node.setRight(insert(data, node.getRight()));
+        else
+            return node;
+
+        updateHeight(node);
+        return applyRotation(node);
     }
     
     @Override
-    public AVLInterface<T> delete(T data){
+    public boolean delete(T data){
+        deletionSuccess = false;
         root = delete(data, root);
-        return this;
+        return deletionSuccess;
+    }
+    
+    private AVLNode<T> delete(T data, AVLNode<T> node){
+        if (node == null)
+            return null;
+
+        if (data.compareTo(node.getKey()) < 0)
+            node.setLeft(delete(data, node.getLeft()));
+        else if (data.compareTo(node.getKey()) > 0)
+            node.setRight(delete(data, node.getRight()));
+        else {
+            deletionSuccess = true;  // mark as success only when node is matched
+
+            if (node.getLeft() == null)
+                return node.getRight();
+            else if (node.getRight() == null)
+                return node.getLeft();
+
+            node.setKey(getMax(node.getLeft()));
+            node.setLeft(delete(node.getKey(), node.getLeft()));
+        }
+
+        updateHeight(node);
+        return applyRotation(node);
     }
     
     @Override
@@ -33,6 +78,7 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
         node.setHeight(maxHeight + 1);
     }
     
+    @Override
     public int height() {
         return height(root);
     }
@@ -53,42 +99,6 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
         return node == null ? 0 : height(node.getLeft()) - height(node.getRight());
     }
     
-    private AVLNode<T> insert(T data, AVLNode<T> node) {
-        if (node == null)
-            return new AVLNode<>(data);
-        
-        if (data.compareTo(node.getKey()) < 0)
-            node.setLeft(insert(data, node.getLeft()));
-        else if (data.compareTo(node.getKey()) > 0)
-            node.setRight(insert(data, node.getRight()));
-        else
-            return node;
-        
-        updateHeight(node);
-        return applyRotation(node);
-    }
-    
-    private AVLNode<T> delete(T data, AVLNode<T> node){
-        if (node == null)
-            return null;
-        
-        if (data.compareTo(node.getKey()) < 0)
-            node.setLeft(delete(data, node.getLeft()));
-        else if (data.compareTo(node.getKey()) > 0)
-            node.setRight(delete(data, node.getRight()));
-        else {
-            if (node.getLeft() == null)
-                return node.getRight();
-            else if (node.getRight() == null)
-                return node.getLeft();
-            
-            node.setKey(getMax(node.getLeft()));
-            node.setLeft(delete(node.getKey(), node.getLeft()));
-        }
-        updateHeight(node);
-        return applyRotation(node);
-    }
-
     private AVLNode<T> rotateRight(AVLNode<T> node){
         AVLNode<T> leftNode = node.getLeft();
         AVLNode<T> centerNode = leftNode.getRight();
@@ -203,20 +213,17 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
 //    }
 
     @Override
-    public T[] toArrayInorder() {
-        int size = size();
-        @SuppressWarnings("unchecked")
-        T[] arr = (T[]) new Comparable[size];
+    public T[] toArrayInorder(T[] arr) {
         fillInorder(root, arr, new int[]{0});
         return arr;
     }
-    
+
     private void fillInorder(AVLNode<T> n, T[] arr, int[] idx) {
         if (n == null)
             return;
         
         fillInorder(n.getLeft(), arr, idx);
-        arr[idx[0]++] = n.getKey();
+        arr[idx[0]++] = n.getKey(); 
         fillInorder(n.getRight(), arr, idx);
     }
     
