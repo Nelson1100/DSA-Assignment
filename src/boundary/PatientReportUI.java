@@ -2,8 +2,8 @@ package boundary;
 
 import control.PatientReportGenerator;
 import entity.Patient;
-import utility.ConsoleIO;
-import utility.DisplayEffect;
+import utility.ScannerConsoleIO;
+import utility.ScannerDisplayEffect;
 
 import java.time.LocalTime;
 import java.util.Scanner;
@@ -25,48 +25,48 @@ public class PatientReportUI {
         int choice;
         
         do {
-            DisplayEffect.clearScreen();
-            DisplayEffect.printHeader("Patient Reports");
+            ScannerDisplayEffect.clearScreen();
+            ScannerDisplayEffect.printHeader("Patient Reports");
             printMenu();
-            choice = ConsoleIO.readInt(sc, "Enter your choice: ");
+            choice = ScannerConsoleIO.readInt(sc, "Enter your choice: ");
             
             switch (choice) {
                 case 1:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Visit Type Summary");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Visit Type Summary");
                     showVisitTypeSummary();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 2:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Average Waiting Time");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Average Waiting Time");
                     showAverageWaitNow();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 3:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Gender Breakdown");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Gender Breakdown");
                     showGenderBreakdown();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 4:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Preview Next Patients");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Preview Next Patients");
                     previewNextN();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 5:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("All Reports");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("All Reports");
                     showAllReports();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 0:
                     System.out.println("Back to main menu...");
                     break;
                 default:
                     System.out.println("Invalid choice");
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
             }
         } while (choice != 0);
     }
@@ -76,31 +76,31 @@ public class PatientReportUI {
     private void showVisitTypeSummary() {
         System.out.println(report.queueHeadline());
         System.out.println();
-        DisplayEffect.printSubheader("Visit Type Summary");
+        ScannerDisplayEffect.printSubheader("Visit Type Summary");
         System.out.println(report.summaryByVisitType());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     private void showAverageWaitNow() {
         System.out.println(report.queueHeadline());
         System.out.println();
-        DisplayEffect.printSubheader("Average Waiting Time");
+        ScannerDisplayEffect.printSubheader("Average Waiting Time");
         System.out.println(report.averageWait(LocalTime.now()));
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     private void showGenderBreakdown() {
         System.out.println(report.queueHeadline());
         System.out.println();
-        DisplayEffect.printSubheader("Gender Breakdown");
+        ScannerDisplayEffect.printSubheader("Gender Breakdown");
         System.out.println(report.genderBreakdown());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     private void previewNextN() {
-        int n = ConsoleIO.readInt(sc, "Preview how many patients? ");
+        int n = ScannerConsoleIO.readInt(sc, "Preview how many patients? ");
         System.out.println();
-        DisplayEffect.printSubheader("Next Patients");
+        ScannerDisplayEffect.printSubheader("Next Patients");
         Patient[] next = report.previewNext(n);
         if (next.length == 0) {
             System.out.println("(none)");
@@ -109,26 +109,26 @@ public class PatientReportUI {
                 System.out.printf("%d) %s%n", i + 1, next[i]);
             }
         }
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     private void showAllReports() {
         System.out.println(report.queueHeadline());
         System.out.println();
 
-        DisplayEffect.printSubheader("Visit Type Summary");
+        ScannerDisplayEffect.printSubheader("Visit Type Summary");
         System.out.println(report.summaryByVisitType());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
         System.out.println();
 
-        DisplayEffect.printSubheader("Average Waiting Time");
+        ScannerDisplayEffect.printSubheader("Average Waiting Time");
         System.out.println(report.averageWait(LocalTime.now()));
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
         System.out.println();
 
-        DisplayEffect.printSubheader("Gender Breakdown");
+        ScannerDisplayEffect.printSubheader("Gender Breakdown");
         System.out.println(report.genderBreakdown());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
     
     /* ---------- Helpers ---------- */

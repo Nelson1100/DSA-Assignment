@@ -20,42 +20,42 @@ public class PatientUI {
         int choice;
         
         do {
-            DisplayEffect.clearScreen();
-            DisplayEffect.printHeader("Patient Management");
+            ScannerDisplayEffect.clearScreen();
+            ScannerDisplayEffect.printHeader("Patient Management");
             printMainMenu();
             
-            choice = ConsoleIO.readInt(sc, "Enter your choice: ");
+            choice = ScannerConsoleIO.readInt(sc, "Enter your choice: ");
             switch (choice) {
                 case 1:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Register New Patient");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Register New Patient");
                     registerFlow();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 2:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Serve Next Patient");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Serve Next Patient");
                     serveFlow();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 3:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Current Queue");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Current Queue");
                     pm.viewAllPatients();
-                    DisplayEffect.printDivider();
-                    ConsoleIO.pause(sc);
+                    ScannerDisplayEffect.printDivider();
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 4:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Find Position");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Find Position");
                     findPositionFlow();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 5:
-                    DisplayEffect.clearScreen();
-                    DisplayEffect.printHeader("Remove Patient");
+                    ScannerDisplayEffect.clearScreen();
+                    ScannerDisplayEffect.printHeader("Remove Patient");
                     removeByIDFlow();
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
                     break;
                 case 6:
                     reportUI.start();
@@ -65,7 +65,7 @@ public class PatientUI {
                     break;
                 default:
                     System.out.println("Invalid choice.");
-                    ConsoleIO.pause(sc);
+                    ScannerConsoleIO.pause(sc);
             }
             
         } while (choice != 0);
@@ -74,36 +74,36 @@ public class PatientUI {
     /* ---------- FLOWS ---------- */
     
     private void registerFlow() {
-        DisplayEffect.printSubheader("Enter Patient Details");
+        ScannerDisplayEffect.printSubheader("Enter Patient Details");
         
         String id = IDGenerator.next(IDType.PATIENT);
         System.out.println("Generated Patient ID: " + id);
         
-        String name    = ConsoleIO.readNonEmpty(sc, "Name       : ");
-        String contact = ConsoleIO.readNonEmpty(sc, "Contact No : ");
-        String email   = ConsoleIO.readNonEmpty(sc, "Email      : ");
+        String name    = ScannerConsoleIO.readNonEmpty(sc, "Name       : ");
+        String contact = ScannerConsoleIO.readNonEmpty(sc, "Contact No : ");
+        String email   = ScannerConsoleIO.readNonEmpty(sc, "Email      : ");
     
-        Gender gender = ConsoleIO.readEnum(sc, "Gender", Gender.class, new String[]{"MALE","FEMALE"});
+        Gender gender = ScannerConsoleIO.readEnum(sc, "Gender", Gender.class, new String[]{"MALE","FEMALE"});
         
-        int age = ConsoleIO.readIntInRange(sc, "Age         : ", 0, 120);
+        int age = ScannerConsoleIO.readIntInRange(sc, "Age         : ", 0, 120);
         
-        VisitType visitType = ConsoleIO.readEnum(sc, "Visit Type", VisitType.class, new String []{"WALK_IN","APPOINTMENT"});
+        VisitType visitType = ScannerConsoleIO.readEnum(sc, "Visit Type", VisitType.class, new String []{"WALK_IN","APPOINTMENT"});
         LocalTime arrival = LocalTime.now();
         
         Patient p = new Patient(id, name, contact, email, gender, age, visitType, arrival);
         
         pm.registerPatient(p);
-        DisplayEffect.printDivider();
-        DisplayEffect.printSubheader("Registered Patient");
+        ScannerDisplayEffect.printDivider();
+        ScannerDisplayEffect.printSubheader("Registered Patient");
         System.out.println(p);
         System.out.println("Queue size is now: " + pm.getQueueSize());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
     
     private void serveFlow() {
         if (pm.isEmpty()) {
             System.out.println("No patients in queue.");
-            DisplayEffect.printDivider();
+            ScannerDisplayEffect.printDivider();
             return;
         }
         
@@ -111,24 +111,24 @@ public class PatientUI {
         
         System.out.println(served == null ? "No patients in queue." :("Serving: " + served));
         System.out.println("Queue size is now: " + pm.getQueueSize());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     private void findPositionFlow() {
-        String id = ConsoleIO.readNonEmpty(sc, "Patient ID: ");
+        String id = ScannerConsoleIO.readNonEmpty(sc, "Patient ID: ");
         int pos = pm.findPosition(id);
         
         System.out.println(pos < 0 ? "Patient not found." : ("Patient " + id + " is #" + pos + " in the queue."));
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     private void removeByIDFlow() {
-        String id = ConsoleIO.readNonEmpty(sc, "Patient ID to remove: ");
+        String id = ScannerConsoleIO.readNonEmpty(sc, "Patient ID to remove: ");
         boolean removed = pm.removeByID(id);
         
         System.out.print(removed ? ("Removed patient " + id + ".") : "Patient not found.");
         System.out.println("Queue size is now: " + pm.getQueueSize());
-        DisplayEffect.printDivider();
+        ScannerDisplayEffect.printDivider();
     }
 
     /* ---------- MAIN MENU ---------- */
