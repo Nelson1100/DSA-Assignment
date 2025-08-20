@@ -12,7 +12,8 @@ public class DoctorUI {
     
     public void taskSelection(){
         boolean newTask = true;
-        String[] menu = {"Register", "Search", "Update", "Remove", "Back", "Cancel"};
+        String[] menu = {"Register", "Search", "Cancel"};
+        String[] updateOption = {"Update", "Remove", "Cancel"};
         
         do {
             int choice = JOptionPaneConsoleIO.readOption("Which task would you like to perform?", "Doctor Management Module", menu);
@@ -27,23 +28,90 @@ public class DoctorUI {
                     if (doctor == null)
                         break;
                     
-                    dm.registerDoctor(doctor);
+                    boolean success = dm.registerDoctor(doctor);
+                    
+                    if (success)
+                        JOptionPaneConsoleIO.showInfo("Doctor is successfully registered.");
+                    else
+                        JOptionPaneConsoleIO.showError("Unsuccessful action. Please try again.");                    
                     break;
                 case 1:
                     // Search doctor
-                    searchDoctor();
-                    dm.viewDoctorInfo(doctorID, doctorName, contactNo, email);
+                    int updateChoice = -1;
+                    
+                    if (dm.isEmptyTree()) {
+                        JOptionPaneConsoleIO.showError("Empty doctor record.");
+                        break;
+                    }
+                    
+                    doctor = searchDoctor();
+                    if (doctor == null)
+                        break;
+                    
+                    String result = dm.findDoctor(doctor);
+                    if (!result.equals("No doctor record is found."))
+                        updateChoice = JOptionPaneConsoleIO.readOption(result, "Doctor Information", updateOption);
+                    else {
+                        JOptionPaneConsoleIO.showError(result);
+                        break;
+                    }
+                    
+                    int modifyChoice = 0;
+                    String newName = null;
+                    String newPhone = null;
+                    String newEmail = null;
+                    String newSpecialization = null;
+                    
+                    if (updateChoice == 0) {
+                        // Update doctor profile
+                        modifyChoice = infoModification();
+                        
+                        if (modifyChoice == -1)
+                            break;
+                        
+                        switch (modifyChoice){
+                            case 1:
+                                // Modify name
+                                newName = JOptionPaneConsoleIO.readNonEmpty("Enter new name: ");
+                                break;
+                            case 2:
+                                // Modify phone number
+                                newPhone = JOptionPaneConsoleIO.readNonEmpty("Enter new phone number: ");
+                                newPhone = validate.standardizedPhone(newPhone);
+                                break;
+                            case 3:
+                                // Modify email address
+                                newEmail = JOptionPaneConsoleIO.readNonEmpty("Enter new email address: ");
+                                break;
+                            case 4:
+                                // Modify specialization
+                                newSpecialization = JOptionPaneConsoleIO.readNonEmpty("Enter new specialization: ");
+                                break;
+                            default:
+                                JOptionPaneConsoleIO.showError("Please enter a valid option.");
+                        }
+                        
+                        if (newName == null && newPhone == null && newEmail == null && newSpecialization == null)
+                            break;
+                        
+                        boolean updateResult = dm.updateDoctor(doctor, modifyChoice, newName, newPhone, newEmail, newSpecialization);
+                        
+                        if (updateResult)
+                            JOptionPaneConsoleIO.showInfo("Information updated.");
+                        else
+                            JOptionPaneConsoleIO.showError("Update unsuccessfully. Please try again.");
+                    } else if (updateChoice == 1){
+                        // Remove doctor
+                        boolean removeResult = dm.removeDoctor(doctor);
+                        
+                        if (removeResult)
+                            JOptionPaneConsoleIO.showInfo("Doctor removed.");
+                        else
+                            JOptionPaneConsoleIO.showError("Remove unsuccessfully. Please try again.");
+                    }
+                        
                     break;
                 case 2:
-                    // Update doctor profile
-                    break;
-                case 3:
-                    // Remove a certain doctor
-                    break;
-                case 4:
-                    // Return back to previous page
-                    break;
-                case 5:
                     // End performing task
                     newTask = false;
                     break;
@@ -80,6 +148,8 @@ public class DoctorUI {
             
             if (phone == null)
                 return null;
+            
+            phone = validate.standardizedPhone(phone);
             
             if (validate.validPhone(phone))
                 valid = true;
@@ -118,6 +188,32 @@ public class DoctorUI {
     }
     
     private Doctor searchDoctor(){
-        JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID / Name / Phone / Email): ");
+        String id = "";
+        String name = "";
+        String phone = "";
+        String email = "";
+        String detail = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID / Name / Phone / Email): ");
+        
+        if (detail == null)
+            return null;
+        
+        if (validate.validName(detail))
+            name = detail.trim();
+        else if (validate.validPhone(detail)) {
+            detail = validate.standardizedPhone(phone);
+            phone = detail.trim();
+        }
+        else if (validate.validEmail(detail))
+            email = detail.trim();
+        
+        doctor = new Doctor(id, name, phone, email, "");
+        return doctor;
     }
+    
+    private int infoModification(){
+        String infoSelection = "Which information would you like to update?\n[1] Name\n[2] Phone Number\n[3] Email Address\n[4] Specialization\n";
+        return JOptionPaneConsoleIO.readInt(infoSelection);
+    }
+    
+    // private 
 }

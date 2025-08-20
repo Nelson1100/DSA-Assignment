@@ -7,8 +7,9 @@ public class Validation {
         return name.matches("[A-Za-z ]+");
     }
     
-    public boolean validPhone(String phone){
-        return phone.matches("^011[0-9]{8}$|^01(0|2|3|4|5|6|7|8|9)[0-9]{7}$");
+    public boolean validPhone(String phone) {
+        phone = standardizedPhone(phone);
+        return phone.matches("^011-[0-9]{8}$|^01(0|2|3|4|5|6|7|8|9)-[0-9]{7}$");
     }
     
     public boolean validEmail(String email){
@@ -19,4 +20,12 @@ public class Validation {
         return specialization.matches("^[A-Za-z ]+$") && specialization.length() >= 3 && specialization.length() <= 50;
     }
     
+    public String standardizedPhone(String phoneNo) {
+        phoneNo = phoneNo.replaceAll("[-\\s]", "");
+        
+        if (phoneNo.length() >= 3)
+            phoneNo = phoneNo.substring(0, 3) + "-" + phoneNo.substring(3);
+        
+        return phoneNo;
+    }
 }
