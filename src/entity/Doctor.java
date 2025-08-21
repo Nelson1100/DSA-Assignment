@@ -8,6 +8,7 @@ public class Doctor implements Comparable<Doctor> {
     private String email;
     private String specialization;
     
+    // Constructor
     public Doctor(){
         this("","","","","");
     }
@@ -20,6 +21,7 @@ public class Doctor implements Comparable<Doctor> {
         this.specialization = specialization;
     }
     
+    // Getter
     public String getDoctorID(){
         return this.doctorID;
     }
@@ -40,6 +42,7 @@ public class Doctor implements Comparable<Doctor> {
         return this.specialization;
     }
     
+    // Setter
     public void setDoctorID(String doctorID){
         this.doctorID = doctorID;
     }
@@ -60,6 +63,7 @@ public class Doctor implements Comparable<Doctor> {
         this.specialization = specialization;
     }
     
+    // Other methods
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
