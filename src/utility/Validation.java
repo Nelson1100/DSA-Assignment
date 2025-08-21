@@ -1,8 +1,13 @@
 package utility;
 
-public class Validation {
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
-    // Formatting and Validation
+public class Validation {
+    private static final DateTimeFormatter STRICT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    // Validation
     public boolean validName(String name){
         return name.matches("[A-Za-z ]+");
     }
@@ -20,6 +25,16 @@ public class Validation {
         return specialization.matches("^[A-Za-z ]+$") && specialization.length() >= 3 && specialization.length() <= 50;
     }
     
+    public static boolean isValidISODate(String dateStr) {
+        try {
+            LocalDate.parse(dateStr, STRICT_ISO);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+    
+    // Formatting
     public String standardizedPhone(String phoneNo) {
         phoneNo = phoneNo.replaceAll("[-\\s]", "");
         
