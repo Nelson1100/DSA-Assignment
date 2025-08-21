@@ -2,9 +2,10 @@ package boundary;
 
 import control.PatientMaintenance;
 import entity.*;
-import utility.JOptionPaneConsoleIO;
+import utility.*;
 
 import javax.swing.JOptionPane;
+import java.time.LocalDateTime;
 
 public class PatientUI {
     private final PatientMaintenance controller;
@@ -15,22 +16,22 @@ public class PatientUI {
     
     public void run() {
         String[] menuOptions = {
-            "Register Patient Visit",
-            "Serve Next Patient",
-            "Remove by Patient ID",
-            "Find Patient Position in Queue",
+            "Register Visit",
+            "Serve Next",
+            "Remove Visit by ID",
+            "Find Postion",
             "View All Visits",
             "Queue Summary",
-            "Top-K Longest Waiting",
-            "Exit"
+            "Top-K Waiting",
+            "Back"
         };
         
         int choice;
         do {
             choice = JOptionPane.showOptionDialog(
                 null,
-                "Choose an option:",
                 "Patient Visit Queue",
+                "Patient Module - Visit Queue",
                 JOptionPane.DEFAULT_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
@@ -46,9 +47,9 @@ public class PatientUI {
 //                case 4 -> viewAll();
 //                case 5 -> showQueueHealth();
 //                case 6 -> showTopK();
-                case 7 -> JOptionPane.showMessageDialog(null, "Goodbye!");
+                default -> JOptionPane.showMessageDialog(null, "Goodbye!");
             }
-        } while (choice != 7);
+        } while (choice != 7 && choice != JOptionPane.CLOSED_OPTION);
     }
     
     private void registerVisit() {

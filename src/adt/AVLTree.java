@@ -87,6 +87,7 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
         return node != null ? node.getHeight() : 0;
     }
     
+    @Override
     public int size() {
         return size(root);
     }

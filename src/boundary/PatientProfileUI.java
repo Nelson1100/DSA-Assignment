@@ -7,30 +7,49 @@ import utility.*;
 import javax.swing.JOptionPane;
 
 public class PatientProfileUI {
-    private final PatientMaintenance controller;
+    private final PatientMaintenance pm = new PatientMaintenance();
+    private final Validation validate = new Validation();
     
-    public PatientProfileUI(PatientMaintenance controller) {
-        this.controller = controller;
-    }
+    private Patient patient; // scratch
     
-    public void run() {
-        String[] options = {
-            "Register New Patient",
-            "Update Existing Patient",
-            "Remove Patient by ID",
-            "Search Patient by ID",
-            "View All Patients (Sorted by ID)",
-            "View All Patients (Sorted by Name)",
-            "Back to Main Menu"
+    public void taskSelection() {
+        boolean newTask = true;
+        String[] menu = {
+            "Register",
+            "Search",
+            "View",
+            "Back"
         };
-        
-        int choice;
-//        do {
-//            choice = JOptionPane.showOptionDialog(
-//                    null,
-//                    "Choose an option:",
-//                    
-//            );
-//        }
+        String[] searchOptions = {
+            "Update",
+            "Remove",
+            "Back"
+        };
+
+        do {
+            int choice = JOptionPaneConsoleIO.readOption(
+                    "Which task would you like to perform?",
+                    "Patient Management Module — Profiles",
+                    menu
+            );
+            
+            if (choice == -1) break;
+            
+            switch (choice) {
+                case 0 -> { // Register
+//                    patient = newDetailsPrompt();
+                    if (patient == null) break;
+                    
+                    boolean success = pm.registerPatient(patient);
+                    if (success)
+                        JOptionPaneConsoleIO.showInfo("Patient successfully registered.");
+                    else
+                        JOptionPaneConsoleIO.showError("Unsuccessful. Patient ID already exists or invalid.");
+                }
+                case 1 -> { // Search -> Update | Remove
+                    
+                }
+            }
+        } while (newTask);
     }
 }
