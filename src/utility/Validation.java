@@ -39,7 +39,7 @@ public final class Validation {
     }
     
     // Formatting
-    public String standardizedPhone(String phoneNo) {
+    public static String standardizedPhone(String phoneNo) {
         phoneNo = phoneNo.replaceAll("[-\\s]", "");
         
         if (phoneNo.length() >= 3)
