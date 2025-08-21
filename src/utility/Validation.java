@@ -1,9 +1,15 @@
 package utility;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 public final class Validation {
     public Validation() {} // prevent instantiation of this utility class
-
-    // Formatting and Validation
+    
+    private static final DateTimeFormatter STRICT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
+    // Validation
     public static boolean validName(String name){
         return name.matches("[A-Za-z ]+");
     }
@@ -23,7 +29,17 @@ public final class Validation {
                 && specialization.length() <= 50;
     }
     
-    public static String standardizedPhone(String phoneNo) {
+    public static boolean isValidISODate(String dateStr) {
+        try {
+            LocalDate.parse(dateStr, STRICT_ISO);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+    
+    // Formatting
+    public String standardizedPhone(String phoneNo) {
         phoneNo = phoneNo.replaceAll("[-\\s]", "");
         
         if (phoneNo.length() >= 3)

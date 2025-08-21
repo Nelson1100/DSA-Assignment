@@ -215,5 +215,4 @@ public class DoctorUI {
         return JOptionPaneConsoleIO.readInt(infoSelection);
     }
     
-    // private 
 }
