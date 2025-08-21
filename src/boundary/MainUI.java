@@ -94,7 +94,7 @@ public class MainUI {
             
             switch (choice) {
 //                case 0 -> new PatientUI(controller).run();
-                case 1 -> new PatientProfileUI(controller).run();
+//                case 1 -> new PatientProfileUI(controller).run();
 //                case 2 -> new PatientReportUI(controller).run();
             }
         } while (choice != 3);

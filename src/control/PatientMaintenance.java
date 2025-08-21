@@ -1,14 +1,16 @@
 package control;
 
 import adt.*;
+import dao.PatientInitializer;
 import entity.*;
 import entity.keys.*;
-import dao.PatientInitializer;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class PatientMaintenance {
+    /* ---------- Data Structures ---------- */
+    
     private final QueueInterface<PatientVisit> visitQueue;
     
     private final AVLTree<PatientByID> idxByID = new AVLTree<>();
@@ -46,7 +48,7 @@ public class PatientMaintenance {
         idxByEmail.delete(new PatientByEmail(p.getEmail(), null));
     }
     
-    /* ---------- Patient CRUD ---------- */
+    /* ---------- CRUD Operations ---------- */
     
     public boolean registerPatient(Patient patient) {
         if (existsByID(patient.getPatientID())) return false;
@@ -55,16 +57,11 @@ public class PatientMaintenance {
         return true;
     }
     
-    public Patient getPatientByID(String id) {
-        PatientByID wrapper = idxByID.find(new PatientByID(id, null));
-        return (wrapper != null) ? wrapper.ref : null;
-    }
-    
     public boolean updatePatient(Patient updatedPatient) {
         String id = updatedPatient.getPatientID();
         if (!existsByID(id)) return false;
         
-        Patient old = getPatientByID(id);
+        Patient old = findPatientByID(id);
         unindexPatient(old);
         indexPatient(updatedPatient);
         return true;
@@ -73,10 +70,48 @@ public class PatientMaintenance {
     public boolean removePatientByID(String id) {
         if (!existsByID(id)) return false;
         
-        Patient p = getPatientByID(id);
+        Patient p = findPatientByID(id);
         unindexPatient(p);
         return true;
     }
+    
+    public boolean updatePatientField(String id, int fieldCode, String newValue) {
+        Patient old = findPatientByID(id);
+        if (old == null || newValue == null) return false;
+        
+        String name = old.getPatientName();
+        String phone = old.getContactNo();
+        String email = old.getEmail();
+        Gender gender = old.getGender();
+        int age = old.getAge();
+        
+        switch (fieldCode) {
+            case 1 -> name = newValue.trim();
+            case 2 -> phone = newValue.trim();
+            case 3 -> email = newValue.trim();
+            case 4 -> {
+                try {
+                    gender = Gender.valueOf(newValue.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return false;
+                }
+            }
+            case 5 -> {
+                try {
+                    age = Integer.parseInt(newValue.trim());
+                    if (age < 1 || age > 120) return false;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            default -> { return false; }
+        }
+        
+        Patient updated = new Patient(id, name, phone, email, gender, age);
+        return updatePatient(updated);
+    }
+    
+    /* ---------- Find Operations ---------- */
     
     public boolean existsByID(String id) {
         if (id == null) return false;
@@ -84,26 +119,40 @@ public class PatientMaintenance {
         return idxByID.contains(new PatientByID(id, null));
     }
     
-    /* ---------- Visit Management ---------- */
+    public Patient findPatientByID(String id) {
+        PatientByID wrapper = idxByID.find(new PatientByID(id, null));
+        return (wrapper != null) ? wrapper.ref : null;
+    }
+    
+    public Patient findPatientByName(String name) {
+        PatientByName wrapper = idxByName.find(new PatientByName(name, "", null));
+        return wrapper != null ? wrapper.ref : null;
+    }
+    
+    public Patient findPatientByPhone(String phone) {
+        PatientByContactNo wrapper = idxByContact.find(new PatientByContactNo(phone, null));
+        return wrapper != null ? wrapper.ref : null;
+    }
+    
+    public Patient findPatientByEmail(String email) {
+        PatientByEmail wrapper = idxByEmail.find(new PatientByEmail(email, null));
+        return wrapper != null ? wrapper.ref : null;
+    }
+    
+    /* ---------- Visit Queue ---------- */
     
     public void registerVisit(Patient patient, VisitType visitType) {
-        String id = patient.getPatientID();
-        
-        if (existsByID(id)) {
-            Patient existing = getPatientByID(id);
-            patient = existing;
+        if (existsByID(patient.getPatientID())) {
+            patient = findPatientByID(patient.getPatientID());
         } else {
             indexPatient(patient);
         }
-        
-        PatientVisit visit = new PatientVisit(patient, visitType, LocalDateTime.now());
-        visitQueue.enqueue(visit);
+
+        visitQueue.enqueue(new PatientVisit(patient, visitType, LocalDateTime.now()));
     }
     
     public PatientVisit serveNextVisit() {
-        if (isEmpty()) return null;
-        
-        return visitQueue.dequeue();
+        return !isEmpty() ? visitQueue.dequeue() : null;
     }
     
     public boolean removeVisitByID(String id) {
@@ -130,7 +179,7 @@ public class PatientMaintenance {
         return removed;
     }
     
-    /* ---------- Queue Access ---------- */
+    // Queue Access
     
     public boolean isEmpty() {
         return visitQueue.isEmpty();
@@ -174,7 +223,7 @@ public class PatientMaintenance {
         return -1;
     }
     
-    /* ---------- Queue Statistics ---------- */
+    // Queue Statistics 
     
     public int countByVisitType(VisitType type) {
         int count = 0;
@@ -227,7 +276,7 @@ public class PatientMaintenance {
         return max;
     }
     
-    // need modification
+    // need modification gua
     public String queueHealthSnapshot(LocalDateTime now) {
         int walkIn = countByVisitType(VisitType.WALK_IN);
         int appointment = countByVisitType(VisitType.APPOINTMENT);
@@ -249,15 +298,157 @@ public class PatientMaintenance {
                 next != null ? next.getPatient().getPatientID() : "(none)");
     }
     
-    /* ---------- Reporting & Sorting ---------- */
+    /* ---------- Patient Sorting ---------- */
     
-    public PatientByID[] getPatientsSortedByID() {
-        return idxByID.toArrayInorder();
+    public Patient[] getAllPatientsSortedByID(boolean descending) {
+        PatientByID[] wrapped = idxByID.toArrayInorder(new PatientByID[idxByID.size()]);
+        
+        if (descending)
+            reverseArray(wrapped);
+        
+        Patient[] result = new Patient[wrapped.length];
+        
+        for (int i = 0; i < wrapped.length; i++) {
+            result[i] = wrapped[i].ref;
+        }
+        
+        return result;
     }
 
-    public PatientByName[] getPatientsSortedByName() {
-        return idxByName.toArrayInorder();
+    public Patient[] getAllPatientsSortedByName(boolean descending) {
+        PatientByName[] wrapped = idxByName.toArrayInorder(new PatientByName[idxByName.size()]);
+        
+        if (descending)
+            reverseArray(wrapped);
+        
+        Patient[] result = new Patient[wrapped.length];
+        
+        for (int i = 0; i < wrapped.length; i++)  {
+            result[i] = wrapped[i].ref;
+        }
+        
+        return result; 
     }
+    
+    public Patient[] getAllPatientsSortedByGender(boolean descending) {
+        Patient[] arr = getAllPatientsSortedByName(false);
+        selectionSortByGender(arr, descending);
+        return arr;
+    }
+    
+    public Patient[] getAllPatientsSortedByAge(boolean descending) {
+        Patient[] arr = getAllPatientsSortedByName(false);
+        selectionSortByAge(arr, descending);
+        return arr;
+    }
+
+    public Patient[] getAllPatientsSortedByContact(boolean descending) {
+        Patient[] arr = getAllPatientsSortedByName(false);
+        selectionSortByContact(arr, descending);
+        return arr;
+    }
+
+    public Patient[] getAllPatientsSortedByEmail(boolean descending) {
+        Patient[] arr = getAllPatientsSortedByName(false);
+        selectionSortByEmail(arr, descending);
+        return arr;
+    }
+    
+    /* ---------- Sort Helpers ---------- */
+    
+    private void selectionSortByGender(Patient[] a, boolean descending) {
+        for (int i = 0; i < a.length - 1; i++) {
+            int target = i;
+            
+            for (int j = i + 1; j < a.length; j++) {
+                int cmp = a[j].getGender().compareTo(a[target].getGender());
+                
+                if (cmp == 0) 
+                    cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());
+                
+                if ((descending && cmp > 0) || (!descending && cmp < 0)) 
+                    target = j;
+            }
+            
+            swap(a, i, target);
+        }
+    }
+
+
+    private void selectionSortByAge(Patient[] a, boolean descending) {
+        for (int i = 0; i < a.length - 1; i++) {
+            int target = i;
+            
+            for (int j = i + 1; j < a.length; j++) {
+                int cmp = Integer.compare(a[j].getAge(), a[target].getAge());
+                
+                if (cmp == 0) 
+                    cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());
+                
+                if ((descending && cmp > 0) || (!descending && cmp < 0)) 
+                    target = j;
+            }
+            
+            swap(a, i, target);
+        }
+    }
+
+
+    private void selectionSortByContact(Patient[] a, boolean descending) {
+        for (int i = 0; i < a.length - 1; i++) {
+            int target = i;
+            
+            for (int j = i + 1; j < a.length; j++) {
+                int cmp = a[j].getContactNo().compareToIgnoreCase(a[target].getContactNo());
+                
+                if (cmp == 0) 
+                    cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());
+                
+                if ((descending && cmp > 0) || (!descending && cmp < 0)) 
+                    target = j;
+            }
+            
+            swap(a, i, target);
+        }
+    }
+
+
+    private void selectionSortByEmail(Patient[] a, boolean descending) {
+        for (int i = 0; i < a.length - 1; i++) {
+            int target = i;
+            
+            for (int j = i + 1; j < a.length; j++) {
+                int cmp = a[j].getEmail().compareToIgnoreCase(a[target].getEmail());
+                
+                if (cmp == 0) 
+                    cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());
+                
+                if ((descending && cmp > 0) || (!descending && cmp < 0)) 
+                    target = j;
+            }
+            
+            swap(a, i, target);
+        }
+    }
+    
+    private <T> void reverseArray(T[] array) {
+        for (int i = 0, j = array.length - 1; i < j; i++, j--) {
+            T temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+    }
+
+
+    private void swap(Patient[] a, int i, int j) {
+        if (i == j) return;
+        
+        Patient temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
+    }
+    
+    /* ---------- Reports ---------- */
     
     // Returns top-K longest waiting patients (based on arrival time)
     public String topKLongestWaiting(int k, LocalDateTime now) {
@@ -295,28 +486,4 @@ public class PatientMaintenance {
             arr[max] = temp;
         }
     }
-    
-    /* ---------- Patient Listing ---------- */
-    
-    public Patient[] getAllPatientsSortedByID() {
-        PatientByID[] wrapped = idxByID.toArrayInorder();
-        Patient[] result = new Patient[wrapped.length];
-        
-        for (int i = 0; i < wrapped.length; i++) {
-            result[i] = wrapped[i].ref;
-        }
-        
-        return result;
-    }
-    
-    public Patient[] getAllPatientsSortedByName() {
-        PatientByName[] wrapped = idxByName.toArrayInorder();
-        Patient[] result = new Patient[wrapped.length];
-        
-        for (int i = 0; i < wrapped.length; i++) {
-            result[i] = wrapped[i].ref;
-        }
-        
-        return result;
-    } 
 }
