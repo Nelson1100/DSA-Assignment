@@ -1,26 +1,29 @@
 package utility;
 
-public class Validation {
+public final class Validation {
+    public Validation() {} // prevent instantiation of this utility class
 
     // Formatting and Validation
-    public boolean validName(String name){
+    public static boolean validName(String name){
         return name.matches("[A-Za-z ]+");
     }
     
-    public boolean validPhone(String phone) {
+    public static boolean validPhone(String phone) {
         phone = standardizedPhone(phone);
         return phone.matches("^011-[0-9]{8}$|^01(0|2|3|4|5|6|7|8|9)-[0-9]{7}$");
     }
     
-    public boolean validEmail(String email){
+    public static boolean validEmail(String email){
         return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
     }
     
-    public boolean validSpecialization(String specialization){
-        return specialization.matches("^[A-Za-z ]+$") && specialization.length() >= 3 && specialization.length() <= 50;
+    public static boolean validSpecialization(String specialization){
+        return specialization.matches("^[A-Za-z ]+$") 
+                && specialization.length() >= 3 
+                && specialization.length() <= 50;
     }
     
-    public String standardizedPhone(String phoneNo) {
+    public static String standardizedPhone(String phoneNo) {
         phoneNo = phoneNo.replaceAll("[-\\s]", "");
         
         if (phoneNo.length() >= 3)
