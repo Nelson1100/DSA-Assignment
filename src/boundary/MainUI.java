@@ -7,18 +7,21 @@ import javax.swing.JTextArea;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
+import utility.JOptionPaneConsoleIO;
+
 public class MainUI {
     public static void main(String[] args) {
-        String welcome = """
-        ╔═════════════════════════════════════════════════╗
-        ║       🏥 Clinic Management System        ║
-        ╠═════════════════════════════════════════════════╣
-        ║          Developed by: Group X           ║
-        ║                                          ║
-        ║          Welcome to the system!          ║
-        ║     Please proceed to the main menu.     ║
-        ╚═════════════════════════════════════════════════╝
-        """;
+        String welcome = 
+                """
+                ╔═════════════════════════════════════════════════╗
+                ║       🏥 Clinic Management System        ║
+                ╠═════════════════════════════════════════════════╣
+                ║          Developed by: Group X           ║
+                ║                                          ║
+                ║          Welcome to the system!          ║
+                ║     Please proceed to the main menu.     ║
+                ╚═════════════════════════════════════════════════╝
+                """;
         
         JTextArea textArea = new JTextArea(welcome);
         textArea.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
@@ -37,8 +40,6 @@ public class MainUI {
             System.out.println("Logo image not found. Skipping image flash.");
         }
         
-        PatientMaintenance patientController = new PatientMaintenance();
-        
         String[] modules = {
             "Patient",
             "Doctor",
@@ -50,53 +51,19 @@ public class MainUI {
         
         int choice;
         do {
-            choice = JOptionPane.showOptionDialog(
-                    null,
-                    "Welcome to Hospital Management System\nSelect a module continue:",
-                    "Main Menu",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    modules,
-                    modules[0]
+            choice = JOptionPaneConsoleIO.readOption(
+                    "Welcome to Hospital Management System\n\nSelect a module continue:", 
+                    "Main Menu", 
+                    modules
             );
             
             switch (choice) {
-                case 0 -> launchPatientModule(patientController);
+                case 0 -> new PatientUI().run();
                 case 1 -> JOptionPane.showMessageDialog(null, "Doctor Module: Not yet implemented.");
                 case 2 -> JOptionPane.showMessageDialog(null, "Consultation Module: Not yet implemented.");
                 case 3 -> JOptionPane.showMessageDialog(null, "Medical Treatment Module: Not yet implemented.");
                 case 4 -> JOptionPane.showMessageDialog(null, "Pharmacy Module: Not yet implemented.");
             }
-        } while (choice != 5);
-    }
-    
-    private static void launchPatientModule(PatientMaintenance controller) {
-        String[] patientOptions = {
-            "Visit Queue",
-            "Profiles",
-            "Reports",
-            "Back"
-        };
-        
-        int choice;
-        do {
-            choice = JOptionPane.showOptionDialog(
-                    null,
-                    "Patient Management Module:\n- Visit Queue: manage visit registrations\n- Profiles: add/edit/remove patients\n- Reports: view summaries",
-                    "Patient Module",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.INFORMATION_MESSAGE,
-                    null,
-                    patientOptions,
-                    patientOptions[0]
-            );
-            
-            switch (choice) {
-//                case 0 -> new PatientUI(controller).run();
-//                case 1 -> new PatientProfileUI(controller).run();
-//                case 2 -> new PatientReportUI(controller).run();
-            }
-        } while (choice != 3);
+        } while (choice != 5 && choice != -1);
     }
 }

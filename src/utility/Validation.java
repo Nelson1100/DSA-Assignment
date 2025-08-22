@@ -3,6 +3,7 @@ package utility;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import entity.Gender;
 
 public final class Validation {
     public Validation() {} // prevent instantiation of this utility class
@@ -27,6 +28,24 @@ public final class Validation {
         return specialization.matches("^[A-Za-z ]+$") 
                 && specialization.length() >= 3 
                 && specialization.length() <= 50;
+    }
+    
+    public static boolean validGender(String gender) {
+        try {
+            Gender.valueOf(gender.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
+    public static boolean validNumber(String value, int min, int max) {
+        try {
+            int num = Integer.parseInt(value);
+            return num >= min && num <= max;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
     
     public static boolean isValidISODate(String dateStr) {
