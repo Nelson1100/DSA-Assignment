@@ -124,9 +124,27 @@ public class PatientMaintenance {
         return (wrapper != null) ? wrapper.ref : null;
     }
     
-    public Patient findPatientByName(String name) {
-        PatientByName wrapper = idxByName.find(new PatientByName(name, "", null));
-        return wrapper != null ? wrapper.ref : null;
+    public Patient[] findPatientsByName(String name) {
+        PatientByName[] all = idxByName.toArrayInorder(new PatientByName[idxByName.size()]);
+        int count = 0;
+        
+        // count matches
+        for (PatientByName p : all) {
+            if (p.getPatient().getPatientName().equalsIgnoreCase(name)) {
+                count++;
+            }
+        }
+        
+        // collect matches
+        Patient[] matches = new Patient[count];
+        int i = 0;
+        for (PatientByName p : all) {
+            if (p.getPatient().getPatientName().equalsIgnoreCase(name)) {
+                matches[i++] = p.getPatient();
+            }
+        }
+        
+        return matches;
     }
     
     public Patient findPatientByPhone(String phone) {
@@ -341,18 +359,6 @@ public class PatientMaintenance {
         selectionSortByAge(arr, descending);
         return arr;
     }
-
-    public Patient[] getAllPatientsSortedByContact(boolean descending) {
-        Patient[] arr = getAllPatientsSortedByName(false);
-        selectionSortByContact(arr, descending);
-        return arr;
-    }
-
-    public Patient[] getAllPatientsSortedByEmail(boolean descending) {
-        Patient[] arr = getAllPatientsSortedByName(false);
-        selectionSortByEmail(arr, descending);
-        return arr;
-    }
     
     /* ---------- Sort Helpers ---------- */
     
@@ -381,44 +387,6 @@ public class PatientMaintenance {
             
             for (int j = i + 1; j < a.length; j++) {
                 int cmp = Integer.compare(a[j].getAge(), a[target].getAge());
-                
-                if (cmp == 0) 
-                    cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());
-                
-                if ((descending && cmp > 0) || (!descending && cmp < 0)) 
-                    target = j;
-            }
-            
-            swap(a, i, target);
-        }
-    }
-
-
-    private void selectionSortByContact(Patient[] a, boolean descending) {
-        for (int i = 0; i < a.length - 1; i++) {
-            int target = i;
-            
-            for (int j = i + 1; j < a.length; j++) {
-                int cmp = a[j].getContactNo().compareToIgnoreCase(a[target].getContactNo());
-                
-                if (cmp == 0) 
-                    cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());
-                
-                if ((descending && cmp > 0) || (!descending && cmp < 0)) 
-                    target = j;
-            }
-            
-            swap(a, i, target);
-        }
-    }
-
-
-    private void selectionSortByEmail(Patient[] a, boolean descending) {
-        for (int i = 0; i < a.length - 1; i++) {
-            int target = i;
-            
-            for (int j = i + 1; j < a.length; j++) {
-                int cmp = a[j].getEmail().compareToIgnoreCase(a[target].getEmail());
                 
                 if (cmp == 0) 
                     cmp = a[j].getPatientName().compareToIgnoreCase(a[target].getPatientName());

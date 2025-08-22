@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 public class PatientInitializer {
     public static void initialize(QueueInterface<PatientVisit> visitQueue) {
         // Sample patients
-        Patient bryant = new Patient("P001", "Bryant", "0123456789", "bryant@example.com",  Gender.MALE,   20);
-        Patient clairo = new Patient("P002", "Clairo", "0128888888", "clairo@mail.com",     Gender.FEMALE, 26);
-        Patient travis = new Patient("P003", "Travis", "0184567890", "travis123@gmail.com", Gender.MALE,   34);
-        Patient drake  = new Patient("P004", "Drake",  "0172223344", "drake@email.com",     Gender.MALE,   38);
+        Patient bryant = new Patient("P202508190001", "Bryant", "012-3456789", "bryant@example.com",  Gender.MALE,   20);
+        Patient clairo = new Patient("P202508190002", "Clairo", "012-8888888", "clairo@mail.com",     Gender.FEMALE, 26);
+        Patient travis = new Patient("P202508200001", "Travis", "018-4567890", "travis123@gmail.com", Gender.MALE,   34);
+        Patient drake  = new Patient("P202508210001", "Drake",  "017-2223344", "drake@email.com",     Gender.MALE,   38);
         
         // Simulated visits (same different patients)
         visitQueue.enqueue(new PatientVisit(bryant, VisitType.WALK_IN,     LocalDateTime.of(2025, 8, 19, 9, 0)));
