@@ -3,6 +3,7 @@ package utility;
 import entity.Specialization;
 import java.time.*;
 import java.time.format.*;
+import entity.Gender;
 
 public class Validation {
     private static final DateTimeFormatter STRICT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -19,6 +20,24 @@ public class Validation {
     
     public boolean validEmail(String email){
         return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
+    }
+    
+    public static boolean validGender(String gender) {
+        try {
+            Gender.valueOf(gender.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+    
+    public static boolean validNumber(String value, int min, int max) {
+        try {
+            int num = Integer.parseInt(value);
+            return num >= min && num <= max;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
     
     public static boolean isValidISODate(String dateStr) {
