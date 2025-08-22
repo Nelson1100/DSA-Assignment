@@ -1,10 +1,8 @@
 package control;
 
-import control.DoctorDutyManagement;
 import entity.Availability;
 import entity.DoctorDuty;
 import entity.Shift;
-
 import java.time.LocalDate;
 
 public class TestDoctorDutyManagement {

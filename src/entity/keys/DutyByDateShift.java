@@ -2,21 +2,22 @@ package entity.keys;
 
 import entity.DoctorDuty;
 import entity.Shift;
-
 import java.time.LocalDate;
 
 public class DutyByDateShift implements Comparable<DutyByDateShift> {
     private final LocalDate date;
     private final Shift shift;
-
-    // --- Simple singly linked list for bucket ---
-    private static class Node {
-        DutyByDoctorDateShift key; // holds reference to DoctorDuty inside
-        Node next;
-        Node(DutyByDoctorDateShift k, Node n) { this.key = k; this.next = n; }
-    }
     private Node head;
     private int size;
+
+    private static class Node {
+        DutyByDoctorDateShift key;
+        Node next;
+        Node(DutyByDoctorDateShift k, Node n) {
+            this.key = k;
+            this.next = n;
+        }
+    }
 
     public DutyByDateShift(LocalDate date, Shift shift) {
         this.date = date;
@@ -25,45 +26,54 @@ public class DutyByDateShift implements Comparable<DutyByDateShift> {
         this.size = 0;
     }
 
-    public LocalDate getDate()  { return date; }
-    public Shift getShift()     { return shift; }
-    public int size()           { return size; }
-    public boolean isEmpty()    { return size == 0; }
+    // Getter
+    public LocalDate getDate() {
+        return date;
+    }
+    
+    public Shift getShift() {
+        return shift;
+    }
+    
+    public int size() {
+        return size;
+    }
+    
+    public boolean isEmpty() {
+        return size == 0;
+    }
 
-    /**
-     * Add a unique DutyByDoctorDateShift into the bucket.
-     * Returns false if a duplicate (same doctorID, date, shift) already exists.
-     */
+    // Other methods
     public boolean add(DutyByDoctorDateShift k) {
-        if (k == null) return false;
-        // defensive: ensure the (date, shift) matches this group
-        if (!sameSlot(k)) return false;
+        if (k == null)
+            return false;
 
-        // check duplicate
+        if (!sameSlot(k))
+            return false;
+
         Node curr = head;
         while (curr != null) {
             if (curr.key.compareTo(k) == 0) {
-                return false; // duplicate
+                return false; // Duplication
             }
             curr = curr.next;
         }
-        // prepend (order not important)
+
         head = new Node(k, head);
         size++;
         return true;
     }
 
-    /**
-     * Remove a key from bucket. Returns true if removed.
-     */
     public boolean remove(DutyByDoctorDateShift k) {
-        if (k == null || head == null) return false;
+        if (k == null || head == null)
+            return false;
 
         if (head.key.compareTo(k) == 0) {
             head = head.next;
             size--;
             return true;
         }
+        
         Node prev = head;
         Node curr = head.next;
         while (curr != null) {
@@ -78,30 +88,27 @@ public class DutyByDateShift implements Comparable<DutyByDateShift> {
         return false;
     }
 
-    /**
-     * Convert bucket to an array of DoctorDuty.
-     * Order is unspecified (insertion-prepend order).
-     */
     public DoctorDuty[] toDutyArray() {
         DoctorDuty[] arr = new DoctorDuty[size];
         int i = 0;
         Node curr = head;
         while (curr != null) {
-            // key.getDuty() may be null only for "probe" instances; we never store probes via add()
             arr[i++] = curr.key.getDuty();
             curr = curr.next;
         }
         return arr;
     }
 
-    /** Helper: ensure a key belongs to this (date, shift) group. */
     private boolean sameSlot(DutyByDoctorDateShift k) {
-        if (k.getDate() == null || k.getShift() == null) return false;
-        if (!k.getDate().equals(this.date)) return false;
+        if (k.getDate() == null || k.getShift() == null)
+            return false;
+        
+        if (!k.getDate().equals(this.date))
+            return false;
+        
         return k.getShift() == this.shift;
     }
 
-    // ---- Comparable: order groups by (date, shift) ----
     @Override
     public int compareTo(DutyByDateShift o) {
         if (o == null) return 1;

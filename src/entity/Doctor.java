@@ -1,19 +1,21 @@
 package entity;
 
+import entity.Specialization;
+
 public class Doctor implements Comparable<Doctor> {
 
     private String doctorID;
     private String doctorName;
     private String contactNo;
     private String email;
-    private String specialization;
+    private Specialization specialization;
     
     // Constructor
     public Doctor(){
-        this("","","","","");
+        this("","","","", null);
     }
     
-    public Doctor(String doctorID, String doctorName, String contactNo, String email, String specialization){
+    public Doctor(String doctorID, String doctorName, String contactNo, String email, Specialization specialization){
         this.doctorID = doctorID;
         this.doctorName = doctorName;
         this.contactNo = contactNo;
@@ -38,7 +40,7 @@ public class Doctor implements Comparable<Doctor> {
         return this.email;
     }
     
-    public String getSpecialization(){
+    public Specialization getSpecialization(){
         return this.specialization;
     }
     
@@ -59,7 +61,7 @@ public class Doctor implements Comparable<Doctor> {
         this.email = email;
     }
     
-    public void setSpecialization(String specialization){
+    public void setSpecialization(Specialization specialization){
         this.specialization = specialization;
     }
     

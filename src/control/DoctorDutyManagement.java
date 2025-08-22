@@ -6,76 +6,70 @@ import entity.Availability;
 import entity.Shift;
 import entity.keys.DutyByDoctorDateShift;
 import entity.keys.DutyByDateShift;
-
-import java.time.LocalDate;
+import utility.Validation;
+import java.time.*;
 
 public class DoctorDutyManagement {
     // Unique index: (doctorID, date, shift) -> DoctorDuty
     private final AVLTree<DutyByDoctorDateShift> idxByDoctorDateShift = new AVLTree<>();
     // Grouped index: (date, shift) -> bucket of duties
     private final AVLTree<DutyByDateShift> idxByDateShift = new AVLTree<>();
+    Validation validate = new Validation();
 
-    /**
-     * Add a new duty. Enforces uniqueness on (doctorID, date, shift).
-     * Inserts into both indexes; rolls back if the group insert fails.
-     */
+    // Adding a new duty
     public boolean addDuty(DoctorDuty duty) {
-        if (duty == null) return false;
+        if (duty == null)
+            return false;
 
-        DutyByDoctorDateShift uniqueKey =
-                new DutyByDoctorDateShift(duty.getDoctorID(), duty.getDate(), duty.getShift(), duty);
+        DutyByDoctorDateShift uniqueKey =  new DutyByDoctorDateShift(duty.getDoctorID(), duty.getDate(), duty.getShift(), duty);
 
-        // Uniqueness check via AVL.find(...)
-        if (idxByDoctorDateShift.find(uniqueKey) != null) return false;
+        if (idxByDoctorDateShift.find(uniqueKey) != null)
+            return false;
+        
+        if (!idxByDoctorDateShift.insert(uniqueKey))
+            return false;
 
-        // Insert into unique index
-        boolean ok1 = idxByDoctorDateShift.insert(uniqueKey);
-        if (!ok1) return false;
-
-        // Upsert group node for (date, shift)
         DutyByDateShift groupProbe = new DutyByDateShift(duty.getDate(), duty.getShift());
         DutyByDateShift groupNode = idxByDateShift.find(groupProbe);
         boolean insertedGroupNode = false;
 
         if (groupNode == null) {
-            groupNode = new DutyByDateShift(duty.getDate(), duty.getShift());
+            groupNode = groupProbe;
             insertedGroupNode = idxByDateShift.insert(groupNode);
             if (!insertedGroupNode) {
-                // rollback unique index
                 idxByDoctorDateShift.delete(uniqueKey);
                 return false;
             }
         }
 
-        // Add to the group's internal bucket
-        boolean okBucket = groupNode.add(uniqueKey);
-        if (!okBucket) {
-            // rollback both indexes
+        boolean groupInsertion = groupNode.add(uniqueKey);
+        if (!groupInsertion) {
             idxByDoctorDateShift.delete(uniqueKey);
+
             if (insertedGroupNode && groupNode.isEmpty()) {
                 idxByDateShift.delete(groupNode);
             }
             return false;
         }
-
         return true;
     }
 
-    /**
-     * Remove duty by (doctorID, date, shift).
-     */
+    // Remove certain duty
     public boolean removeDuty(String doctorID, LocalDate date, Shift shift) {
-        DutyByDoctorDateShift probe = new DutyByDoctorDateShift(doctorID, date, shift, null);
-        DutyByDoctorDateShift found = idxByDoctorDateShift.find(probe);
-        if (found == null) return false;
+        DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
+        DutyByDoctorDateShift found = idxByDoctorDateShift.find(searchKey);
+        
+        if (found == null)
+            return false;
 
-        // Remove from unique index
-        boolean ok1 = idxByDoctorDateShift.delete(found);
-        if (!ok1) return false;
+        boolean deletion = idxByDoctorDateShift.delete(found);
+        
+        if (!deletion) 
+            return false;
 
-        // Remove from group bucket; drop group node if empty
         DutyByDateShift groupProbe = new DutyByDateShift(date, shift);
         DutyByDateShift groupNode = idxByDateShift.find(groupProbe);
+        
         if (groupNode != null) {
             groupNode.remove(found);
             if (groupNode.isEmpty()) {
@@ -85,34 +79,76 @@ public class DoctorDutyManagement {
         return true;
     }
 
-    /**
-     * SEARCH #1: exact search by (doctorID, date, shift).
-     */
+    // SEARCH #1: exact search by (doctorID, date, shift).
     public DoctorDuty searchDutyByDoctorDateShift(String doctorID, LocalDate date, Shift shift) {
-        DutyByDoctorDateShift probe = new DutyByDoctorDateShift(doctorID, date, shift, null);
-        DutyByDoctorDateShift found = idxByDoctorDateShift.find(probe);
+        DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
+        DutyByDoctorDateShift found = idxByDoctorDateShift.find(searchKey);
         return (found == null) ? null : found.getDuty();
     }
 
-    /**
-     * SEARCH #2: list all duties for a (date, shift).
-     */
+    // SEARCH #2: list all duties for a (date, shift).
     public DoctorDuty[] searchDutiesByDateShift(LocalDate date, Shift shift) {
-        DutyByDateShift probe = new DutyByDateShift(date, shift);
-        DutyByDateShift node = idxByDateShift.find(probe);
-        if (node == null) return new DoctorDuty[0];
+        DutyByDateShift searchKey = new DutyByDateShift(date, shift);
+        DutyByDateShift node = idxByDateShift.find(searchKey);
+        
+        if (node == null)
+            return new DoctorDuty[0];
+        
         return node.toDutyArray();
     }
 
-    /**
-     * Update availability for an existing duty.
-     */
+    // Update availability for an existing duty.
     public boolean updateAvailability(String doctorID, LocalDate date, Shift shift, Availability newAvailability) {
-        DutyByDoctorDateShift probe = new DutyByDoctorDateShift(doctorID, date, shift, null);
-        DutyByDoctorDateShift found = idxByDoctorDateShift.find(probe);
-        if (found == null) return false;
+        DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
+        DutyByDoctorDateShift found = idxByDoctorDateShift.find(searchKey);
 
-        found.getDuty().setAvailability(newAvailability);
-        return true;
+        if (found != null) {
+            found.getDuty().setAvailability(newAvailability);
+            return true;
+        }
+
+        DoctorDuty created = new DoctorDuty(doctorID, date, shift, newAvailability);
+        return addDuty(created);
+    }
+
+    // Build a monthly duty roster
+    public DoctorDuty[][] MonthlyRosterTableMatrix(String doctorID, int year, int month, boolean autoCreateWeedays){
+        YearMonth ym = YearMonth.of(year, month);
+        int days = ym.lengthOfMonth();
+        Shift[] shifts = Shift.values();
+        DoctorDuty[][] roster = new DoctorDuty[days][shifts.length];
+
+        for (int day = 1; day <= days; day++) {
+            LocalDate date = ym.atDay(day);
+            for (int i = 0; i < shifts.length; i++) {
+                Shift shift = shifts[i];
+                roster[day - 1][i] = autoCreateWeedays
+                        ? WeekdayDuty(doctorID, date, shift)
+                        : findDuty(doctorID, date, shift);
+            }
+        }
+        return roster;
+    }
+    
+    // Assuming every weekday has duty
+    public DoctorDuty WeekdayDuty(String doctorID, LocalDate date, Shift shift){
+        DoctorDuty docDuty = findDuty(doctorID, date, shift);
+        DoctorDuty created;
+        
+        if (docDuty != null)
+            return docDuty;
+        
+        if (!validate.isWeekday(date))
+            created = new DoctorDuty(doctorID, date, shift, Availability.UNAVAILABLE);
+        else
+            created = new DoctorDuty(doctorID, date, shift, Availability.AVAILABLE);
+        
+        return addDuty(created) ? created : null;
+    }
+    
+    private DoctorDuty findDuty(String doctorID, LocalDate date, Shift shift) {
+        DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
+        DutyByDoctorDateShift leaf = idxByDoctorDateShift.find(searchKey);
+        return (leaf == null) ? null : leaf.getDuty();
     }
 }

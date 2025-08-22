@@ -1,8 +1,8 @@
 package utility;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import entity.Specialization;
+import java.time.*;
+import java.time.format.*;
 
 public class Validation {
     private static final DateTimeFormatter STRICT_ISO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -21,10 +21,6 @@ public class Validation {
         return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
     }
     
-    public boolean validSpecialization(String specialization){
-        return specialization.matches("^[A-Za-z ]+$") && specialization.length() >= 3 && specialization.length() <= 50;
-    }
-    
     public static boolean isValidISODate(String dateStr) {
         try {
             LocalDate.parse(dateStr, STRICT_ISO);
@@ -32,6 +28,11 @@ public class Validation {
         } catch (DateTimeParseException e) {
             return false;
         }
+    }
+    
+    public boolean isWeekday(LocalDate date){
+        DayOfWeek day = date.getDayOfWeek();
+        return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY;
     }
     
     // Formatting
