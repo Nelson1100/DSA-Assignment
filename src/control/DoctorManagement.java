@@ -5,6 +5,7 @@ package control;
 import adt.AVLInterface;
 import adt.AVLTree;
 import entity.Doctor;
+import entity.Specialization;
 import utility.*;
 
 public class DoctorManagement {
@@ -20,16 +21,16 @@ public class DoctorManagement {
         return doctorRegistration(doctor);
     }
     
-    public String findDoctor(Doctor doctor){
+    public Doctor findDoctor(Doctor doctor){
         Doctor found = searchByKey(doctor);
         
         if (found == null)
-            return "No doctor record is found.";
+            return null;
         else
-            return found.toString();
+            return found;
     }
     
-    public boolean updateDoctor(Doctor doctor, int infoSelected, String newName, String newPhone, String newEmail, String newSpecialization){
+    public boolean updateDoctor(Doctor doctor, int infoSelected, String newName, String newPhone, String newEmail, Specialization newSpecialization){
         Doctor selectedDoc = searchByKey(doctor);
         
         switch (infoSelected){
@@ -98,8 +99,8 @@ public class DoctorManagement {
         return false;
     }
     
-    private boolean modifySpecialization(Doctor doctor, String newSpecialization){
-        if (validate.validSpecialization(newSpecialization) && !newSpecialization.equals(doctor.getSpecialization())){
+    private boolean modifySpecialization(Doctor doctor, Specialization newSpecialization){
+        if (!newSpecialization.equals(doctor.getSpecialization())){
             doctor.setSpecialization(newSpecialization);
             return true;
         }

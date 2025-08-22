@@ -1,5 +1,6 @@
 package utility;
 
+import entity.Specialization;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -55,6 +56,11 @@ public final class Validation {
         } catch (DateTimeParseException e) {
             return false;
         }
+    }
+    
+    public boolean isWeekday(LocalDate date){
+        DayOfWeek day = date.getDayOfWeek();
+        return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY;
     }
     
     // Formatting

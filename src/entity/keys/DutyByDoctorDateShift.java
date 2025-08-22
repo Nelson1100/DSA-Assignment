@@ -2,14 +2,13 @@ package entity.keys;
 
 import entity.DoctorDuty;
 import entity.Shift;
-
 import java.time.LocalDate;
 
 public class DutyByDoctorDateShift implements Comparable<DutyByDoctorDateShift> {
     private final String doctorID;
     private final LocalDate date;
     private final Shift shift;
-    private final DoctorDuty duty; // may be null for probe keys
+    private final DoctorDuty duty;
 
     public DutyByDoctorDateShift(String doctorID, LocalDate date, Shift shift, DoctorDuty duty) {
         this.doctorID = doctorID;
@@ -18,17 +17,30 @@ public class DutyByDoctorDateShift implements Comparable<DutyByDoctorDateShift> 
         this.duty = duty;
     }
 
-    public String getDoctorID() { return doctorID; }
-    public LocalDate getDate() { return date; }
-    public Shift getShift() { return shift; }
-    public DoctorDuty getDuty() { return duty; }
+    // Getter
+    public String getDoctorID() {
+        return doctorID;
+    }
+    
+    public LocalDate getDate() { 
+        return date; 
+    }
+    
+    public Shift getShift() { 
+        return shift; 
+    }
+    
+    public DoctorDuty getDuty() { 
+        return duty; 
+    }
 
+    // Other method
     @Override
     public int compareTo(DutyByDoctorDateShift o) {
         if (o == null) return 1;
         int c;
 
-        // doctorID (nulls last, but you should not store null doctorIDs in real data)
+        // doctorID
         if (this.doctorID == null && o.doctorID != null) return 1;
         if (this.doctorID != null && o.doctorID == null) return -1;
         if (this.doctorID != null && o.doctorID != null) {
