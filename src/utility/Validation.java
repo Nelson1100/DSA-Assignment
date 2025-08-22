@@ -1,9 +1,8 @@
 package utility;
 
 import entity.Specialization;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.time.*;
+import java.time.format.*;
 import entity.Gender;
 
 public class Validation {
@@ -21,12 +20,6 @@ public class Validation {
     
     public boolean validEmail(String email){
         return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
-    }
-    
-    public static boolean validSpecialization(String specialization){
-        return specialization.matches("^[A-Za-z ]+$") 
-                && specialization.length() >= 3 
-                && specialization.length() <= 50;
     }
     
     public static boolean validGender(String gender) {
