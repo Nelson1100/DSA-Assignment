@@ -1,19 +1,25 @@
 package control;
 
-// Manage doctor information, duty schedules and availability tracking.
-
 import adt.AVLInterface;
 import adt.AVLTree;
 import entity.Doctor;
 import entity.Specialization;
 import utility.*;
+import entity.DoctorDuty;
+import entity.Shift;
+import java.time.LocalDate;
 
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
     Validation validate = new Validation();
+    DoctorDutyManagement DocDuty = new DoctorDutyManagement();
     
     public boolean isEmptyTree() {
         return doctorTree.isEmpty();
+    }
+    
+    public int doctorAmount(){
+        return doctorTree.size();
     }
         
     // Abstract Classes
@@ -51,6 +57,11 @@ public class DoctorManagement {
         return eraseDoctor(selectedDoc);
     }
     
+    public Doctor[] getAllDoctor() {
+        Doctor[] doctors = new Doctor[doctorTree.size()];
+        return doctorTree.toArrayInorder(doctors);
+    }
+    
     // Implementation Classes
     private boolean doctorRegistration(Doctor doctor){
         return doctorTree.insert(doctor);
@@ -68,11 +79,6 @@ public class DoctorManagement {
                 return doc;
         }
         return null;
-    }
-    
-    private Doctor[] getAllDoctor() {
-        Doctor[] doctors = new Doctor[doctorTree.size()];
-        return doctorTree.toArrayInorder(doctors);
     }
     
     private boolean modifyName(Doctor doctor, String newName){
