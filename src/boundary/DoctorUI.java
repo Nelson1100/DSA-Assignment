@@ -10,17 +10,20 @@ import entity.DoctorDuty;
 import entity.Shift;
 import java.time.*;
 import entity.Specialization;
+import control.DoctorReportGenerator;
 
 public class DoctorUI {
     DoctorManagement dm = new DoctorManagement();
     Doctor doctor = new Doctor();
     Validation validate = new Validation();
     DoctorDutyManagement DocDuty = new DoctorDutyManagement();
+    DoctorReportGenerator ReportGen = new DoctorReportGenerator(DocDuty, validate);
+    Doctor[] doctors;
     String[] specializationOp = {"CARDIOLOGY", "NEUROLOGY", "ORTHOPEDICS", "PEDIATRICS", "DERMATOLOGY", "PSYCHIATRY", "ONCOLOGY", "GENERAL_SURGERY", "INTERNAL_MEDICINE", "OBSTETRICS_GYNECOLOGY", "OPHTHALMOLOGY", "OTOLARYNGOLOGY", "RADIOLOGY", "PATHOLOGY", "FAMILY_MEDICINE", "EMERGENCY_MEDICINE"};
 
     public void taskSelection(){
         boolean newTask = true;
-        String[] menu = {"Register", "Search", "Cancel"};
+        String[] menu = {"Register", "Search", "Duty By Date", "Report", "Cancel"};
         String[] updateOption = {"Update", "Remove", "Duty", "Cancel"};
         
         // Hardcoded doctor information
@@ -30,6 +33,7 @@ public class DoctorUI {
         dm.registerDoctor(A);
         dm.registerDoctor(B); 
         dm.registerDoctor(C);
+        doctors = dm.getAllDoctor();
             
         do {
             int choice = JOptionPaneConsoleIO.readOption("Which task would you like to perform?", "Doctor Management Module", menu);
@@ -175,6 +179,79 @@ public class DoctorUI {
                     } while (update == 3);
                     break;
                 case 2:
+                    int year = JOptionPaneConsoleIO.readInt("Enter year: ");
+                    int month = JOptionPaneConsoleIO.readIntInRange("Enter month: ", 1, 12);
+                    int day = JOptionPaneConsoleIO.readIntInRange("Enter day: ", 1, YearMonth.of(year, month).lengthOfMonth());
+                    LocalDate date = LocalDate.of(year, month, day);
+
+                    Shift shift = JOptionPaneConsoleIO.readEnum("Enter shift: ", Shift.class, new String[]{"MORNING", "AFTERNOON", "NIGHT"});
+                    DoctorDuty[] arr = DocDuty.searchDutiesByDateShift(date, shift);
+                    
+                    if (doctors != null){
+                        for (int i = 0; i < dm.doctorAmount(); i++){
+                            DocDuty.WeekdayDuty(doctors[i].getDoctorID(), date, shift);
+                        }
+                    }
+                    
+                    if (arr.length == 0 && !validate.isWeekday(date)) {
+                        JOptionPaneConsoleIO.showError("No doctor duties on " + date + " (" + shift + ").");
+                        break;
+                    }
+                    
+                    if (validate.isWeekday(date)) {
+                        for (int i = 0; i < arr.length; i++) {
+                            if (arr[i].getAvailability() == null) {
+                                DocDuty.WeekdayDuty(arr[i].getDoctorID(), date, shift);
+                            }
+                        }
+                        arr = DocDuty.searchDutiesByDateShift(date, shift);
+                    }
+                    
+                    StringBuilder sb = new StringBuilder(256);
+                    sb.append("Duties on ").append(date).append(" (").append(shift).append(")\n");
+
+                    if (arr.length == 0) {
+                        sb.append("  (none)\n");
+                    } else {
+                        for (int i = 0; i < arr.length; i++) {
+                            DoctorDuty d = arr[i];
+
+                            Doctor searchKey = new Doctor(d.getDoctorID(), "", "", "", null);
+                            Doctor doctor = dm.findDoctor(searchKey);
+
+                            String name = (doctor != null ? doctor.getDoctorName() : d.getDoctorID()); // or getName()
+                            String spec = (doctor != null && doctor.getSpecialization() != null)
+                                          ? doctor.getSpecialization().toString()
+                                          : "-";
+
+                            if (d.getAvailability().equals(Availability.AVAILABLE)) {
+                                sb.append(String.format(i+1 + ".  %s (%s) | Availability: %s%n", name, spec, d.getAvailability()));
+                            }
+                        }
+                    }
+                    JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + sb + "</pre></html>");
+                    break;
+                case 3:
+                    // Generate report
+                    String[] reportOp = {"Annual Doctor Attendance Report", "Report", "Cancel"};
+                    int reportChoice = JOptionPaneConsoleIO.readOption("Which report would you like to generate?", "Generate Report", reportOp);
+                    
+                    if (reportChoice == 0){
+                        StringBuilder attReport = new StringBuilder(50000);
+                        int yearToGen = JOptionPaneConsoleIO.readInt("Enter year: ");
+                        
+                        for (int i = 0; i < doctors.length; i++){
+                            ReportGen.yearlyAttendanceRate(doctors[i].getDoctorID(), yearToGen, true, attReport);
+                        }
+                        
+                        JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + attReport + "</pre></html>");
+                    } else if (reportChoice == 1){
+                        
+                    } else {
+                        break;
+                    }
+                    break;
+                case 4:
                     // End performing task
                     newTask = false;
                     break;

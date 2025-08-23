@@ -96,19 +96,22 @@ public class DoctorDutyManagement {
         
         return node.toDutyArray();
     }
-
+    
     // Update availability for an existing duty.
     public boolean updateAvailability(String doctorID, LocalDate date, Shift shift, Availability newAvailability) {
-        DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
-        DutyByDoctorDateShift found = idxByDoctorDateShift.find(searchKey);
+        if (date.isAfter(LocalDate.now())){
+            DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
+            DutyByDoctorDateShift found = idxByDoctorDateShift.find(searchKey);
 
-        if (found != null) {
-            found.getDuty().setAvailability(newAvailability);
-            return true;
+            if (found != null) {
+                found.getDuty().setAvailability(newAvailability);
+                return true;
+            }
+
+            DoctorDuty created = new DoctorDuty(doctorID, date, shift, newAvailability);
+            return addDuty(created);
         }
-
-        DoctorDuty created = new DoctorDuty(doctorID, date, shift, newAvailability);
-        return addDuty(created);
+        return false;
     }
 
     // Build a monthly duty roster
@@ -133,19 +136,15 @@ public class DoctorDutyManagement {
     // Assuming every weekday has duty
     public DoctorDuty WeekdayDuty(String doctorID, LocalDate date, Shift shift){
         DoctorDuty docDuty = findDuty(doctorID, date, shift);
-        DoctorDuty created;
-        
         if (docDuty != null)
             return docDuty;
-        
-        if (!validate.isWeekday(date))
-            created = new DoctorDuty(doctorID, date, shift, Availability.UNAVAILABLE);
-        else
-            created = new DoctorDuty(doctorID, date, shift, Availability.AVAILABLE);
-        
+
+        // Do NOT create weekend records (they shouldn't count against attendance)
+        if (!validate.isWeekday(date)) return null;
+
+        DoctorDuty created = new DoctorDuty(doctorID, date, shift, Availability.AVAILABLE);
         return addDuty(created) ? created : null;
-    }
-    
+    }    
     private DoctorDuty findDuty(String doctorID, LocalDate date, Shift shift) {
         DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
         DutyByDoctorDateShift leaf = idxByDoctorDateShift.find(searchKey);
