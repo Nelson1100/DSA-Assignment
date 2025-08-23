@@ -2,21 +2,21 @@ package entity;
 
 import java.time.LocalDate;
 
-public class StockBatch {
+public class StockBatch implements Comparable<StockBatch>{
     private String batchID;
     private String medicineID;
-    private int qty;
+    private int stockQty;
     private LocalDate expiryDate;
     private LocalDate receivedDate;
     
-    public StockBatch(String batchID, String medicineID, int qty, LocalDate expiryDate, LocalDate receivedDate){
+    public StockBatch(String batchID, String medicineID, int stockQty, LocalDate expiryDate, LocalDate receivedDate){
         this.batchID = batchID;
         this.medicineID = medicineID;
-        this.qty = qty;
+        this.stockQty = stockQty;
         this.expiryDate = expiryDate;
         this.receivedDate = receivedDate;
     }
-    
+        
     public String getBatchID(){
         return batchID;
     }
@@ -25,8 +25,8 @@ public class StockBatch {
         return medicineID;
     }
     
-    public int getQty(){
-        return qty;
+    public int getStockQty(){
+        return stockQty;
     }
     
     public LocalDate getExpiryDate(){
@@ -45,8 +45,8 @@ public class StockBatch {
         this.medicineID = medicineID;
     }
     
-    public void setQty(int qty){
-        this.qty = qty;
+    public void setStockQty(int stockQty){
+        this.stockQty = stockQty;
     }
     
     public void setExpiryDate(LocalDate expiryDate){
@@ -57,9 +57,17 @@ public class StockBatch {
         this.receivedDate = receivedDate;
     }
     
+    public String stockKey() {
+        return medicineID + "#" + batchID;
+    }
+    
+    public int compareTo(StockBatch other){
+        return this.stockKey().compareTo(other.stockKey());
+    }
+    
     @Override
     public String toString() {
-        return String.format("StockBatch{batch=%s, med=%s, qty=%d, expiry=%s, received=%s}",
-                batchID, medicineID, qty, expiryDate, receivedDate);
+        return String.format("StockBatch{batch=%s, med=%s, stockQty=%d, expiry=%s, received=%s}",
+                batchID, medicineID, stockQty, expiryDate, receivedDate);
     }
 }
