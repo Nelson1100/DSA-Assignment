@@ -58,6 +58,10 @@ public final class JOptionPaneConsoleIO {
         while (!valid) {
             value = readInt(prompt + " (" + min + "–" + max + ")");
             
+            if (value == -1){
+                break;
+            }
+            
             if (value >= min && value <= max) {
                 valid = true;
             } else {
