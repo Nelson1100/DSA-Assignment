@@ -11,6 +11,8 @@ import utility.JOptionPaneConsoleIO;
 
 public class MainUI {
     public static void main(String[] args) {
+        PatientMaintenance pm = new PatientMaintenance();
+        
         String welcome = 
                 """
                 ╔═════════════════════════════════════════════════╗
@@ -58,7 +60,7 @@ public class MainUI {
             );
             
             switch (choice) {
-                case 0 -> new PatientUI().run();
+                case 0 -> new PatientUI(pm).run();
                 case 1 -> JOptionPane.showMessageDialog(null, "Doctor Module: Not yet implemented.");
                 case 2 -> JOptionPane.showMessageDialog(null, "Consultation Module: Not yet implemented.");
                 case 3 -> JOptionPane.showMessageDialog(null, "Medical Treatment Module: Not yet implemented.");

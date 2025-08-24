@@ -1,6 +1,10 @@
 package utility;
 
+import java.awt.Dimension;
+import java.awt.Font;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 public final class JOptionPaneConsoleIO {
     private JOptionPaneConsoleIO () {} // prevent instantiation of this utility class
@@ -132,5 +136,27 @@ public final class JOptionPaneConsoleIO {
     // Shows a general info dialog
     public static void showInfo(String msg) {
         JOptionPane.showMessageDialog(null, msg, "Info", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    // Shows a dialog with no icon
+    public static void showPlain(String msg) {
+        JOptionPane.showMessageDialog(null, msg, "Message", JOptionPane.PLAIN_MESSAGE);
+    }
+    
+    // Shows a dialog with no icon (custom title)
+    public static void showPlain(String msg, String title) {
+        JOptionPane.showMessageDialog(null, msg, title, JOptionPane.PLAIN_MESSAGE);
+    }
+    
+    // Let user to confirm an action
+    public static boolean confirmDialog(String message, String title) {
+        int result = JOptionPane.showConfirmDialog(
+                null,
+                message,
+                title,
+                JOptionPane.YES_NO_OPTION
+        );
+        
+        return result == JOptionPane.YES_OPTION;
     }
 }

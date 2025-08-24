@@ -6,11 +6,13 @@ public class PatientVisit {
     private final Patient patient;
     private final LocalDateTime arrivalDateTime;
     private final VisitType visitType;
+    private VisitStatus status;
     
     public PatientVisit(Patient patient, VisitType visitType, LocalDateTime arrivalDateTime) {
         this.patient = patient;
         this.arrivalDateTime = arrivalDateTime;
         this.visitType = visitType;
+        this.status = VisitStatus.WAITING;
     }
     
     public Patient getPatient() {
@@ -25,10 +27,18 @@ public class PatientVisit {
         return arrivalDateTime;
     }
     
+    public VisitStatus getStatus() {
+        return status;
+    }
+    
+    public void setStatus(VisitStatus status) {
+        this.status = status;
+    }
+    
     @Override
     public String toString() {
-        return String.format("Visit: %s | ID: %s | Name: %s | Type: %s | Arrival: %s",
-            patient.getPatientID(), patient.getPatientName(), visitType, arrivalDateTime);
+        return String.format("Visit: %s | ID: %s | Name: %s | Type: %s | Arrival: %s | Status: %s",
+            patient.getPatientID(), patient.getPatientName(), visitType, arrivalDateTime, status);
     }
     
     @Override
