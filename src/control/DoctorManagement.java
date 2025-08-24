@@ -5,9 +5,6 @@ import adt.AVLTree;
 import entity.Doctor;
 import entity.Specialization;
 import utility.*;
-import entity.DoctorDuty;
-import entity.Shift;
-import java.time.LocalDate;
 
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
@@ -64,6 +61,8 @@ public class DoctorManagement {
     
     // Implementation Classes
     private boolean doctorRegistration(Doctor doctor){
+        String phone = validate.standardizedPhone(doctor.getContactNo());
+        doctor.setContactNo(phone);
         return doctorTree.insert(doctor);
     }
     
@@ -73,7 +72,7 @@ public class DoctorManagement {
                 return doc;
             if (!doctor.getDoctorName().isEmpty() && doctor.getDoctorName().equals(doc.getDoctorName()))
                 return doc;
-            if (!doctor.getContactNo().isEmpty() && doctor.getContactNo().equals(doc.getContactNo()))
+            if (!doctor.getContactNo().isEmpty() && validate.standardizedPhone(doctor.getContactNo()).equals(doc.getContactNo())) 
                 return doc;
             if (!doctor.getEmail().isEmpty() && doctor.getEmail().equals(doc.getEmail()))
                 return doc;

@@ -1,22 +1,23 @@
 package control;
 
+import entity.Doctor;
 import entity.DoctorDuty;
 import entity.Shift;
+import entity.Specialization;
 import java.time.*;
 import utility.Validation;
 
 public class DoctorReportGenerator {
     private final DoctorDutyManagement DocDuty;
-    private final Validation validate;
+    Validation validate = new Validation();
+    DoctorManagement dm = new DoctorManagement();
 
-    public DoctorReportGenerator(DoctorDutyManagement docDuty, Validation validate) {
+    public DoctorReportGenerator(DoctorDutyManagement docDuty, DoctorManagement dm) {
         this.DocDuty = docDuty;
-        this.validate = validate;
+        this.dm = dm;
     }
 
-    public double yearlyAttendanceRate(String doctorID, int year,
-                                       boolean autoCreateWeekdays,
-                                       StringBuilder sb) {
+    public void yearlyAttendanceRate(String doctorID, int year, boolean autoCreateWeekdays, StringBuilder sb) {
         Shift[] shifts = Shift.values();
 
         int scheduled   = 0;
@@ -60,11 +61,17 @@ public class DoctorReportGenerator {
             }
         }
 
-        int denom = present + unavailable;
-        double rate = (denom == 0) ? 0.0 : (present / (double) denom) * 100;
+        int denom = present + unavailable + onLeave;
+        double rate = (denom == 0) ? 0.0 : ((double) present / (double) denom) * 100.00;
 
+        Doctor found = dm.findDoctor(new Doctor(doctorID.trim(), "", "", "", null));
+
+        String name = (found != null && found.getDoctorName() != null && !found.getDoctorName().isBlank())
+                        ? found.getDoctorName()
+                        : doctorID;
+        
         if (sb != null) {
-            sb.append("Attendance Report — Doctor ").append(doctorID)
+            sb.append("Attendance Report — Dr. ").append(name)
               .append(" (").append(year).append(")\n")
               .append("Total Scheduled Shifts: ").append(scheduled).append('\n')
               .append("Present Shifts      : ").append(present).append('\n')
@@ -72,6 +79,38 @@ public class DoctorReportGenerator {
               .append("On Leave Shifts     : ").append(onLeave).append('\n')
               .append(String.format("Attendance: %.2f%%\n\n", rate));
         }
-        return rate;
+    }
+    
+    public void specializationInventory(StringBuilder sb) {
+        if (sb == null)
+            return;
+
+        Specialization[] specs = Specialization.values();
+        int P = specs.length;
+        int[] counts = new int[P];
+
+        Doctor[] docs = dm.getAllDoctor();
+        int totalDoctors = (docs == null ? 0 : docs.length);
+
+        if (docs != null) {
+            for (int i = 0; i < docs.length; i++) {
+                if (docs[i] == null) continue;
+                int idx = docs[i].getSpecialization().ordinal();
+                counts[idx]++;
+            }
+        }
+
+        sb.append("Clinic Specialization Inventory — as of ")
+          .append(java.time.LocalDate.now()).append('\n');
+        sb.append(String.format("%-28s%-10s%-10s%n", "Specialization", "Doctors", "Percent"));
+        sb.append(String.format("%-28s%-10s%-10s%n", "----------------------------", "--------", "--------"));
+
+        for (int p = 0; p < P; p++) {
+            double pct = (totalDoctors == 0) ? 0.0 : (counts[p] * 100.0 / totalDoctors);
+            sb.append(String.format("%-28s%-10d%-7.2f%%%n", specs[p].name(), counts[p], pct));
+        }
+
+        sb.append('\n');
+        sb.append(String.format("%-28s%d%n%n", "TOTAL DOCTORS", totalDoctors));
     }
 }

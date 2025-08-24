@@ -1,6 +1,5 @@
 package utility;
 
-import entity.Specialization;
 import java.time.*;
 import java.time.format.*;
 import entity.Gender;
@@ -64,5 +63,26 @@ public final class Validation {
             phoneNo = phoneNo.substring(0, 3) + "-" + phoneNo.substring(3);
         
         return phoneNo;
+    }
+    
+    public String standardizedName(String name){
+        if (!validName(name))
+            return null;
+        
+        String[] parts = name.trim().toLowerCase().split("\\s+");
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].length() > 0) {
+                sb.append(Character.toUpperCase(parts[i].charAt(0)));
+                if (parts[i].length() > 1) {
+                    sb.append(parts[i].substring(1));
+                }
+            }
+            if (i < parts.length - 1) {
+                sb.append(" ");
+            }
+        }
+        return sb.toString();
     }
 }

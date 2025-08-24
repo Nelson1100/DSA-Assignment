@@ -8,6 +8,7 @@ import entity.keys.DutyByDoctorDateShift;
 import entity.keys.DutyByDateShift;
 import utility.Validation;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class DoctorDutyManagement {
     // Unique index: (doctorID, date, shift) -> DoctorDuty
@@ -136,15 +137,24 @@ public class DoctorDutyManagement {
     // Assuming every weekday has duty
     public DoctorDuty WeekdayDuty(String doctorID, LocalDate date, Shift shift){
         DoctorDuty docDuty = findDuty(doctorID, date, shift);
+        
+        String regDateStr = doctorID.substring(1, doctorID.length() - 4);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate regDate = LocalDate.parse(regDateStr, formatter);
+        
+        if (date.isBefore(regDate))
+            return null;
+        
         if (docDuty != null)
             return docDuty;
 
-        // Do NOT create weekend records (they shouldn't count against attendance)
-        if (!validate.isWeekday(date)) return null;
+        if (!validate.isWeekday(date))
+            return null;
 
         DoctorDuty created = new DoctorDuty(doctorID, date, shift, Availability.AVAILABLE);
         return addDuty(created) ? created : null;
-    }    
+    }
+    
     private DoctorDuty findDuty(String doctorID, LocalDate date, Shift shift) {
         DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
         DutyByDoctorDateShift leaf = idxByDoctorDateShift.find(searchKey);
