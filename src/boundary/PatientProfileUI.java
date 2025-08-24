@@ -5,10 +5,14 @@ import entity.*;
 import utility.*;
 
 public class PatientProfileUI {
-    private final PatientMaintenance pm = new PatientMaintenance();
+    private final PatientMaintenance pm;
     private final Validation validate = new Validation();
     
     private Patient tempPatient;
+    
+    public PatientProfileUI(PatientMaintenance pm) {
+        this.pm = pm;
+    }
     
     public void run() {
         boolean repeat = true;
@@ -22,7 +26,7 @@ public class PatientProfileUI {
 
         while (repeat) {
             int choice = JOptionPaneConsoleIO.readOption(
-                    "Patient Profile Management",
+                    "Patient Profile Menu",
                     "Patient Profile",
                     menu
             );
@@ -72,10 +76,12 @@ public class PatientProfileUI {
             String[] options = new String[matches.length];
             
             for (int i = 0; i < matches.length; i++) {
-                options[i] = String.format("%s (%s, %s)", 
+                options[i] = String.format("%s (%s, %s, %s)", 
                         matches[i].getPatientName(), 
                         matches[i].getPatientID(), 
-                        matches[i].getContactNo());
+                        matches[i].getContactNo(),
+                        matches[i].getEmail()
+                );
             }
             
             int sel = JOptionPaneConsoleIO.readOption("Multiple matches found:", "Select Patient", options);
@@ -144,22 +150,27 @@ public class PatientProfileUI {
             }
         } while (field == -1);
         
-        String newValue = JOptionPaneConsoleIO.readNonEmpty("Enter new value:");
-        if (newValue == null) return;
+        String newValue;
+        boolean valid = false;
         
-        boolean valid = switch (field) {
-            case 1 -> validate.validName(newValue);
-            case 2 -> validate.validPhone(validate.standardizedPhone(newValue));
-            case 3 -> validate.validEmail(newValue.toLowerCase());
-            case 4 -> validate.validGender(newValue);
-            case 5 -> validate.validNumber(newValue, 0, 120);
-            default -> false;
-        };
-        
-        if (!valid) {
-            JOptionPaneConsoleIO.showError("Invalid input for the selected field.");
-            return;
-        }
+        do {
+            newValue = JOptionPaneConsoleIO.readNonEmpty("Enter new value:");
+            
+            if (newValue == null) return;
+            
+            valid = switch (field) {
+                case 1 -> validate.validName(newValue);
+                case 2 -> validate.validPhone(validate.standardizedPhone(newValue));
+                case 3 -> validate.validEmail(newValue.toLowerCase());
+                case 4 -> validate.validGender(newValue);
+                case 5 -> validate.validNumber(newValue, 0, 120);
+                default -> false;
+            };
+            
+            if (!valid) {
+                JOptionPaneConsoleIO.showError("Invalid input for the selected field.");
+            }
+        } while (!valid);
         
         // Standardize phone or email
         if (field == 2)
@@ -178,16 +189,19 @@ public class PatientProfileUI {
     }
     
     private void deletePatient() {
-        int confirm = JOptionPaneConsoleIO.readOption(
+        boolean confirm = JOptionPaneConsoleIO.confirmDialog(
                 "Are you sure you want to delete this patient?\n" + tempPatient, 
-                "Confirm Deletion", 
-                new String[] { "Yes", "No" }
+                "Confirm Deletion"
         );
         
-        if (confirm != 0) return;
+        if (!confirm) {
+            viewPatientMenu();
+            return;
+        }
         
         boolean result = pm.removePatientByID(tempPatient.getPatientID());
         JOptionPaneConsoleIO.showInfo(result ? "Patient deleted." : "Deletion failed.");
+        tempPatient = null;
     }
 
     private void viewSortedPatients() {
@@ -262,11 +276,17 @@ public class PatientProfileUI {
             
             contact = validate.standardizedPhone(contact);
             
-            if (validate.validPhone(contact)) {
-                valid = true;
-            } else {
+            if (!validate.validPhone(contact)) {
                 JOptionPaneConsoleIO.showError("Please enter a valid Malaysian contact number (+60).");
+                continue;
             }
+            
+            if (pm.findPatientByPhone(contact) != null) {
+                JOptionPaneConsoleIO.showError("Contact number is already registered.");
+                continue;
+            }
+            
+            valid = true;
         }
         
         // Email
@@ -276,11 +296,17 @@ public class PatientProfileUI {
             
             if (email == null) return null;
             
-            if (validate.validEmail(email)) {
-                valid = true;
-            } else {
+            if (!validate.validEmail(email)) {
                 JOptionPaneConsoleIO.showError("Please enter a valid email.");
+                continue;
             }
+            
+            if (pm.findPatientByEmail(email) != null) {
+                JOptionPaneConsoleIO.showError("Email is already registered.");
+                continue;
+            }
+            
+            valid = true;
         }
         
         // Gender

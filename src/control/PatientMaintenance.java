@@ -51,7 +51,12 @@ public class PatientMaintenance {
     /* ---------- CRUD Operations ---------- */
     
     public boolean registerPatient(Patient patient) {
+        if (patient == null) return false;
+        
+        // Uniqueness checks
         if (existsByID(patient.getPatientID())) return false;
+        if (findPatientByPhone(patient.getContactNo()) != null) return false;
+        if (findPatientByEmail(patient.getEmail()) != null) return false;
         
         indexPatient(patient);
         return true;
@@ -159,20 +164,36 @@ public class PatientMaintenance {
     
     /* ---------- Visit Queue ---------- */
     
-    public void registerVisit(Patient patient, VisitType visitType) {
-        if (existsByID(patient.getPatientID())) {
-            patient = findPatientByID(patient.getPatientID());
-        } else {
-            indexPatient(patient);
+    public boolean registerVisit(Patient patient, VisitType visitType) {
+        if (!existsByID(patient.getPatientID())) {
+            return false;
         }
-
+        
+        // Check last registration time for this patient
+        QueueIterator<PatientVisit> it = getIterator();
+        while (it.hasNext()) {
+            PatientVisit visit = it.getNext();
+            if (visit.getPatient().getPatientID().equals(patient.getPatientID())) {
+                long minutesSince = ChronoUnit.MINUTES.between(visit.getArrivalDateTime(), LocalDateTime.now());
+                if (minutesSince < 10) { // cooldown window
+                    return false; // prevent repeated registration
+                }
+            }
+        }
+        
         visitQueue.enqueue(new PatientVisit(patient, visitType, LocalDateTime.now()));
+        return true;
     }
     
     public PatientVisit serveNextVisit() {
-        return !isEmpty() ? visitQueue.dequeue() : null;
+        if (isEmpty()) return null;
+        
+        PatientVisit next = visitQueue.dequeue();
+        next.setStatus(VisitStatus.SERVED);
+        return next;
     }
     
+    // Visit records removed from the queue are considered cancelled
     public boolean removeVisitByID(String id) {
         if (id == null || isEmpty()) return false;
         
@@ -213,19 +234,38 @@ public class PatientMaintenance {
     
     public PatientVisit getNextVisit() {
         QueueIterator<PatientVisit> it = getIterator();
-        return it.hasNext() ? it.getNext() : null;
+        
+        while (it.hasNext()) {
+            PatientVisit visit = it.getNext();
+            if (visit.getStatus() == VisitStatus.WAITING)
+                return visit;
+        }
+        return null;
     }
     
     public PatientVisit[] peekNextN(int n) {
         int size = Math.min(n, visitQueue.size());
-        PatientVisit[] arr = new PatientVisit[size];
-        QueueIterator<PatientVisit> it = getIterator();
+        PatientVisit[] result = new PatientVisit[size];
         
-        for (int i = 0; i < size && it.hasNext(); i++) {
-            arr[i] = it.getNext();
+        QueueIterator<PatientVisit> it = getIterator();
+        int i = 0;
+        
+        while (it.hasNext() && i < size) {
+            PatientVisit v = it.getNext();
+            if (v.getStatus() == VisitStatus.WAITING) 
+                result[i++] = v;
         }
         
-        return arr;
+        // if there are fewer WAITING patients than size
+        if (i < size) {
+            PatientVisit[] trimmed = new PatientVisit[i];
+            for (int j = 0; j < 1; j++) {
+                trimmed[j] = result [j];
+            }
+            return trimmed;
+        }
+        
+        return result;
     }
     
     public int findPosition(String id) {
@@ -239,6 +279,34 @@ public class PatientMaintenance {
         }
         
         return -1;
+    }
+    
+    public PatientVisit[] getAllVisits() {
+        QueueIterator<PatientVisit> it = getIterator();
+        PatientVisit[] temp = new PatientVisit[visitQueue.size()];
+        int i = 0;
+
+        while (it.hasNext()) {
+            temp[i++] = it.getNext();
+        }
+
+        return temp;
+    }
+    
+    public int countVisitsByID(String id) {
+        if (id == null) return 0;
+
+        int count = 0;
+        QueueIterator<PatientVisit> it = getIterator();
+
+        while (it.hasNext()) {
+            PatientVisit v = it.getNext();
+            if (id.equals(v.getPatient().getPatientID())) {
+                count++;
+            }
+        }
+
+        return count;
     }
     
     // Queue Statistics 
@@ -414,44 +482,5 @@ public class PatientMaintenance {
         Patient temp = a[i];
         a[i] = a[j];
         a[j] = temp;
-    }
-    
-    /* ---------- Reports ---------- */
-    
-    // Returns top-K longest waiting patients (based on arrival time)
-    public String topKLongestWaiting(int k, LocalDateTime now) {
-        PatientVisit[] snap = peekNextN(100);
-        sortByWaitTimeDesc(snap, now);
-        StringBuilder sb = new StringBuilder();
-        
-        sb.append("Top ").append(k).append(" Longest-Waiting Patients\n");
-        sb.append("-------------------------------------\n");
-        
-        for (int i = 0; i < Math.min(k, snap.length); i++) {
-            PatientVisit v = snap[i];
-            long wait = ChronoUnit.MINUTES.between(v.getArrivalDateTime(), now);
-            sb.append(String.format("%2d) %s | Wait: %d min%n", i + 1, v.getPatient().getPatientName(), wait));
-        }
-        
-        return sb.toString();
-    }
-
-    private void sortByWaitTimeDesc(PatientVisit[] arr, LocalDateTime now) {
-        for (int i = 0; i < arr.length - 1; i++) {
-            int max = i;
-            long wMax = ChronoUnit.MINUTES.between(arr[i].getArrivalDateTime(), now);
-            
-            for (int j = i + 1; j < arr.length; j++) {
-                long w = ChronoUnit.MINUTES.between(arr[j].getArrivalDateTime(), now);
-                if (w > wMax) {
-                    max = j;
-                    wMax = w;
-                }
-            }
-            
-            PatientVisit temp = arr[i]; 
-            arr[i] = arr[max]; 
-            arr[max] = temp;
-        }
     }
 }
