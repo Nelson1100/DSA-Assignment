@@ -1,6 +1,8 @@
 package adt;
 
-public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
+import java.util.Iterator;
+
+public class AVLTree<T extends Comparable<T>> implements AVLInterface<T>{
     private AVLNode<T> root;
     private boolean insertionSuccess;
     private boolean deletionSuccess;
@@ -212,6 +214,11 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T> {
 //        out.add(n.getKey());
 //        toListInorder(n.getRight(), out);
 //    }
+    
+    @Override
+    public Iterator<T> iterator() {
+        return new AVLInOrderIterator<>(root); // root must be accessible
+    }
 
     @Override
     public T[] toArrayInorder(T[] arr) {

@@ -1,6 +1,6 @@
 package adt;
 
-public interface AVLInterface<T extends Comparable<T>> {
+public interface AVLInterface<T extends Comparable<T>> extends Iterable<T>{
     boolean insert(T data);
     boolean delete(T data);
     T find(T data);

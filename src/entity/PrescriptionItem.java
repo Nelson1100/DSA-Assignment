@@ -15,7 +15,7 @@ public class PrescriptionItem {
         return medicineID;
     }
 
-    public int getprescribedQty() {
+    public int getPrescribedQty() {
         return prescribedQty;
     }
 

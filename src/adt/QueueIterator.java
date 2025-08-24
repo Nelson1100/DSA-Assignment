@@ -1,6 +1,9 @@
 package adt;
 
-public class QueueIterator<T> {
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+public class QueueIterator<T> implements Iterator<T>{
     private QueueNode<T> current;
     
     public QueueIterator(QueueNode<T> front) {
@@ -11,12 +14,16 @@ public class QueueIterator<T> {
         return current != null;
     }
     
-    public T getNext() {
+    public T next() {
         if (!hasNext()) {
             throw new IllegalStateException("No more elements.");
         }
         T data = current.data;
         current = current.next;
         return data;
+    }
+    
+    public T getNext() {
+        return next();
     }
 }
