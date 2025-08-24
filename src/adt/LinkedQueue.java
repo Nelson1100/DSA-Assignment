@@ -1,6 +1,8 @@
 package adt;
 
-public class LinkedQueue<T> implements QueueInterface<T> {
+import java.util.Iterator;
+
+public class LinkedQueue<T> implements QueueInterface<T>, Iterable<T>{
     private QueueNode<T> front;
     private QueueNode<T> rear;
     private int size;
@@ -61,6 +63,12 @@ public class LinkedQueue<T> implements QueueInterface<T> {
         return size;
     }
     
+    @Override
+    public Iterator<T> iterator() {
+        return new QueueIterator<>(front);
+    }
+    
+    @Override
     public QueueIterator<T> getIterator() {
         return new QueueIterator<>(front);
     }

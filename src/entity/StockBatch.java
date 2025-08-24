@@ -61,6 +61,16 @@ public class StockBatch implements Comparable<StockBatch>{
         return medicineID + "#" + batchID;
     }
     
+    // add
+    public void add(int stockQty) {
+        this.stockQty += stockQty;
+   }
+    
+    // remove
+    public void deduct(int stockQty) { 
+        this.stockQty -= stockQty; 
+    }
+    
     public int compareTo(StockBatch other){
         return this.stockKey().compareTo(other.stockKey());
     }

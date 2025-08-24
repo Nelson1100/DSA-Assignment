@@ -5,6 +5,7 @@ public class AVLNode<T extends Comparable<T>> {
     private int height = 1;
     private AVLNode<T> left;
     private AVLNode<T> right;
+    
     AVLNode(T key) {
         this.key = key;
     }
@@ -39,5 +40,9 @@ public class AVLNode<T extends Comparable<T>> {
     
     public AVLNode<T> getRight(){
         return right;
+    }
+    
+    public T getData() {
+        return getKey(); 
     }
 }
