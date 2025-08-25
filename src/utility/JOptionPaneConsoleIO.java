@@ -2,6 +2,7 @@ package utility;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -158,5 +159,61 @@ public final class JOptionPaneConsoleIO {
         );
         
         return result == JOptionPane.YES_OPTION;
+    }
+    
+    // Format into monospaced columns
+    public static void showMonospaced(String title, String content) {
+        JTextArea ta = new JTextArea(content);
+        ta.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        ta.setEditable(false);
+        ta.setOpaque(false);
+        ta.setCaretPosition(0);
+        ta.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        JScrollPane sp = new JScrollPane(ta);
+        sp.setPreferredSize(new Dimension(760, 700));
+        sp.setBorder(null);
+        
+        JOptionPane.showMessageDialog(
+                null,
+                sp,
+                title,
+                JOptionPane.PLAIN_MESSAGE
+        );
+    }
+    
+    // Report display
+    public static String line(char c, int length) {
+        return String.valueOf(c).repeat(length);
+    }
+    
+    public static String center(String text, int width) {
+        int pad = Math.max(0, (width - text.length()) / 2);
+        return " ".repeat(pad) + text;
+    }
+    
+    public static String reportHeader(String moduleName, String reportTitle, int width) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(line('=', width)).append("\n");
+        sb.append(center("TUNKU ABDUL RAHMAN UNIVERSITY OF MANAGEMENT AND TECHNOLOGY", width)).append("\n");
+        sb.append(center(moduleName.toUpperCase(), width)).append("\n\n");
+        sb.append(center(reportTitle.toUpperCase(), width)).append("\n");
+        sb.append(center("-".repeat(reportTitle.length() + 6), width)).append("\n\n");
+        sb.append("Generated at: ").append(
+            java.time.LocalDateTime.now().format(
+                    java.time.format.DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy, hh:mm a")
+            )).append("\n");
+         sb.append(line('*', width)).append("\n\n");
+        return sb.toString();
+    }
+    
+    public static String sectionTitle(String title, int width) {
+        return center(title, width) + "\n" + line('-', width) + "\n";
+    }
+    
+    public static String reportFooter(int width) {
+        return "\n" + line('*', width) + "\n" +
+               center("END OF REPORT", width) + "\n" +
+               line('=', width);
     }
 }

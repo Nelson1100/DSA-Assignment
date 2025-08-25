@@ -69,6 +69,7 @@ public class PatientManagement {
         Patient old = findPatientByID(id);
         unindexPatient(old);
         indexPatient(updatedPatient);
+        updatePatientInVisitQueue(id);
         return true;
     }
     
@@ -77,6 +78,7 @@ public class PatientManagement {
         
         Patient p = findPatientByID(id);
         unindexPatient(p);
+        removeVisitByID(id);
         return true;
     }
     
@@ -193,6 +195,25 @@ public class PatientManagement {
         return next;
     }
     
+    private void updatePatientInVisitQueue(String id) {
+        QueueInterface<PatientVisit> temp = new LinkedQueue<>();
+        
+        while(!visitQueue.isEmpty()) {
+            PatientVisit visit = visitQueue.dequeue();
+            
+            if (visit.getPatient().getPatientID().equals(id)) {
+                Patient updated = findPatientByID(id);
+                visit.setPatient(updated);
+            }
+            
+            temp.enqueue(visit);
+        }
+        
+        while (!temp.isEmpty()) {
+            visitQueue.enqueue(temp.dequeue());
+        }
+    }
+
     // Visit records removed from the queue are considered cancelled
     public boolean removeVisitByID(String id) {
         if (id == null || isEmpty()) return false;

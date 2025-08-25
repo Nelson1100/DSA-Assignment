@@ -19,15 +19,15 @@ public class PatientProfileUI {
         
         String[] menu = {
             "Register",
-            "Search",
+            "Search & Manage",
             "View All",
             "Back"
         };
 
         while (repeat) {
             int choice = JOptionPaneConsoleIO.readOption(
-                    "Patient Profile Menu",
-                    "Patient Profile",
+                    "Please select a Patient Profile option:",
+                    "Patient Profile Management",
                     menu
             );
             
@@ -36,7 +36,7 @@ public class PatientProfileUI {
                 case 1 -> searchPatient();
                 case 2 -> viewSortedPatients();
                 case 3, -1 -> repeat = false;
-                default -> JOptionPaneConsoleIO.showError("Invalid choice.");
+                default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
             }
         }
     }
@@ -51,7 +51,7 @@ public class PatientProfileUI {
     }
 
     private void searchPatient() {
-        String detail = JOptionPaneConsoleIO.readNonEmpty("Enter ID / Name / Contact / Email:");
+        String detail = JOptionPaneConsoleIO.readNonEmpty("Search by ID / Name / Contact / Email:");
         
         if (detail == null) return;
         detail = detail.trim();
@@ -172,11 +172,13 @@ public class PatientProfileUI {
             }
         } while (!valid);
         
-        // Standardize phone or email
-        if (field == 2)
-            newValue = validate.standardizedPhone(newValue);
-        else if (field == 3)
-            newValue = newValue.toLowerCase();
+        // Standardize name, phone or email
+        switch (field) {
+            case 1 -> newValue = validate.standardizedName(newValue);
+            case 2 -> newValue = validate.standardizedPhone(newValue);
+            case 3 -> newValue = newValue.toLowerCase();
+            default -> {}
+        }
         
         boolean success = pm.updatePatientField(tempPatient.getPatientID(), field, newValue);
         
@@ -216,10 +218,10 @@ public class PatientProfileUI {
             "Descending"
         };
         
-        int sortChoice = JOptionPaneConsoleIO.readOption("Sort by:", "Patient View", viewOptions);
+        int sortChoice = JOptionPaneConsoleIO.readOption("Please select sorting field:", "Patient List Sorting", viewOptions);
         if (sortChoice == -1) return;
         
-        int orderChoice = JOptionPaneConsoleIO.readOption("Order:", "Sort Order", orderOptions);
+        int orderChoice = JOptionPaneConsoleIO.readOption("Please select sorting order:", "Sort Order", orderOptions);
         boolean descending = (orderChoice == 1);
         
         Patient[] arr = switch (sortChoice) {
@@ -235,15 +237,28 @@ public class PatientProfileUI {
             return;
         }
         
-        StringBuilder sb = new StringBuilder("Sorted Patients:\n---------------------\n");
+        final int width = 100;
+        StringBuilder sb = new StringBuilder();
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Sorted Patients", width));
+        sb.append(String.format("%-15s %-25s %-10s %-5s %-25s %-15s\n", 
+                "Patient ID", "Name", "Gender", "Age", "Email", "Contact"));
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+                
         for (Patient p : arr) {
-            sb.append(p.getPatientID()).append(" | ")
-              .append(p.getPatientName()).append(" | ")
-              .append(p.getAge()).append(" | ")
-              .append(p.getGender()).append("\n");
+            sb.append(String.format("%-15s %-25s %-10s %-5s %-25s %-15s\n",
+                p.getPatientID(),
+                p.getPatientName(),
+                p.getGender(),
+                p.getAge(),
+                p.getEmail(),
+                p.getContactNo()
+            ));
         }
+        
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
 
-        JOptionPaneConsoleIO.showInfo(sb.toString());
+        JOptionPaneConsoleIO.showMonospaced("Sorted Patients", sb.toString());
     }
 
     private Patient readPatientPrompt() {
@@ -259,6 +274,8 @@ public class PatientProfileUI {
             name = JOptionPaneConsoleIO.readNonEmpty("Enter Patient Name:");
             
             if (name == null) return null;
+            
+            name = validate.standardizedName(name);
             
             if (validate.validName(name)) {
                 valid = true;

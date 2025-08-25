@@ -1,12 +1,14 @@
 package control;
 
 import entity.*;
+import utility.JOptionPaneConsoleIO;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class PatientReportGenerator {
+    private static final int WIDTH = 100;
     private final PatientManagement pm;
     
     public PatientReportGenerator(PatientManagement pm) {
@@ -15,9 +17,15 @@ public class PatientReportGenerator {
     
     public String generateVisitQueueAnalysisReport() {
         StringBuilder sb = new StringBuilder();
-        LocalDateTime now = LocalDateTime.now();
-        String dateTime = now.format(DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy, hh:mm a"));
+        LocalDateTime now = LocalDateTime.now();        
+        // Header
+        sb.append(JOptionPaneConsoleIO.reportHeader(
+                "Patient Management Module", 
+                "Visit Queue Anaylsis Report", 
+                WIDTH
+        ));
         
+        // Queue Snapshot
         int total = pm.getQueueSize();
         int walkIn = pm.countByVisitType(VisitType.WALK_IN);
         int appointment = pm.countByVisitType(VisitType.APPOINTMENT);
@@ -25,37 +33,23 @@ public class PatientReportGenerator {
         long maxWait = pm.maxWaitMinutes(now);
         PatientVisit next = pm.getNextVisit();
         
-        // Header
-        sb.append("=".repeat(100)).append("\n");
-        sb.append(center("TUNKU ABDUL RAHMAN UNIVERSITY OF MANAGEMENT AND TECHNOLOGY", 100)).append("\n");
-        sb.append(center("PATIENT MANAGEMENT MODULE", 100)).append("\n\n");
-        sb.append(center("VISIT QUEUE ANALYSIS REPORT", 100)).append("\n");
-        sb.append(center("---------------------------------", 100)).append("\n\n");
-        
-        sb.append("Generated at: ").append(dateTime).append("\n");
-        sb.append("*".repeat(100)).append("\n\n");
-        
-        // Queue Snapshot
-        sb.append(center("Queue Snapshot", 100)).append("\n");
-        sb.append("-".repeat(100)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Queue Snapshot", WIDTH));
         sb.append(String.format("%-30s: %d\n", "Total Patients", total));
         sb.append(String.format("%-30s: %d\n", "Total Walk-in Patients", walkIn));
         sb.append(String.format("%-30s: %d\n", "Total Appointment Patients", appointment));
         sb.append(String.format("%-30s: %.1f minutes\n", "Average Wait Time", avgWait));
         sb.append(String.format("%-30s: %d minutes\n\n", "Max Wait Time", maxWait));
-        
+       
         if (next != null) {
             sb.append(String.format("%-30s: %s (%s)\n", "Next to be served",
                     next.getPatient().getPatientName(), next.getPatient().getPatientID()));
         } else {
             sb.append(String.format("%-30s: (none)\n", "Next to be served"));
         }
-        
-        sb.append("-".repeat(100)).append("\n\n");
+        sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n\n");
         
         // Wait Time Distribution Chart (5 ranges)
-        sb.append(center("Wait Time Distribution (in minutes)", 100)).append("\n");
-        sb.append("-".repeat(100)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Wait Time Distribution (in minutes)", WIDTH));
         
         int[] ranges = new int[5];
         String[] labels = {"0-5 min", "5–9 min", "10–19 min", "20–29 min", "30+ min"};
@@ -69,22 +63,18 @@ public class PatientReportGenerator {
             else if (w < 30) ranges[3]++;
             else ranges[4]++;
         }
-        
         for (int i = 0; i < 5; i++) {
             sb.append(String.format("%-9s: %-60s (%d)\n", labels[i], "*".repeat(ranges[i]), ranges[i]));
         }
-        
-        sb.append("-".repeat(100)).append("\n\n");
+        sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n\n");
         
         // Top 5 Longest Waiting Patients
-        sb.append(center("Top 5 Longest-Waiting Patients", 100)).append("\n");
-        sb.append("-".repeat(100)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Top 5 Longest-Waiting Patients", 100));
         sb.append(String.format("%-5s %-20s %-24s %-10s\n", "No.", "ID", "Patient Name", "Wait (min)"));
-        sb.append("-".repeat(100)).append("\n");
+        sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n");
         
         
         sortByWaitTimeDesc(snap, now);
-        
         for (int i = 0; i < Math.min(5, snap.length); i++) {
             PatientVisit v = snap[i];
             long wait = ChronoUnit.MINUTES.between(v.getArrivalDateTime(), now);
@@ -95,19 +85,23 @@ public class PatientReportGenerator {
                     wait
             ));
         }
-        sb.append("-".repeat(100)).append("\n\n");
+        sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n");
         
-        sb.append("*".repeat(100)).append("\n");
-        sb.append(center("END OF REPORT", 100)).append("\n");
-        sb.append("=".repeat(100));
+        // Footer
+        sb.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
         
         return sb.toString();
     }
     
     public String generatePatientSummaryReport() {
         StringBuilder sb = new StringBuilder();
-        LocalDateTime now = LocalDateTime.now();
-        String dateTime = now.format(DateTimeFormatter.ofPattern("EEEE, MMM dd yyyy, hh:mm a"));
+        
+        // Header
+        sb.append(JOptionPaneConsoleIO.reportHeader(
+                "Patient Management Module",
+                "Patient Summary Report",
+                WIDTH
+        ));
         
         Patient[] patients = pm.getAllPatientsSortedByID(false);
         PatientVisit[] visits = pm.getAllVisits();
@@ -136,14 +130,9 @@ public class PatientReportGenerator {
             else femaleCount++;
         }
         
-        int totalVisits = visits.length;
-        String mostFrequent = "";
-        String leastFrequent = "";
-        int maxCount = 0;
-        int minCount = Integer.MAX_VALUE;
-
         StringBuilder most = new StringBuilder();
         StringBuilder least = new StringBuilder();
+        int maxCount = 0;
         
         for (Patient p : patients) {
             int count = pm.countVisitsByID(p.getPatientID());
@@ -169,19 +158,8 @@ public class PatientReportGenerator {
             if (latest == null || dt.isAfter(latest)) latest = dt;
         }
         
-        // Header
-        sb.append("=".repeat(100)).append("\n");
-        sb.append(center("TUNKU ABDUL RAHMAN UNIVERSITY OF MANAGEMENT AND TECHNOLOGY", 100)).append("\n");
-        sb.append(center("PATIENT MANAGEMENT MODULE", 100)).append("\n\n");
-        sb.append(center("PATIENT SUMMARY REPORT", 100)).append("\n");
-        sb.append(center("----------------------------", 100)).append("\n\n");
-        
-        sb.append("Generated at: ").append(dateTime).append("\n");
-        sb.append("*".repeat(100)).append("\n\n");
-        
         // Patient Demographics
-        sb.append(center("Patient Demographics", 100)).append("\n");
-        sb.append("-".repeat(100)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Patient Demographics", WIDTH));
         sb.append(String.format("%-30s: %d\n", "Total Registered Patients", totalPatients));
         sb.append(String.format("%-30s: Male - %d, Female - %d\n", "Gender Breakdown", maleCount, femaleCount));
         
@@ -195,30 +173,24 @@ public class PatientReportGenerator {
         for (int i = 0; i < ageGroup.length; i++) {
             sb.append(String.format(" %-6s : %-40s (%d)\n", ageLabels[i], "*".repeat(ageGroup[i]), ageGroup[i]));
         }
-        sb.append("-".repeat(100)).append("\n\n");
+        sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n\n");
         
-        // Visit Frequency
-        sb.append(center("Visit Frequency", 100)).append("\n");
-        sb.append("-".repeat(100)).append("\n");
-        sb.append(String.format("%-30s: %d\n", "Total Number of Visits", totalVisits));
-        sb.append("\nMost Frequent Visitors:\n").append(most);
-        sb.append("\nLeast Frequent Visitors (1-time):\n").append(least);
-        sb.append("-".repeat(100)).append("\n\n");
+        // Queue Participation Rate
+        int queueSize = pm.getQueueSize();
+        double participationRate = (totalPatients == 0) ? 0.0 : ((double) queueSize / totalPatients * 100);
         
-        // First vs Most Recent Visit
-        sb.append(center("First vs Most Recent Visit", 100)).append("\n");
-        sb.append("-".repeat(100)).append("\n");
-        sb.append(String.format("%-30s: %s\n", "Earliest Visit Date", earliest != null ? earliest.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a")) : "(none)"));
-        sb.append(String.format("%-30s: %s\n", "Most Recent Visit Date", latest != null ? latest.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a")) : "(none)"));
-        sb.append("-".repeat(100)).append("\n\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Queue Participation", WIDTH));
+        sb.append(String.format("%-30s: %d out of %d (%.1f%%)\n", 
+                "Currently Queued Patients", queueSize, totalPatients, participationRate));
+        sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n");
         
-        sb.append("*".repeat(100)).append("\n");
-        sb.append(center("END OF REPORT", 100)).append("\n");
-        sb.append("=".repeat(100));
+        // Footer
+        sb.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
         
         return sb.toString();
     }
     
+    // Helpers
     private void sortByWaitTimeDesc(PatientVisit[] arr, LocalDateTime now) {
         for (int i = 0; i < arr.length - 1; i++) {
             int max = i;
@@ -236,10 +208,5 @@ public class PatientReportGenerator {
             arr[i] = arr[max];
             arr[max] = temp;
         }
-    }
-    
-    private String center(String text, int width) {
-        int pad = Math.max(0, (width - text.length()) / 2);
-        return " ".repeat(pad) + text;
     }
 }

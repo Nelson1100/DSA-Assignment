@@ -4,8 +4,6 @@ import control.*;
 
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
 
 import utility.JOptionPaneConsoleIO;
 
@@ -21,7 +19,7 @@ public class MainUI {
                 ╔═════════════════════════════════════════════════╗
                 ║       🏥 Clinic Management System        ║
                 ╠═════════════════════════════════════════════════╣
-                ║          Developed by: Group X           ║
+                ║          Developed by: Group 3           ║
                 ║                                          ║
                 ║          Welcome to the system!          ║
                 ║     Please proceed to the main menu.     ║
@@ -35,16 +33,6 @@ public class MainUI {
         
         JOptionPane.showMessageDialog(null, textArea, "Welcome", JOptionPane.PLAIN_MESSAGE);
         
-        try {
-            ImageIcon logo = new ImageIcon("logo.png");
-            JLabel label = new JLabel("Welcome to Clinic Management System", logo, JLabel.CENTER);
-            label.setHorizontalTextPosition(JLabel.CENTER);
-            label.setVerticalTextPosition(JLabel.BOTTOM);
-            JOptionPane.showMessageDialog(null, label, "Welcome", JOptionPane.PLAIN_MESSAGE);
-        } catch (Exception e) {
-            System.out.println("Logo image not found. Skipping image flash.");
-        }
-        
         String[] modules = {
             "Patient",
             "Doctor",
@@ -57,7 +45,7 @@ public class MainUI {
         int choice;
         do {
             choice = JOptionPaneConsoleIO.readOption(
-                    "Welcome to Hospital Management System\n\nSelect a module continue:", 
+                    "Please select a module option:", 
                     "Main Menu", 
                     modules
             );
