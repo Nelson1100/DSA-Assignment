@@ -4,7 +4,6 @@ import entity.*;
 import utility.JOptionPaneConsoleIO;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class PatientReportGenerator {
