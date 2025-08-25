@@ -3,7 +3,7 @@ package entity;
 import java.time.LocalDateTime;
 
 public class PatientVisit {
-    private final Patient patient;
+    private Patient patient;
     private final LocalDateTime arrivalDateTime;
     private final VisitType visitType;
     private VisitStatus status;
@@ -35,9 +35,13 @@ public class PatientVisit {
         this.status = status;
     }
     
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+    
     @Override
     public String toString() {
-        return String.format("Visit: %s | ID: %s | Name: %s | Type: %s | Arrival: %s | Status: %s",
+        return String.format("Visit:%nID: %s | Name: %s | Type: %s | Arrival: %s | Status: %s",
             patient.getPatientID(), patient.getPatientName(), visitType, arrivalDateTime, status);
     }
     

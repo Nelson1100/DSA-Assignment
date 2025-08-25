@@ -1,15 +1,16 @@
 package boundary;
 
-import control.PatientMaintenance;
+import control.PatientManagement;
 import entity.*;
+import java.time.format.DateTimeFormatter;
 import utility.*;
 
 
 public class PatientQueueUI {
-    private final PatientMaintenance pm;
+    private final PatientManagement pm;
     private final Validation validate = new Validation();
     
-    public PatientQueueUI(PatientMaintenance pm) {
+    public PatientQueueUI(PatientManagement pm) {
         this.pm = pm;
     }
     
@@ -19,7 +20,7 @@ public class PatientQueueUI {
         String[] menu = {
             "Register",
             "Serve Next",
-            "Find Postion",
+            "Find Position",
             "View Queue",
             "Remove",
             "Back"
@@ -27,8 +28,8 @@ public class PatientQueueUI {
         
         while (repeat) {
             int choice = JOptionPaneConsoleIO.readOption(
-                    "Visit Queue Menu", 
-                    "Patient Queue", 
+                    "Please select a Visit Queue option:", 
+                    "Patient Queue Management", 
                     menu
             );
             
@@ -54,8 +55,8 @@ public class PatientQueueUI {
             "Appointment"
         };
         int type = JOptionPaneConsoleIO.readOption(
-                "Visit Type:",
-                "Select visit type:",
+                "Select Visit Type:",
+                "Visit Type",
                 types
         );
         
@@ -105,20 +106,34 @@ public class PatientQueueUI {
             return;
         }
         
-        StringBuilder sb = new StringBuilder("Current Queue\n");
-        sb.append("----------------------------\n");
+        final int width = 100;
+        StringBuilder sb = new StringBuilder();
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Current Queue", width));
+        sb.append(String.format(
+            "%-4s %-15s %-25s %-8s %-5s %-13s %-10s\n",
+            "No.", "Patient ID", "Name", "Gender", "Age", "Visit Type", "Arrived"
+        ));
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
         
         for (int i = 0; i < visits.length; i++) {
             Patient p = visits[i].getPatient();
-            sb.append(String.format("%2d) %-20s | %-10s | %-12s\n", 
-                    i + 1,
-                    p.getPatientName(),
-                    p.getPatientID(),
-                    visits[i].getVisitType()
+            String arrival = visits[i].getArrivalDateTime().format(DateTimeFormatter.ofPattern("hh:mm a"));
+            
+            sb.append(String.format(
+                "%-4d %-15s %-25s %-8s %-5d %-13s %-10s\n",
+                i + 1,
+                p.getPatientID(),
+                p.getPatientName(),
+                p.getGender(),
+                p.getAge(),
+                visits[i].getVisitType(),
+                arrival
             ));
         }
         
-        JOptionPaneConsoleIO.showInfo(sb.toString());
+        sb.append(JOptionPaneConsoleIO.line('-', width));
+        JOptionPaneConsoleIO.showMonospaced("Patient Queue", sb.toString());
     }
     
     private void removeVisit() {
@@ -126,9 +141,10 @@ public class PatientQueueUI {
         
         if (patient == null) return;
         
-        PatientVisit nextVisit = pm.getNextVisit();
-        if (nextVisit == null || !nextVisit.getPatient().getPatientID().equals(patient.getPatientID())) {
-            JOptionPaneConsoleIO.showError("Patient is not in the queue or already served.");
+        int pos = pm.findPosition(patient.getPatientID());
+        
+        if (pos == -1) {
+            JOptionPaneConsoleIO.showError("Patient is not in the queue.");
             return;
         }
         
