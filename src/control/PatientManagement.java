@@ -9,10 +9,9 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 public class PatientManagement {
-    /* ---------- Data Structures ---------- */
+    /* ---------- Fields & Constructor ---------- */
     
     private final QueueInterface<PatientVisit> visitQueue;
-    
     private final AVLTree<PatientByID> idxByID = new AVLTree<>();
     private final AVLTree<PatientByName> idxByName = new AVLTree<>();
     private final AVLTree<PatientByContactNo> idxByContact = new AVLTree<>();
@@ -164,7 +163,7 @@ public class PatientManagement {
         return wrapper != null ? wrapper.ref : null;
     }
     
-    /* ---------- Visit Queue ---------- */
+    /* ---------- Visit Queue Operations ---------- */
     
     public boolean registerVisit(Patient patient, VisitType visitType) {
         if (!existsByID(patient.getPatientID())) {
@@ -194,27 +193,7 @@ public class PatientManagement {
         next.setStatus(VisitStatus.SERVED);
         return next;
     }
-    
-    private void updatePatientInVisitQueue(String id) {
-        QueueInterface<PatientVisit> temp = new LinkedQueue<>();
-        
-        while(!visitQueue.isEmpty()) {
-            PatientVisit visit = visitQueue.dequeue();
-            
-            if (visit.getPatient().getPatientID().equals(id)) {
-                Patient updated = findPatientByID(id);
-                visit.setPatient(updated);
-            }
-            
-            temp.enqueue(visit);
-        }
-        
-        while (!temp.isEmpty()) {
-            visitQueue.enqueue(temp.dequeue());
-        }
-    }
 
-    // Visit records removed from the queue are considered cancelled
     public boolean removeVisitByID(String id) {
         if (id == null || isEmpty()) return false;
         
@@ -237,20 +216,6 @@ public class PatientManagement {
         }
         
         return removed;
-    }
-    
-    // Queue Access
-    
-    public boolean isEmpty() {
-        return visitQueue.isEmpty();
-    }
-    
-    public int getQueueSize() {
-        return visitQueue.size();
-    }
-    
-    private QueueIterator<PatientVisit> getIterator() {
-        return visitQueue.getIterator();
     }
     
     public PatientVisit getNextVisit() {
@@ -330,7 +295,40 @@ public class PatientManagement {
         return count;
     }
     
-    // Queue Statistics 
+    private void updatePatientInVisitQueue(String id) {
+        QueueInterface<PatientVisit> temp = new LinkedQueue<>();
+        
+        while(!visitQueue.isEmpty()) {
+            PatientVisit visit = visitQueue.dequeue();
+            
+            if (visit.getPatient().getPatientID().equals(id)) {
+                Patient updated = findPatientByID(id);
+                visit.setPatient(updated);
+            }
+            
+            temp.enqueue(visit);
+        }
+        
+        while (!temp.isEmpty()) {
+            visitQueue.enqueue(temp.dequeue());
+        }
+    }
+    
+    // Queue Helpers
+    
+    public boolean isEmpty() {
+        return visitQueue.isEmpty();
+    }
+    
+    public int getQueueSize() {
+        return visitQueue.size();
+    }
+    
+    private QueueIterator<PatientVisit> getIterator() {
+        return visitQueue.getIterator();
+    }
+    
+    /* ---------- Queue Statistics ---------- */
     
     public int countByVisitType(VisitType type) {
         int count = 0;
@@ -383,29 +381,7 @@ public class PatientManagement {
         return max;
     }
     
-    // need modification gua
-    public String queueHealthSnapshot(LocalDateTime now) {
-        int walkIn = countByVisitType(VisitType.WALK_IN);
-        int appointment = countByVisitType(VisitType.APPOINTMENT);
-        double avg = avgWaitMinutes(now);
-        long max = maxWaitMinutes(now);
-        PatientVisit next = getNextVisit();
-        
-        return String.format("""
-                Queue Health Summary
-                ---------------------
-                Walk-in Patients   : %d
-                Appointments       : %d
-                Average Wait       : %.1f min
-                Max Wait           : %d min
-                Next to Serve      : %s (%s)
-                """, 
-                walkIn, appointment, avg, max,
-                next != null ? next.getPatient().getPatientName() : "(none)",
-                next != null ? next.getPatient().getPatientID() : "(none)");
-    }
-    
-    /* ---------- Patient Sorting ---------- */
+    /* ---------- Sorting Patients ---------- */
     
     public Patient[] getAllPatientsSortedByID(boolean descending) {
         PatientByID[] wrapped = idxByID.toArrayInorder(new PatientByID[idxByID.size()]);
@@ -449,7 +425,7 @@ public class PatientManagement {
         return arr;
     }
     
-    /* ---------- Sort Helpers ---------- */
+    /* ---------- Sorting Helpers ---------- */
     
     private void selectionSortByGender(Patient[] a, boolean descending) {
         for (int i = 0; i < a.length - 1; i++) {
@@ -468,7 +444,6 @@ public class PatientManagement {
             swap(a, i, target);
         }
     }
-
 
     private void selectionSortByAge(Patient[] a, boolean descending) {
         for (int i = 0; i < a.length - 1; i++) {
@@ -495,7 +470,6 @@ public class PatientManagement {
             array[j] = temp;
         }
     }
-
 
     private void swap(Patient[] a, int i, int j) {
         if (i == j) return;

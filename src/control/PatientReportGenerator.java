@@ -8,6 +8,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class PatientReportGenerator {
+    /* ---------- Fields & Constructor ---------- */
+    
     private static final int WIDTH = 100;
     private final PatientManagement pm;
     
@@ -15,9 +17,12 @@ public class PatientReportGenerator {
         this.pm = pm;
     }
     
+    /* ---------- Visit Queue Analysis Report ---------- */
+    
     public String generateVisitQueueAnalysisReport() {
         StringBuilder sb = new StringBuilder();
-        LocalDateTime now = LocalDateTime.now();        
+        LocalDateTime now = LocalDateTime.now();
+        
         // Header
         sb.append(JOptionPaneConsoleIO.reportHeader(
                 "Patient Management Module", 
@@ -25,7 +30,7 @@ public class PatientReportGenerator {
                 WIDTH
         ));
         
-        // Queue Snapshot
+        // Queue Snapshot 
         int total = pm.getQueueSize();
         int walkIn = pm.countByVisitType(VisitType.WALK_IN);
         int appointment = pm.countByVisitType(VisitType.APPOINTMENT);
@@ -48,7 +53,7 @@ public class PatientReportGenerator {
         }
         sb.append(JOptionPaneConsoleIO.line('-', WIDTH)).append("\n\n");
         
-        // Wait Time Distribution Chart (5 ranges)
+        // Wait Time Distribution
         sb.append(JOptionPaneConsoleIO.sectionTitle("Wait Time Distribution (in minutes)", WIDTH));
         
         int[] ranges = new int[5];
@@ -92,6 +97,8 @@ public class PatientReportGenerator {
         
         return sb.toString();
     }
+    
+    /* ---------- Patient Summary Report ---------- */
     
     public String generatePatientSummaryReport() {
         StringBuilder sb = new StringBuilder();
