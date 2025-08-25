@@ -12,6 +12,9 @@ import utility.JOptionPaneConsoleIO;
 public class MainUI {
     public static void main(String[] args) {
         PatientMaintenance pm = new PatientMaintenance();
+        DoctorManagement dm = new DoctorManagement();
+        MedicalTreatmentManagement tm = new MedicalTreatmentManagement();
+        ConsultationManagement cm = new ConsultationManagement(pm, dm, tm);
         
         String welcome = 
                 """
@@ -62,7 +65,7 @@ public class MainUI {
             switch (choice) {
                 case 0 -> new PatientUI(pm).run();
                 case 1 -> JOptionPane.showMessageDialog(null, "Doctor Module: Not yet implemented.");
-                case 2 -> JOptionPane.showMessageDialog(null, "Consultation Module: Not yet implemented.");
+                case 2 -> new ConsultationUI(cm, pm, dm).run();
                 case 3 -> JOptionPane.showMessageDialog(null, "Medical Treatment Module: Not yet implemented.");
                 case 4 -> JOptionPane.showMessageDialog(null, "Pharmacy Module: Not yet implemented.");
             }
