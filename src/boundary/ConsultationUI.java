@@ -1,7 +1,7 @@
 package boundary;
 
 import control.ConsultationManagement;
-import control.PatientMaintenance;
+import control.PatientManagement;
 import control.DoctorManagement;
 import entity.*;
 import utility.JOptionPaneConsoleIO;
@@ -11,11 +11,11 @@ import java.util.List;
 
 public class ConsultationUI {
     private final ConsultationManagement consultationManagement;
-    private final PatientMaintenance patientMaintenance;
+    private final PatientManagement patientMaintenance;
     private final DoctorManagement doctorManagement;
     
     public ConsultationUI(ConsultationManagement consultationManagement, 
-                         PatientMaintenance patientMaintenance,
+                         PatientManagement patientMaintenance,
                          DoctorManagement doctorManagement) {
         this.consultationManagement = consultationManagement;
         this.patientMaintenance = patientMaintenance;

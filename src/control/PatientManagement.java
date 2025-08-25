@@ -193,7 +193,7 @@ public class PatientManagement {
         next.setStatus(VisitStatus.SERVED);
         return next;
     }
-    
+
     public boolean removeVisitByID(String id) {
         if (id == null || isEmpty()) return false;
         

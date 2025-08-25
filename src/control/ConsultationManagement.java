@@ -14,11 +14,11 @@ public class ConsultationManagement {
     private final AVLTree<ConsultationByPatientID> idxByPatientID = new AVLTree<>();
     private final AVLTree<ConsultationByDoctorID> idxByDoctorID = new AVLTree<>();
     
-    private final PatientMaintenance patientMaintenance;
+    private final PatientManagement patientMaintenance;
     private final DoctorManagement doctorManagement;
     private final MedicalTreatmentManagement treatmentManagement;
     
-    public ConsultationManagement(PatientMaintenance patientMaintenance, 
+    public ConsultationManagement(PatientManagement patientMaintenance, 
                                  DoctorManagement doctorManagement,
                                  MedicalTreatmentManagement treatmentManagement) {
         this.patientMaintenance = patientMaintenance;
