@@ -8,7 +8,7 @@ import entity.keys.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-public class PatientMaintenance {
+public class PatientManagement {
     /* ---------- Data Structures ---------- */
     
     private final QueueInterface<PatientVisit> visitQueue;
@@ -18,7 +18,7 @@ public class PatientMaintenance {
     private final AVLTree<PatientByContactNo> idxByContact = new AVLTree<>();
     private final AVLTree<PatientByEmail> idxByEmail = new AVLTree<>();
     
-    public PatientMaintenance() {
+    public PatientManagement() {
         visitQueue = new LinkedQueue<>();
         PatientInitializer.initialize(visitQueue); // Pre-load test data
         rebuildIndexesFromQueue();

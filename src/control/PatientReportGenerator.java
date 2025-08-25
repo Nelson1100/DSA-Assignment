@@ -7,9 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class PatientReportGenerator {
-    private final PatientMaintenance pm;
+    private final PatientManagement pm;
     
-    public PatientReportGenerator(PatientMaintenance pm) {
+    public PatientReportGenerator(PatientManagement pm) {
         this.pm = pm;
     }
     

@@ -1,12 +1,12 @@
 package boundary;
 
-import control.PatientMaintenance;
+import control.PatientManagement;
 import utility.JOptionPaneConsoleIO;
 
 public class PatientUI {
-    private final PatientMaintenance pm;
+    private final PatientManagement pm;
     
-    public PatientUI(PatientMaintenance pm) {
+    public PatientUI(PatientManagement pm) {
         this.pm = pm;
     }
     

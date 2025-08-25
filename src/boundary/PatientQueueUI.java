@@ -1,15 +1,15 @@
 package boundary;
 
-import control.PatientMaintenance;
+import control.PatientManagement;
 import entity.*;
 import utility.*;
 
 
 public class PatientQueueUI {
-    private final PatientMaintenance pm;
+    private final PatientManagement pm;
     private final Validation validate = new Validation();
     
-    public PatientQueueUI(PatientMaintenance pm) {
+    public PatientQueueUI(PatientManagement pm) {
         this.pm = pm;
     }
     

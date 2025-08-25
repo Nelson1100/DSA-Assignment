@@ -11,7 +11,7 @@ import utility.JOptionPaneConsoleIO;
 
 public class MainUI {
     public static void main(String[] args) {
-        PatientMaintenance pm = new PatientMaintenance();
+        PatientManagement pm = new PatientManagement();
         DoctorManagement dm = new DoctorManagement();
         MedicalTreatmentManagement tm = new MedicalTreatmentManagement();
         ConsultationManagement cm = new ConsultationManagement(pm, dm, tm);

@@ -1,13 +1,13 @@
 package boundary;
 
-import control.PatientMaintenance;
+import control.PatientManagement;
 import control.PatientReportGenerator;
 import utility.JOptionPaneConsoleIO;
 
 public class PatientReportUI {
     private final PatientReportGenerator reportGen;
     
-    public PatientReportUI(PatientMaintenance pm) {
+    public PatientReportUI(PatientManagement pm) {
         this.reportGen = new PatientReportGenerator(pm);
     }
     
