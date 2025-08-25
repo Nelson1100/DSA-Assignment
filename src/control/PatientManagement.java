@@ -213,7 +213,7 @@ public class PatientManagement {
             visitQueue.enqueue(temp.dequeue());
         }
     }
-    
+
     // Visit records removed from the queue are considered cancelled
     public boolean removeVisitByID(String id) {
         if (id == null || isEmpty()) return false;
