@@ -8,7 +8,7 @@ import entity.keys.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
-public class PatientMaintenance {
+public class PatientManagement {
     /* ---------- Data Structures ---------- */
     
     private final QueueInterface<PatientVisit> visitQueue;
@@ -18,7 +18,7 @@ public class PatientMaintenance {
     private final AVLTree<PatientByContactNo> idxByContact = new AVLTree<>();
     private final AVLTree<PatientByEmail> idxByEmail = new AVLTree<>();
     
-    public PatientMaintenance() {
+    public PatientManagement() {
         visitQueue = new LinkedQueue<>();
         PatientInitializer.initialize(visitQueue); // Pre-load test data
         rebuildIndexesFromQueue();
@@ -69,6 +69,7 @@ public class PatientMaintenance {
         Patient old = findPatientByID(id);
         unindexPatient(old);
         indexPatient(updatedPatient);
+        updatePatientInVisitQueue(id);
         return true;
     }
     
@@ -77,6 +78,7 @@ public class PatientMaintenance {
         
         Patient p = findPatientByID(id);
         unindexPatient(p);
+        removeVisitByID(id);
         return true;
     }
     
@@ -191,6 +193,25 @@ public class PatientMaintenance {
         PatientVisit next = visitQueue.dequeue();
         next.setStatus(VisitStatus.SERVED);
         return next;
+    }
+    
+    private void updatePatientInVisitQueue(String id) {
+        QueueInterface<PatientVisit> temp = new LinkedQueue<>();
+        
+        while(!visitQueue.isEmpty()) {
+            PatientVisit visit = visitQueue.dequeue();
+            
+            if (visit.getPatient().getPatientID().equals(id)) {
+                Patient updated = findPatientByID(id);
+                visit.setPatient(updated);
+            }
+            
+            temp.enqueue(visit);
+        }
+        
+        while (!temp.isEmpty()) {
+            visitQueue.enqueue(temp.dequeue());
+        }
     }
     
     // Visit records removed from the queue are considered cancelled

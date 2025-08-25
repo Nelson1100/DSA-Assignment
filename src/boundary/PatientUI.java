@@ -1,12 +1,12 @@
 package boundary;
 
-import control.PatientMaintenance;
+import control.PatientManagement;
 import utility.JOptionPaneConsoleIO;
 
 public class PatientUI {
-    private final PatientMaintenance pm;
+    private final PatientManagement pm;
     
-    public PatientUI(PatientMaintenance pm) {
+    public PatientUI(PatientManagement pm) {
         this.pm = pm;
     }
     
@@ -14,7 +14,7 @@ public class PatientUI {
         boolean repeat = true;
         
         String[] menu = {
-            "Profiles",
+            "Patient Profiles",
             "Visit Queue",
             "Reports",
             "Back"
@@ -22,8 +22,8 @@ public class PatientUI {
         
         while (repeat) {
             int choice = JOptionPaneConsoleIO.readOption(
-                    "Select a module:", 
-                    "Patient Module", 
+                    "Please select a Patient Management option:", 
+                    "Patient Management Module", 
                     menu
             );
             switch (choice) {

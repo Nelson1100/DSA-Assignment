@@ -1,13 +1,13 @@
 package boundary;
 
-import control.PatientMaintenance;
+import control.PatientManagement;
 import control.PatientReportGenerator;
 import utility.JOptionPaneConsoleIO;
 
 public class PatientReportUI {
     private final PatientReportGenerator reportGen;
     
-    public PatientReportUI(PatientMaintenance pm) {
+    public PatientReportUI(PatientManagement pm) {
         this.reportGen = new PatientReportGenerator(pm);
     }
     
@@ -22,14 +22,20 @@ public class PatientReportUI {
         
         while (repeat) {
             int choice = JOptionPaneConsoleIO.readOption(
-                    "Patient Reports Menu", 
-                    "Patient Reports", 
+                    "Please select a Patient Report option:", 
+                    "Patient Report Management", 
                     menu
             );
 
             switch (choice) {
-                case 0 -> JOptionPaneConsoleIO.showPlain("<html><pre style='font-family:monospace'>" + reportGen.generateVisitQueueAnalysisReport() + "</pre></html>", "Visit Queue Analysis Report");
-                case 1 -> JOptionPaneConsoleIO.showPlain("<html><pre style='font-family:monospace'>" + reportGen.generatePatientSummaryReport() + "</pre></html>", "Patient Summary Report");
+                case 0 -> JOptionPaneConsoleIO.showMonospaced(
+                        "Visit Queue Analysis Report", 
+                        reportGen.generateVisitQueueAnalysisReport()
+                );
+                case 1 -> JOptionPaneConsoleIO.showMonospaced(
+                        "Patient Summary Report", 
+                        reportGen.generatePatientSummaryReport()
+                );
                 case 2, -1 -> repeat = false;
                 default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
             }
