@@ -6,7 +6,8 @@ import entity.*;
 import java.time.LocalDateTime;
 
 /**
- *                           ONLY NEEDED WHEN USING FILES
+ *
+ * @author Ng Wei Jian
  */
 public class PatientInitializer {
     public static void initialize(QueueInterface<PatientVisit> visitQueue) {

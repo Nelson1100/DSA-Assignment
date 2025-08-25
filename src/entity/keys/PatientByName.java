@@ -2,6 +2,10 @@ package entity.keys;
 
 import entity.Patient;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientByName implements Comparable<PatientByName> {
     public final String nameKey; // UPPER(name) + "|" + ID
     public final Patient ref;

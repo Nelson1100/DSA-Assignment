@@ -3,6 +3,10 @@ package boundary;
 import control.PatientManagement;
 import utility.JOptionPaneConsoleIO;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientUI {
     private final PatientManagement pm;
     

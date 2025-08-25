@@ -2,6 +2,10 @@ package entity;
 
 import java.time.LocalDateTime;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientVisit {
     private Patient patient;
     private final LocalDateTime arrivalDateTime;

@@ -1,5 +1,9 @@
 package entity;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class Patient {
     private String patientID;
     private String patientName;

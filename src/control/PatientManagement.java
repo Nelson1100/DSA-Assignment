@@ -8,6 +8,10 @@ import entity.keys.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientManagement {
     /* ---------- Fields & Constructor ---------- */
     
@@ -336,18 +340,6 @@ public class PatientManagement {
         
         while (it.hasNext()) {
             if (it.getNext().getVisitType() == type)
-                count++;
-        }
-        
-        return count;
-    }
-    
-    public int countByGender(Gender gender) {
-        int count = 0;
-        QueueIterator<PatientVisit> it = getIterator();
-        
-        while (it.hasNext()) {
-            if (it.getNext().getPatient().getGender() == gender)
                 count++;
         }
         

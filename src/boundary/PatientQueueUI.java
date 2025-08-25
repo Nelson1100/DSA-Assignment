@@ -5,7 +5,10 @@ import entity.*;
 import java.time.format.DateTimeFormatter;
 import utility.*;
 
-
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientQueueUI {
     private final PatientManagement pm;
     private final Validation validate = new Validation();

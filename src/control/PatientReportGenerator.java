@@ -6,6 +6,10 @@ import utility.JOptionPaneConsoleIO;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientReportGenerator {
     /* ---------- Fields & Constructor ---------- */
     
