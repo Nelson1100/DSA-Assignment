@@ -2,6 +2,10 @@ package entity.keys;
 
 import entity.Patient;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientByContactNo implements Comparable<PatientByContactNo> {
     public final String contactNo;
     public final Patient ref;

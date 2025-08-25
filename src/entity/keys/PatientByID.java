@@ -2,6 +2,10 @@ package entity.keys;
 
 import entity.Patient;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientByID implements Comparable<PatientByID>{
     public final String id;
     public final Patient ref; // pointer to the actual Patient

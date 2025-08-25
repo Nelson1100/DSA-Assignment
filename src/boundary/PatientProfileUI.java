@@ -4,6 +4,10 @@ import control.PatientManagement;
 import entity.*;
 import utility.*;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientProfileUI {
     private final PatientManagement pm;
     private final Validation validate = new Validation();

@@ -4,6 +4,10 @@ import control.PatientManagement;
 import control.PatientReportGenerator;
 import utility.JOptionPaneConsoleIO;
 
+/**
+ *
+ * @author Ng Wei Jian
+ */
 public class PatientReportUI {
     private final PatientReportGenerator reportGen;
     
