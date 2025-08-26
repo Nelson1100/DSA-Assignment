@@ -83,7 +83,7 @@ public class PatientQueueUI {
             JOptionPaneConsoleIO.showInfo("No patients in the queue.");
         } else {
             Patient p = next.getPatient();
-            JOptionPaneConsoleIO.showInfo("Now serving: " + p.getPatientName() + " (" + p.getPatientID() + ")");
+            JOptionPaneConsoleIO.showInfo("Now serving:\n" + p);
         }
     }
     
@@ -152,7 +152,7 @@ public class PatientQueueUI {
         }
         
         boolean confirm = JOptionPaneConsoleIO.confirmDialog(
-                "Are you sure you want to remove " + patient.getPatientName() + " (" + patient.getPatientID() + ") "+ "from the queue?", 
+                "Are you sure you want to remove this patient from the queue?\n" + patient, 
                 "Confirm Removal");
         
         if (confirm) {
