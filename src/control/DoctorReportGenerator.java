@@ -5,6 +5,7 @@ import entity.DoctorDuty;
 import entity.Shift;
 import entity.Specialization;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import utility.Validation;
 
 public class DoctorReportGenerator {
@@ -36,8 +37,12 @@ public class DoctorReportGenerator {
                     Shift shift = shifts[i];
 
                     DoctorDuty duty = DocDuty.searchDutyByDoctorDateShift(doctorID, date, shift);
+                    String regDateStr = doctorID.substring(1, doctorID.length() - 4);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    LocalDate regDate = LocalDate.parse(regDateStr, formatter);
+                    boolean registeredByThatDay = !regDate.isAfter(date);
 
-                    if (duty == null && autoCreateWeekdays && validate.isWeekday(date))
+                    if (duty == null && autoCreateWeekdays && validate.isWeekday(date) && registeredByThatDay)
                         duty = DocDuty.WeekdayDuty(doctorID, date, shift);
 
                     if (duty == null) 
@@ -100,8 +105,6 @@ public class DoctorReportGenerator {
             }
         }
 
-        sb.append("Clinic Specialization Inventory — as of ")
-          .append(java.time.LocalDate.now()).append('\n');
         sb.append(String.format("%-28s%-10s%-10s%n", "Specialization", "Doctors", "Percent"));
         sb.append(String.format("%-28s%-10s%-10s%n", "----------------------------", "--------", "--------"));
 

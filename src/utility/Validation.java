@@ -11,15 +11,24 @@ public final class Validation {
     
     // Validation
     public static boolean validName(String name){
+        if (name == null)
+            return false;
+        
         return name.matches("[A-Za-z ]+");
     }
     
     public static boolean validPhone(String phone) {
+        if (phone == null)
+            return false;
+        
         phone = standardizedPhone(phone);
         return phone.matches("^011-[0-9]{8}$|^01(0|2|3|4|5|6|7|8|9)-[0-9]{7}$");
     }
     
     public static boolean validEmail(String email){
+        if (email == null)
+            return false;
+        
         return email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,6}$");
     }
     
