@@ -1,1 +1,1 @@
-explain how to run your application
+need explain how the application
