@@ -7,18 +7,21 @@ import entity.*;
 import utility.JOptionPaneConsoleIO;
 
 import javax.swing.JOptionPane;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class ConsultationUI {
     private final ConsultationManagement consultationManagement;
-    private final PatientManagement patientMaintenance;
+    private final PatientManagement patientManagement;
     private final DoctorManagement doctorManagement;
     
     public ConsultationUI(ConsultationManagement consultationManagement, 
-                         PatientManagement patientMaintenance,
+                         PatientManagement patientManagement,
                          DoctorManagement doctorManagement) {
         this.consultationManagement = consultationManagement;
-        this.patientMaintenance = patientMaintenance;
+        this.patientManagement = patientManagement;
         this.doctorManagement = doctorManagement;
     }
     
@@ -31,6 +34,7 @@ public class ConsultationUI {
             "Update Consultation Details",
             "Complete Consultation",
             "Cancel Consultation",
+            "Schedule Appointment",
             "Search Consultations",
             "View Reports",
             "Back"
@@ -49,9 +53,10 @@ public class ConsultationUI {
                 case 2 -> updateConsultationDetails();
                 case 3 -> completeConsultation();
                 case 4 -> cancelConsultation();
-                case 5 -> searchConsultations();
-                case 6 -> viewReports();
-                case 7, -1 -> repeat = false;
+                case 5 -> scheduleAppointment();
+                case 6 -> searchConsultations();
+                case 7 -> viewReports();
+                case 8, -1 -> repeat = false;
                 default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
             }
         }
@@ -67,12 +72,13 @@ public class ConsultationUI {
             }
             
             // Validate patient exists
-            Patient patient = patientMaintenance.findPatientByID(patientID.trim());
+            Patient patient = patientManagement.findPatientByID(patientID.trim());
             if (patient == null) {
                 JOptionPaneConsoleIO.showError("Patient not found with ID: " + patientID);
                 return;
             }
             
+            // Show available doctors
             Doctor[] doctors = doctorManagement.getAllDoctor();
             if (doctors.length == 0) {
                 JOptionPaneConsoleIO.showError("No doctors available in the system.");
@@ -93,6 +99,7 @@ public class ConsultationUI {
             
             String doctorID = doctors[doctorChoice].getDoctorID();
             
+            // Start consultation
             String result = consultationManagement.startConsultation(patientID.trim(), doctorID);
             
             if (result.startsWith("Error:")) {
@@ -116,7 +123,7 @@ public class ConsultationUI {
         
         StringBuilder sb = new StringBuilder("=== Active Consultations ===\n\n");
         for (Consultation consultation : activeConsultations) {
-            Patient patient = patientMaintenance.findPatientByID(consultation.getPatientID());
+            Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
             String patientName = patient != null ? patient.getPatientName() : "Unknown";
             
             sb.append(String.format("ID: %s | Patient: %s (%s) | Doctor: %s | Status: %s\n",
@@ -149,6 +156,7 @@ public class ConsultationUI {
             return;
         }
         
+        // Show current details
         JOptionPaneConsoleIO.showPlain(consultation.toString(), "Current Details");
         
         String symptoms = JOptionPane.showInputDialog("Enter Symptoms (current: " + 
@@ -235,6 +243,7 @@ public class ConsultationUI {
             return;
         }
         
+        // Show current details
         JOptionPaneConsoleIO.showPlain(consultation.toString(), "Current Consultation");
         
         int confirm = JOptionPane.showConfirmDialog(null, 
@@ -294,7 +303,8 @@ public class ConsultationUI {
             return;
         }
         
-        Patient patient = patientMaintenance.findPatientByID(consultation.getPatientID());
+        // Get patient name for display
+        Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
         String patientName = patient != null ? patient.getPatientName() : "Unknown";
         
         String displayInfo = consultation.toString() + "\nPatient Name: " + patientName;
@@ -339,7 +349,7 @@ public class ConsultationUI {
         
         StringBuilder sb = new StringBuilder("=== Consultations for Doctor " + doctorID + " ===\n\n");
         for (Consultation consultation : consultations) {
-            Patient patient = patientMaintenance.findPatientByID(consultation.getPatientID());
+            Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
             String patientName = patient != null ? patient.getPatientName() : "Unknown";
             
             sb.append(consultation.getConsultationID()).append(" | ")
@@ -360,7 +370,7 @@ public class ConsultationUI {
         
         StringBuilder sb = new StringBuilder("=== All Consultations ===\n\n");
         for (Consultation consultation : consultations) {
-            Patient patient = patientMaintenance.findPatientByID(consultation.getPatientID());
+            Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
             String patientName = patient != null ? patient.getPatientName() : "Unknown";
             
             sb.append(consultation.getConsultationID()).append(" | ")
@@ -373,9 +383,160 @@ public class ConsultationUI {
         JOptionPaneConsoleIO.showPlain(sb.toString(), "All Consultations");
     }
     
+    private void scheduleAppointment() {
+        String[] appointmentOptions = {
+            "Schedule Follow-up Appointment",
+            "Schedule New Appointment",
+            "View Upcoming Appointments",
+            "Back"
+        };
+        
+        int choice = JOptionPaneConsoleIO.readOption(
+            "Select appointment option:", "Appointment Scheduling", appointmentOptions
+        );
+        
+        switch (choice) {
+            case 0 -> scheduleFollowUpAppointment();
+            case 1 -> scheduleNewAppointment();
+            case 2 -> viewUpcomingAppointments();
+            case 3, -1 -> { /* Back */ }
+            default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
+        }
+    }
+    
+    private void scheduleFollowUpAppointment() {
+        String consultationID = JOptionPaneConsoleIO.readNonEmpty("Enter Consultation ID for follow-up:");
+        if (consultationID == null) return;
+        
+        Consultation consultation = consultationManagement.getConsultationByID(consultationID.trim());
+        if (consultation == null) {
+            JOptionPaneConsoleIO.showError("Consultation not found with ID: " + consultationID);
+            return;
+        }
+        
+        if (!consultation.isCompleted()) {
+            JOptionPaneConsoleIO.showError("Can only schedule follow-up for completed consultations.");
+            return;
+        }
+        
+        String dateTimeStr = JOptionPane.showInputDialog("Enter appointment date and time (dd-MM-yyyy HH:mm):");
+        if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) {
+            JOptionPaneConsoleIO.showError("Date and time are required.");
+            return;
+        }
+        
+        String purpose = JOptionPane.showInputDialog("Enter appointment purpose:");
+        if (purpose == null) purpose = "Follow-up consultation";
+        
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            LocalDateTime appointmentDateTime = LocalDateTime.parse(dateTimeStr.trim(), formatter);
+            
+            String result = consultationManagement.scheduleFollowUpAppointment(
+                consultationID.trim(), appointmentDateTime, purpose.trim());
+                
+            if (result.startsWith("Error:")) {
+                JOptionPaneConsoleIO.showError(result);
+            } else {
+                JOptionPaneConsoleIO.showPlain(result, "Success");
+            }
+            
+        } catch (DateTimeParseException e) {
+            JOptionPaneConsoleIO.showError("Invalid date format. Please use dd-MM-yyyy HH:mm");
+        }
+    }
+    
+    private void scheduleNewAppointment() {
+        String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
+        if (patientID == null) return;
+        
+        Patient patient = patientManagement.findPatientByID(patientID.trim());
+        if (patient == null) {
+            JOptionPaneConsoleIO.showError("Patient not found with ID: " + patientID);
+            return;
+        }
+        
+        // Show available doctors
+        Doctor[] doctors = doctorManagement.getAllDoctor();
+        if (doctors.length == 0) {
+            JOptionPaneConsoleIO.showError("No doctors available in the system.");
+            return;
+        }
+        
+        String[] doctorOptions = new String[doctors.length];
+        for (int i = 0; i < doctors.length; i++) {
+            doctorOptions[i] = doctors[i].getDoctorID() + " - " + doctors[i].getDoctorName() + 
+                             " (" + doctors[i].getSpecialization() + ")";
+        }
+        
+        int doctorChoice = JOptionPaneConsoleIO.readOption(
+            "Select a doctor:", "Available Doctors", doctorOptions
+        );
+        
+        if (doctorChoice == -1) return;
+        
+        String doctorID = doctors[doctorChoice].getDoctorID();
+        
+        String dateTimeStr = JOptionPane.showInputDialog("Enter appointment date and time (dd-MM-yyyy HH:mm):");
+        if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) {
+            JOptionPaneConsoleIO.showError("Date and time are required.");
+            return;
+        }
+        
+        String purpose = JOptionPane.showInputDialog("Enter appointment purpose:");
+        if (purpose == null || purpose.trim().isEmpty()) {
+            purpose = "General consultation";
+        }
+        
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            LocalDateTime appointmentDateTime = LocalDateTime.parse(dateTimeStr.trim(), formatter);
+            
+            String result = consultationManagement.scheduleAppointment(
+                patientID.trim(), doctorID, appointmentDateTime, purpose.trim());
+                
+            if (result.startsWith("Error:")) {
+                JOptionPaneConsoleIO.showError(result);
+            } else {
+                JOptionPaneConsoleIO.showPlain(result, "Success");
+            }
+            
+        } catch (DateTimeParseException e) {
+            JOptionPaneConsoleIO.showError("Invalid date format. Please use dd-MM-yyyy HH:mm");
+        }
+    }
+    
+    private void viewUpcomingAppointments() {
+        List<Appointment> upcomingAppointments = consultationManagement.getUpcomingAppointments();
+        
+        if (upcomingAppointments.isEmpty()) {
+            JOptionPaneConsoleIO.showPlain("No upcoming appointments found.", "Upcoming Appointments");
+            return;
+        }
+        
+        StringBuilder sb = new StringBuilder("=== Upcoming Appointments ===\n\n");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        
+        for (Appointment apt : upcomingAppointments) {
+            Patient patient = patientManagement.findPatientByID(apt.getPatientID());
+            String patientName = patient != null ? patient.getPatientName() : "Unknown";
+            
+            sb.append(String.format("ID: %s\n", apt.getAppointmentID()));
+            sb.append(String.format("Date: %s\n", apt.getAppointmentDateTime().format(formatter)));
+            sb.append(String.format("Patient: %s (%s)\n", patientName, apt.getPatientID()));
+            sb.append(String.format("Doctor: %s\n", apt.getDoctorID()));
+            sb.append(String.format("Purpose: %s\n", apt.getPurpose()));
+            sb.append(String.format("Status: %s\n", apt.getStatus()));
+            sb.append("---\n");
+        }
+        
+        JOptionPaneConsoleIO.showPlain(sb.toString(), "Upcoming Appointments");
+    }
+    
     private void viewReports() {
         String[] reportOptions = {
-            "Consultation Summary",
+            "Consultation Trends Report",
+            "Appointment Summary Report", 
             "Active Consultations Report",
             "Completed Consultations Report", 
             "Doctor Performance Report",
@@ -388,19 +549,25 @@ public class ConsultationUI {
         );
         
         switch (choice) {
-            case 0 -> showConsultationSummary();
-            case 1 -> showActiveConsultationsReport();
-            case 2 -> showCompletedConsultationsReport();
-            case 3 -> showDoctorPerformanceReport();
-            case 4 -> showPatientHistoryReport();
-            case 5, -1 -> { /* Back */ }
+            case 0 -> showConsultationTrendsReport();
+            case 1 -> showAppointmentSummaryReport();
+            case 2 -> showActiveConsultationsReport();
+            case 3 -> showCompletedConsultationsReport();
+            case 4 -> showDoctorPerformanceReport();
+            case 5 -> showPatientHistoryReport();
+            case 6, -1 -> { /* Back */ }
             default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
         }
     }
     
-    private void showConsultationSummary() {
-        String summary = consultationManagement.getConsultationSummary();
-        JOptionPaneConsoleIO.showPlain(summary, "Consultation Summary");
+    private void showConsultationTrendsReport() {
+        String report = consultationManagement.getConsultationTrendsReport();
+        JOptionPaneConsoleIO.showPlain(report, "Consultation Trends Report");
+    }
+    
+    private void showAppointmentSummaryReport() {
+        String report = consultationManagement.getAppointmentSummaryReport();
+        JOptionPaneConsoleIO.showPlain(report, "Appointment Summary Report");
     }
     
     private void showActiveConsultationsReport() {
@@ -415,7 +582,7 @@ public class ConsultationUI {
         sb.append("Total Active: ").append(activeConsultations.size()).append("\n\n");
         
         for (Consultation consultation : activeConsultations) {
-            Patient patient = patientMaintenance.findPatientByID(consultation.getPatientID());
+            Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
             String patientName = patient != null ? patient.getPatientName() : "Unknown";
             
             sb.append("ID: ").append(consultation.getConsultationID()).append("\n");
@@ -440,7 +607,7 @@ public class ConsultationUI {
         sb.append("Total Completed: ").append(completedConsultations.size()).append("\n\n");
         
         for (Consultation consultation : completedConsultations) {
-            Patient patient = patientMaintenance.findPatientByID(consultation.getPatientID());
+            Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
             String patientName = patient != null ? patient.getPatientName() : "Unknown";
             
             sb.append("ID: ").append(consultation.getConsultationID()).append("\n");
@@ -487,7 +654,7 @@ public class ConsultationUI {
             return;
         }
         
-        Patient patient = patientMaintenance.findPatientByID(patientID.trim());
+        Patient patient = patientManagement.findPatientByID(patientID.trim());
         if (patient == null) {
             JOptionPaneConsoleIO.showError("Patient not found with ID: " + patientID);
             return;
