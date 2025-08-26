@@ -11,6 +11,7 @@ import entity.Shift;
 import java.time.*;
 import entity.Specialization;
 import control.DoctorReportGenerator;
+import java.time.format.DateTimeFormatter;
 
 public class DoctorUI {
     DoctorManagement dm = new DoctorManagement();
@@ -24,14 +25,15 @@ public class DoctorUI {
     YearMonth current = YearMonth.now();
     int year = current.getYear();
     int month = current.getMonthValue();
+    private static final int WIDTH = 100;
     
     public void taskSelection(){
         boolean newTask = true;
-        String[] menu = {"Register", "Search", "Duty By Date", "Report", "Cancel"};
-        String[] updateOption = {"Update", "Remove", "Duty", "Cancel"};
+        String[] menu = {"Register", "Search", "Duty By Date", "Report", "Back"};
+        String[] updateOption = {"Update", "Remove", "Duty", "Back"};
         
         // Hardcoded doctor information
-        Doctor A = new Doctor(IDGenerator.next(IDType.DOCTOR), "Nelson", "0182284609", "nelson@gmail.com", Specialization.PSYCHIATRY);
+        Doctor A = new Doctor("D202408110001", "Nelson", "0182284609", "nelson@gmail.com", Specialization.PSYCHIATRY);
         Doctor B = new Doctor(IDGenerator.next(IDType.DOCTOR), "Choonni", "0121234567", "cn@gmail.com", Specialization.NEUROLOGY);
         Doctor C = new Doctor(IDGenerator.next(IDType.DOCTOR), "WeiJian", "0121234567", "wj@gmail.com", Specialization.CARDIOLOGY);
         dm.registerDoctor(A);
@@ -93,13 +95,13 @@ public class DoctorUI {
                             // Update doctor profile
                             modifyChoice = infoModification();
 
-                            if (modifyChoice == -1 || modifyChoice == 5) {
+                            if (modifyChoice == 0 || modifyChoice == 5) {
                                 update = 3;
                                 continue;
                             }
 
                             switch (modifyChoice){
-                                case 1:
+                                case 1 -> {
                                     // Modify name
                                     newName = JOptionPaneConsoleIO.readNonEmpty("Enter new name: ");
                                     if (newName == null) {
@@ -107,8 +109,8 @@ public class DoctorUI {
                                         continue;
                                     }
                                     newName = validate.standardizedName(newName);
-                                    break;
-                                case 2:
+                                }
+                                case 2 -> {
                                     // Modify phone number
                                     newPhone = JOptionPaneConsoleIO.readNonEmpty("Enter new phone number: ");
                                     if (newPhone == null) {
@@ -116,25 +118,24 @@ public class DoctorUI {
                                         continue;
                                     }
                                     newPhone = validate.standardizedPhone(newPhone);
-                                    break;
-                                case 3:
+                                }
+                                case 3 -> {
                                     // Modify email address
                                     newEmail = JOptionPaneConsoleIO.readNonEmpty("Enter new email address: ");
                                     if (newEmail == null) {
                                         update = 3;
                                         continue;
                                     }
-                                    break;
-                                case 4:
+                                }
+                                case 4 -> {
                                     // Modify specialization
                                     newSpecialization = JOptionPaneConsoleIO.readEnum("Enter new specialization: ", Specialization.class, specializationOp);
                                     if (newSpecialization == null) {
                                         update = 3;
                                         continue;
                                     }
-                                    break;
-                                default:
-                                    JOptionPaneConsoleIO.showError("Please enter a valid option.");
+                                }
+                                default -> JOptionPaneConsoleIO.showError("Please enter a valid option.");
                             }
 
                             boolean updateResult = dm.updateDoctor(result, modifyChoice, newName, newPhone, newEmail, newSpecialization);
@@ -201,7 +202,7 @@ public class DoctorUI {
                     } while (update == 3);
                     break;
                 case 2:
-                    int year = JOptionPaneConsoleIO.readInt("Enter year: ");
+                    int year = JOptionPaneConsoleIO.readIntInRange("Enter year: ", LocalDate.now().getYear(), LocalDate.now().getYear() + 5);
                     
                     if (year == -1){
                         update = 3;
@@ -276,23 +277,37 @@ public class DoctorUI {
                 case 3:
                     boolean repeatReport = false;
                     do {    
-                        String[] reportOp = {"Annual Doctor Attendance Report", "Specialization Inventory Report", "Cancel"};
+                        String[] reportOp = {"Annual Doctor Attendance Report", "Specialization Inventory Report", "Back"};
                         int reportChoice = JOptionPaneConsoleIO.readOption("Which report would you like to generate?", "Generate Report", reportOp);
 
                         switch (reportChoice) {
                             case 0:
                                 // Annual Doctor Attendance Report
                                 StringBuilder attReport = new StringBuilder(4096);
-                                int yearToGen = JOptionPaneConsoleIO.readInt("Enter year: ");
+                                int yearToGen = JOptionPaneConsoleIO.readIntInRange("Enter year: ", LocalDate.now().getYear() - 5, LocalDate.now().getYear());
 
                                 if (yearToGen == -1){
                                     repeatReport = true;
                                     continue;
                                 }
 
-                                for (int i = 0; i < dm.doctorAmount(); i++){
-                                    ReportGen.yearlyAttendanceRate(doctors[i].getDoctorID().trim(), yearToGen, true, attReport);
+                                attReport.append(JOptionPaneConsoleIO.reportHeader(
+                                        "Doctor Management Module", 
+                                        "Doctor Yearly Attendance Report", 
+                                        WIDTH
+                                ));
+                                
+                                for (int i = 0; i < dm.doctorAmount(); i++) {
+                                    String regDateStr = doctors[i].getDoctorID().substring(1, doctors[i].getDoctorID().length() - 4);
+                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                                    LocalDate regDate = LocalDate.parse(regDateStr, formatter);
+
+                                    if (regDate.getYear() <= yearToGen) {
+                                        ReportGen.yearlyAttendanceRate(doctors[i].getDoctorID().trim(), yearToGen, true, attReport);
+                                    }
                                 }
+                                
+                                attReport.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
 
                                 JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + attReport + "</pre></html>");
                                 repeatReport = true;
@@ -300,7 +315,17 @@ public class DoctorUI {
                             case 1:
                                 // Clinic Specialization Inventory
                                 StringBuilder inv = new StringBuilder(2048);
+                                
+                                inv.append(JOptionPaneConsoleIO.reportHeader(
+                                        "Doctor Management Module", 
+                                        "Clinic Specialization Inventory Report", 
+                                        WIDTH
+                                ));
+                                
                                 ReportGen.specializationInventory(inv);
+                                
+                                inv.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
+                                
                                 JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + inv + "</pre></html>");
                                 repeatReport = true;
                                 break;
@@ -418,8 +443,9 @@ public class DoctorUI {
     }
     
     private int infoModification(){
-        String infoSelection = "Which information would you like to update?\n[1] Name\n[2] Phone Number\n[3] Email Address\n[4] Specialization\n";
-        return JOptionPaneConsoleIO.readInt(infoSelection);
+        String[] updateOp = {"Name", "Phone Number", "Email Address", "Specialization", "Back"};
+        String infoSelection = "Which information would you like to update?";
+        return JOptionPaneConsoleIO.readOption(infoSelection, "Information Modification Options", updateOp) + 1;
     }
     
     public String buildMonthlyRosterByWeeks(String doctorID, int year, int month) {
@@ -513,7 +539,7 @@ public class DoctorUI {
     }
     
     private int dutyOpPrompt(String table, int year, int month, String doctorID){
-        String[] DutyOp = {"Update", "Other Month", "Cancel"};
+        String[] DutyOp = {"Update", "Other Month", "Back"};
         
         int dutyChoice = JOptionPaneConsoleIO.readOption("<html><pre style='font-family:monospace'>" + table + "</pre></html>", "Duty Roster", DutyOp);
         

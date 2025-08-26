@@ -9,7 +9,6 @@ import utility.*;
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
     Validation validate = new Validation();
-    DoctorDutyManagement DocDuty = new DoctorDutyManagement();
     
     public boolean isEmptyTree() {
         return doctorTree.isEmpty();
