@@ -4,7 +4,7 @@ import adt.LinkedQueue;
 import control.MedicalTreatmentManagement;
 import entity.Patient;
 import entity.TreatmentRecord;
-import utility.ConsoleIO;
+import utility.ScannerConsoleIO;
 import utility.IDGenerator;
 import utility.IDType;
 
@@ -32,7 +32,7 @@ public class MedicalTreatmentUI {
             System.out.println("0. Back / Exit");
             
             // validation
-            int choice = ConsoleIO.readIntInRange(sc, "Choice: ", 0, 4);
+            int choice = ScannerConsoleIO.readIntInRange(sc, "Choice: ", 0, 4);
             switch (choice) {
                 case 1: addPatientFlow(sc); break;
                 case 2: serveNextFlow(sc); break;
@@ -47,13 +47,13 @@ public class MedicalTreatmentUI {
         String id = IDGenerator.next(IDType.PATIENT);
         System.out.println("Generated Patient ID: " + id);
 
-        String name = ConsoleIO.readNonEmpty(sc, "Name: ");
-        String contact = ConsoleIO.readNonEmpty(sc, "Contact No: ");
-        String email = ConsoleIO.readNonEmpty(sc, "Email: ");
-        // Use ConsoleIO to read enums (it expects allowed names array)
-        entity.Gender gender = ConsoleIO.readEnum(sc, "Gender", entity.Gender.class, new String[]{"MALE","FEMALE","OTHER"});
-        int age = ConsoleIO.readIntInRange(sc, "Age: ", 0, 150);
-        entity.VisitType vt = ConsoleIO.readEnum(sc, "Visit Type", entity.VisitType.class, new String[]{"WALK_IN","APPOINTMENT"});
+        String name = ScannerConsoleIO.readNonEmpty(sc, "Name: ");
+        String contact = ScannerConsoleIO.readNonEmpty(sc, "Contact No: ");
+        String email = ScannerConsoleIO.readNonEmpty(sc, "Email: ");
+        // Use ScannerConsoleIO to read enums (it expects allowed names array)
+        entity.Gender gender = ScannerConsoleIO.readEnum(sc, "Gender", entity.Gender.class, new String[]{"MALE","FEMALE","OTHER"});
+        int age = ScannerConsoleIO.readIntInRange(sc, "Age: ", 0, 150);
+        entity.VisitType vt = ScannerConsoleIO.readEnum(sc, "Visit Type", entity.VisitType.class, new String[]{"WALK_IN","APPOINTMENT"});
         LocalTime arrival = LocalTime.now();
 
         Patient p = new Patient(id, name, contact, email, gender, age, vt, arrival);
@@ -66,8 +66,8 @@ public class MedicalTreatmentUI {
             System.out.println("No patients waiting.");
             return;
         }
-        String diag = ConsoleIO.readNonEmpty(sc, "Diagnosis: ");
-        String treat = ConsoleIO.readNonEmpty(sc, "Treatment: ");
+        String diag = ScannerConsoleIO.readNonEmpty(sc, "Diagnosis: ");
+        String treat = ScannerConsoleIO.readNonEmpty(sc, "Treatment: ");
         
         entity.Patient served = control.serveNextPatient(diag, treat);
         if (served != null) {
@@ -82,16 +82,16 @@ public class MedicalTreatmentUI {
     }
 
     private void addTreatmentByIdFlow(Scanner sc) {
-        String pid = ConsoleIO.readNonEmpty(sc, "Patient ID: ");
-        String diag = ConsoleIO.readNonEmpty(sc, "Diagnosis: ");
-        String treat = ConsoleIO.readNonEmpty(sc, "Treatment: ");
+        String pid = ScannerConsoleIO.readNonEmpty(sc, "Patient ID: ");
+        String diag = ScannerConsoleIO.readNonEmpty(sc, "Diagnosis: ");
+        String treat = ScannerConsoleIO.readNonEmpty(sc, "Treatment: ");
         TreatmentRecord rec = new TreatmentRecord(IDGenerator.next(IDType.TREATMENT), pid, diag, treat, LocalDateTime.now());
         boolean ok = control.addTreatmentById(pid, rec);
         System.out.println(ok ? "Treatment recorded." : "Patient not found.");
     }
 
     private void viewHistoryFlow(Scanner sc) {
-        String pid = ConsoleIO.readNonEmpty(sc, "Patient ID: ");
+        String pid = ScannerConsoleIO.readNonEmpty(sc, "Patient ID: ");
         var ph = control.findHistory(pid);
         if (ph == null) {
             System.out.println("Patient not found.");
