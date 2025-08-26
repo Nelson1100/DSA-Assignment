@@ -158,31 +158,67 @@ public class PatientProfileUI {
         boolean valid = false;
         
         do {
-            newValue = JOptionPaneConsoleIO.readNonEmpty("Enter new value:");
-            
-            if (newValue == null) return;
-            
-            valid = switch (field) {
-                case 1 -> validate.validName(newValue);
-                case 2 -> validate.validPhone(validate.standardizedPhone(newValue));
-                case 3 -> validate.validEmail(newValue.toLowerCase());
-                case 4 -> validate.validGender(newValue);
-                case 5 -> validate.validNumber(newValue, 0, 120);
-                default -> false;
-            };
-            
-            if (!valid) {
-                JOptionPaneConsoleIO.showError("Invalid input for the selected field.");
-            }
-        } while (!valid);
-        
-        // Standardize name, phone or email
+        newValue = JOptionPaneConsoleIO.readNonEmpty("Enter new value:");
+
+        if (newValue == null) return;
+
         switch (field) {
-            case 1 -> newValue = validate.standardizedName(newValue);
-            case 2 -> newValue = validate.standardizedPhone(newValue);
-            case 3 -> newValue = newValue.toLowerCase();
-            default -> {}
+            case 1: // Name
+                newValue = validate.standardizedName(newValue);
+                valid = validate.validName(newValue);
+                break;
+
+            case 2: // Phone
+                newValue = validate.standardizedPhone(newValue);
+                if (!validate.validPhone(newValue)) {
+                    JOptionPaneConsoleIO.showError("Please enter a valid Malaysian contact number (+60).");
+                    valid = false;
+                } else if (!newValue.equals(tempPatient.getContactNo()) &&
+                        pm.findPatientByPhone(newValue) != null) {
+                    JOptionPaneConsoleIO.showError("Contact number is already registered.");
+                    valid = false;
+                } else {
+                    valid = true;
+                }
+                break;
+
+            case 3: // Email
+                newValue = newValue.toLowerCase();
+                if (!validate.validEmail(newValue)) {
+                    JOptionPaneConsoleIO.showError("Please enter a valid email address.");
+                    valid = false;
+                } else if (!newValue.equals(tempPatient.getEmail()) &&
+                        pm.findPatientByEmail(newValue) != null) {
+                    JOptionPaneConsoleIO.showError("Email is already registered.");
+                    valid = false;
+                } else {
+                    valid = true;
+                }
+                break;
+
+            case 4: // Gender
+                valid = validate.validGender(newValue);
+                if (!valid) {
+                    JOptionPaneConsoleIO.showError("Please enter MALE or FEMALE.");
+                }
+                break;
+
+            case 5: // Age
+                valid = validate.validNumber(newValue, 0, 120);
+                if (!valid) {
+                    JOptionPaneConsoleIO.showError("Please enter a valid age (0–120).");
+                }
+                break;
+
+            default:
+                valid = false;
         }
+
+        if (!valid && field != 2 && field != 3 && field != 4 && field != 5) {
+            JOptionPaneConsoleIO.showError("Invalid input for the selected field.");
+        }
+
+    } while (!valid);
         
         boolean success = pm.updatePatientField(tempPatient.getPatientID(), field, newValue);
         
