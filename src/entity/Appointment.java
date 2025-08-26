@@ -7,7 +7,7 @@ public class Appointment implements Comparable<Appointment> {
     private final String appointmentID;
     private final String patientID;
     private final String doctorID;
-    private final String consultationID; // Related consultation
+    private final String consultationID; 
     private final LocalDateTime appointmentDateTime;
     private String purpose;
     private AppointmentStatus status;
@@ -25,7 +25,6 @@ public class Appointment implements Comparable<Appointment> {
         this.notes = "";
     }
     
-    // Getters
     public String getAppointmentID() { return appointmentID; }
     public String getPatientID() { return patientID; }
     public String getDoctorID() { return doctorID; }
@@ -35,12 +34,10 @@ public class Appointment implements Comparable<Appointment> {
     public AppointmentStatus getStatus() { return status; }
     public String getNotes() { return notes; }
     
-    // Setters
     public void setPurpose(String purpose) { this.purpose = purpose; }
     public void setStatus(AppointmentStatus status) { this.status = status; }
     public void setNotes(String notes) { this.notes = notes; }
     
-    // Business methods
     public void confirmAppointment() {
         this.status = AppointmentStatus.CONFIRMED;
     }

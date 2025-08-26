@@ -64,21 +64,18 @@ public class ConsultationUI {
     
     private void startNewConsultation() {
         try {
-            // Get patient ID
             String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
             if (patientID == null || patientID.trim().isEmpty()) {
                 JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
                 return;
             }
             
-            // Validate patient exists
             Patient patient = patientManagement.findPatientByID(patientID.trim());
             if (patient == null) {
                 JOptionPaneConsoleIO.showError("Patient not found with ID: " + patientID);
                 return;
             }
             
-            // Show available doctors
             Doctor[] doctors = doctorManagement.getAllDoctor();
             if (doctors.length == 0) {
                 JOptionPaneConsoleIO.showError("No doctors available in the system.");
@@ -95,11 +92,10 @@ public class ConsultationUI {
                 "Select a doctor:", "Available Doctors", doctorOptions
             );
             
-            if (doctorChoice == -1) return; // User cancelled
+            if (doctorChoice == -1) return; 
             
             String doctorID = doctors[doctorChoice].getDoctorID();
             
-            // Start consultation
             String result = consultationManagement.startConsultation(patientID.trim(), doctorID);
             
             if (result.startsWith("Error:")) {
@@ -156,7 +152,6 @@ public class ConsultationUI {
             return;
         }
         
-        // Show current details
         JOptionPaneConsoleIO.showPlain(consultation.toString(), "Current Details");
         
         String symptoms = JOptionPane.showInputDialog("Enter Symptoms (current: " + 
@@ -166,7 +161,6 @@ public class ConsultationUI {
         String notes = JOptionPane.showInputDialog("Enter Notes (current: " + 
                       (consultation.getNotes().isEmpty() ? "None" : consultation.getNotes()) + "):");
         
-        // Use existing values if user provides empty input
         symptoms = (symptoms == null || symptoms.trim().isEmpty()) ? consultation.getSymptoms() : symptoms.trim();
         diagnosis = (diagnosis == null || diagnosis.trim().isEmpty()) ? consultation.getDiagnosis() : diagnosis.trim();
         notes = (notes == null || notes.trim().isEmpty()) ? consultation.getNotes() : notes.trim();
@@ -203,7 +197,6 @@ public class ConsultationUI {
             return;
         }
         
-        // Show current details
         JOptionPaneConsoleIO.showPlain(consultation.toString(), "Current Consultation");
         
         String finalDiagnosis = JOptionPaneConsoleIO.readNonEmpty("Enter Final Diagnosis:");
@@ -243,7 +236,6 @@ public class ConsultationUI {
             return;
         }
         
-        // Show current details
         JOptionPaneConsoleIO.showPlain(consultation.toString(), "Current Consultation");
         
         int confirm = JOptionPane.showConfirmDialog(null, 
@@ -303,7 +295,6 @@ public class ConsultationUI {
             return;
         }
         
-        // Get patient name for display
         Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
         String patientName = patient != null ? patient.getPatientName() : "Unknown";
         
@@ -456,7 +447,6 @@ public class ConsultationUI {
             return;
         }
         
-        // Show available doctors
         Doctor[] doctors = doctorManagement.getAllDoctor();
         if (doctors.length == 0) {
             JOptionPaneConsoleIO.showError("No doctors available in the system.");

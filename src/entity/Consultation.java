@@ -14,7 +14,6 @@ public class Consultation implements Comparable<Consultation> {
     private ConsultationStatus status;
     private TreatmentRecord treatmentRecord;
     
-    // Constructor for new consultation
     public Consultation(String consultationID, String patientID, String doctorID) {
         this.consultationID = consultationID;
         this.patientID = patientID;
@@ -27,7 +26,6 @@ public class Consultation implements Comparable<Consultation> {
         this.treatmentRecord = null;
     }
     
-    // Constructor with initial data
     public Consultation(String consultationID, String patientID, String doctorID, 
                        String symptoms, String diagnosis, String notes) {
         this.consultationID = consultationID;
@@ -41,7 +39,6 @@ public class Consultation implements Comparable<Consultation> {
         this.treatmentRecord = null;
     }
     
-    // Getters
     public String getConsultationID() {
         return consultationID;
     }
@@ -78,7 +75,6 @@ public class Consultation implements Comparable<Consultation> {
         return treatmentRecord;
     }
     
-    // Setters
     public void setSymptoms(String symptoms) {
         this.symptoms = symptoms;
     }
@@ -102,7 +98,6 @@ public class Consultation implements Comparable<Consultation> {
         }
     }
     
-    // Business methods
     public void completeConsultation(String diagnosis, String notes) {
         this.diagnosis = diagnosis;
         this.notes = notes;

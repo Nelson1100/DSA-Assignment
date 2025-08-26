@@ -11,16 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConsultationManagement {
-    /* ---------- Data Structures ---------- */
     
     private final AVLTree<ConsultationByID> idxByID = new AVLTree<>();
     private final AVLTree<ConsultationByPatientID> idxByPatientID = new AVLTree<>();
     private final AVLTree<ConsultationByDoctorID> idxByDoctorID = new AVLTree<>();
     
-    // Appointment management
     private final List<Appointment> appointments = new ArrayList<>();
     
-    // Dependencies
     private final PatientManagement patientManagement;
     private final DoctorManagement doctorManagement;
     private final MedicalTreatmentManagement treatmentManagement;
@@ -33,7 +30,6 @@ public class ConsultationManagement {
         this.treatmentManagement = treatmentManagement;
     }
     
-    /* ---------- Index Management ---------- */
     
     private void indexConsultation(Consultation consultation) {
         idxByID.insert(new ConsultationByID(consultation.getConsultationID(), consultation));
@@ -54,28 +50,20 @@ public class ConsultationManagement {
     /* ---------- Core Operations ---------- */
     
     public String startConsultation(String patientID, String doctorID) {
-        // Validate patient exists
         Patient patient = patientManagement.findPatientByID(patientID);
         if (patient == null) {
             return "Error: Patient not found with ID: " + patientID;
         }
         
-        // Validate doctor exists
         Doctor doctor = getDoctorByID(doctorID);
         if (doctor == null) {
             return "Error: Doctor not found with ID: " + doctorID;
         }
-        
-        // For now, we'll start consultation without checking active visit
-        // This can be enhanced later to integrate with visit queue
-        
-        // Generate consultation ID
+
         String consultationID = IDGenerator.next(IDType.CONSULTATION);
         
-        // Create consultation
         Consultation consultation = new Consultation(consultationID, patientID, doctorID);
         
-        // Index the consultation
         indexConsultation(consultation);
         
         return "Consultation started successfully. Consultation ID: " + consultationID;
@@ -113,7 +101,6 @@ public class ConsultationManagement {
             return "Error: Cannot complete a cancelled consultation.";
         }
         
-        // Complete the consultation
         consultation.completeConsultation(finalDiagnosis, treatmentNotes);
         
         return "Consultation completed successfully.";
@@ -276,16 +263,13 @@ public class ConsultationManagement {
             return "Error: Can only schedule follow-up appointments for completed consultations.";
         }
         
-        // Validate doctor exists
         Doctor doctor = getDoctorByID(consultation.getDoctorID());
         if (doctor == null) {
             return "Error: Doctor not found for consultation.";
         }
         
-        // Generate appointment ID
         String appointmentID = IDGenerator.next(IDType.APPOINTMENT);
         
-        // Create appointment
         Appointment appointment = new Appointment(
             appointmentID,
             consultation.getPatientID(),
@@ -301,27 +285,23 @@ public class ConsultationManagement {
     }
     
     public String scheduleAppointment(String patientID, String doctorID, LocalDateTime appointmentDateTime, String purpose) {
-        // Validate patient exists
         Patient patient = patientManagement.findPatientByID(patientID);
         if (patient == null) {
             return "Error: Patient not found with ID: " + patientID;
         }
         
-        // Validate doctor exists
         Doctor doctor = getDoctorByID(doctorID);
         if (doctor == null) {
             return "Error: Doctor not found with ID: " + doctorID;
         }
         
-        // Generate appointment ID
         String appointmentID = IDGenerator.next(IDType.APPOINTMENT);
         
-        // Create appointment
         Appointment appointment = new Appointment(
             appointmentID,
             patientID,
             doctorID,
-            null, // No related consultation for direct appointments
+            null, 
             appointmentDateTime,
             purpose
         );
@@ -375,7 +355,6 @@ public class ConsultationManagement {
         sb.append(String.format("  Cancellation Rate: %.1f%%\n", total > 0 ? (cancelled * 100.0 / total) : 0));
         sb.append(String.format("  Active Consultations: %d\n\n", active));
         
-        // Doctor performance summary
         sb.append("Doctor Performance Summary:\n");
         Doctor[] doctors = doctorManagement.getAllDoctor();
         for (Doctor doctor : doctors) {
@@ -386,7 +365,6 @@ public class ConsultationManagement {
             }
         }
         
-        // Upcoming appointments
         List<Appointment> upcoming = getUpcomingAppointments();
         sb.append(String.format("\nUpcoming Appointments: %d\n", upcoming.size()));
         
@@ -409,7 +387,6 @@ public class ConsultationManagement {
         sb.append(String.format("  Completed: %d\n", completedAppointments));
         sb.append(String.format("  Cancelled: %d\n\n", cancelledAppointments));
         
-        // Upcoming appointments details
         List<Appointment> upcoming = getUpcomingAppointments();
         sb.append("Upcoming Appointments:\n");
         if (upcoming.isEmpty()) {
