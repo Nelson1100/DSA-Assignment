@@ -2,82 +2,85 @@ package entity;
 
 import java.time.LocalDate;
 
-public class StockBatch implements Comparable<StockBatch>{
-    private String batchID;
-    private String medicineID;
+public class StockBatch implements Comparable<StockBatch> {
+
+    private final String batchID;
+    private final MedicineName medicineName;
     private int stockQty;
     private LocalDate expiryDate;
     private LocalDate receivedDate;
-    
-    public StockBatch(String batchID, String medicineID, int stockQty, LocalDate expiryDate, LocalDate receivedDate){
+
+    public StockBatch(String batchID, MedicineName medicineName, int stockQty,
+            LocalDate expiryDate, LocalDate receivedDate) {
         this.batchID = batchID;
-        this.medicineID = medicineID;
+        this.medicineName = medicineName;
         this.stockQty = stockQty;
         this.expiryDate = expiryDate;
         this.receivedDate = receivedDate;
     }
-        
-    public String getBatchID(){
+
+    // Getters & setters (no validation)
+    public String getBatchID() {
         return batchID;
     }
-    
-    public String getMedicineID(){
-        return medicineID;
+
+    public MedicineName getMedicineName() {
+        return medicineName;
     }
-    
-    public int getStockQty(){
+
+    public int getStockQty() {
         return stockQty;
     }
-    
-    public LocalDate getExpiryDate(){
+
+    public LocalDate getExpiryDate() {
         return expiryDate;
     }
-    
-    public LocalDate getReceivedDate(){
+
+    public LocalDate getReceivedDate() {
         return receivedDate;
     }
-    
-    public void setBatchID(String batchID){
-        this.batchID = batchID;
-    }
-    
-    public void setMedicineID(String medicineID){
-        this.medicineID = medicineID;
-    }
-    
-    public void setStockQty(int stockQty){
+
+    public void setStockQty(int stockQty) {
         this.stockQty = stockQty;
     }
-    
-    public void setExpiryDate(LocalDate expiryDate){
+
+    public void setExpiryDate(LocalDate expiryDate) {
         this.expiryDate = expiryDate;
     }
-    
-    public void setReceivedDate(LocalDate receivedDate){
+
+    public void setReceivedDate(LocalDate receivedDate) {
         this.receivedDate = receivedDate;
     }
-    
+
+    // Operations
+    public void add(int qty) {
+        this.stockQty += qty;
+    }
+
+    public boolean deduct(int qty) {
+        if (qty > stockQty) {
+            return false;
+        }
+        this.stockQty -= qty;
+        return true;
+    }
+
     public String stockKey() {
-        return medicineID + "#" + batchID;
+        return medicineName.name() + "#" + batchID;
     }
-    
-    // add
-    public void add(int stockQty) {
-        this.stockQty += stockQty;
-   }
-    
-    // remove
-    public void deduct(int stockQty) { 
-        this.stockQty -= stockQty; 
+
+    @Override
+    public int compareTo(StockBatch other) {
+        int c = this.medicineName.name().compareTo(other.medicineName.name());
+        if (c != 0) {
+            return c;
+        }
+        return this.batchID.compareTo(other.batchID);
     }
-    
-    public int compareTo(StockBatch other){
-        return this.stockKey().compareTo(other.stockKey());
-    }
-    
+
     @Override
     public String toString() {
         return String.format("StockBatch{batch=%s, med=%s, stockQty=%d, expiry=%s, received=%s}",
-                batchID, medicineID, stockQty, expiryDate, receivedDate);
+                batchID, medicineName, stockQty, expiryDate, receivedDate);
     }
 }

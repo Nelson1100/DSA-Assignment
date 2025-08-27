@@ -55,7 +55,7 @@ public class MainUI {
                 case 1 -> JOptionPane.showMessageDialog(null, "Doctor Module: Not yet implemented.");
                 case 2 -> new ConsultationUI(cm, pm, dm).run();
                 case 3 -> JOptionPane.showMessageDialog(null, "Medical Treatment Module: Not yet implemented.");
-                case 4 -> JOptionPane.showMessageDialog(null, "Pharmacy Module: Not yet implemented.");
+                case 4 -> new PharmacyModuleUI().run();
             }
         } while (choice != 5 && choice != -1);
     }

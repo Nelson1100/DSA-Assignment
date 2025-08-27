@@ -1,6 +1,6 @@
 package control;
 
-import adt.AVL_Tree;
+import adt.AVLTree;
 import adt.LinkedQueue;
 import adt.QueueInterface;
 import adt.QueueIterator;
