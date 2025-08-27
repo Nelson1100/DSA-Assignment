@@ -1,8 +1,11 @@
 package entity;
 
 import adt.LinkedQueue;
+import utility.IDGenerator;
+import utility.IDType;
 
 public class Prescription {
+    private String prescriptionID;
     private String patientID;
     private String doctorID;
     private LinkedQueue<PrescriptionItem> items;
@@ -12,7 +15,11 @@ public class Prescription {
         this.doctorID = doctorID;
         this.items = new LinkedQueue<>();
     }
-
+    
+    public String getPrescriptionID() {
+        return prescriptionID;
+    }
+    
     public String getPatientID() {
         return patientID;
     }
@@ -31,7 +38,8 @@ public class Prescription {
 
     @Override
     public String toString() {
-        return "Prescription for patient " + patientID + " by Dr. " + doctorID;
+        return String.format("Prescription ID : %s\nPatient ID     : %s\nDoctor ID      : %s",
+                prescriptionID, patientID, doctorID);
     }
 }
 

@@ -10,8 +10,7 @@ public enum IDType {
     PRESCRIPTION("PR"),
     DISPENSE("DP"),
     MEDICINE("M"),
-    BATCH("B"),
-    STOCK_TXN("STK"),
+    STOCKBATCH("B"),
     INVOICE("INV");
     
     private final String prefix;

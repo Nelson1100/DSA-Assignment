@@ -1,18 +1,18 @@
 package entity;
 
 public class PrescriptionItem {
-    private String medicineID;
+    private MedicineName medicineName;
     private int prescribedQty;
     private String dosageInstruction;  // for example this kind "2 tablets twice daily"
 
-    public PrescriptionItem(String medicineID, int prescribedQty, String dosageInstruction) {
-        this.medicineID = medicineID;
+    public PrescriptionItem(MedicineName medicineName, int prescribedQty, String dosageInstruction) {
+        this.medicineName = medicineName;
         this.prescribedQty = prescribedQty;
         this.dosageInstruction = dosageInstruction;
     }
 
-    public String getMedicineID() {
-        return medicineID;
+    public MedicineName getMedicineName() {
+        return medicineName;
     }
 
     public int getPrescribedQty() {
@@ -25,7 +25,7 @@ public class PrescriptionItem {
 
     @Override
     public String toString() {
-        return medicineID + " x" + prescribedQty + " (" + dosageInstruction + ")";
+        return medicineName + " x" + prescribedQty + " (" + dosageInstruction + ")";
     }
 }
 

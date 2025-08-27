@@ -1,64 +1,58 @@
 package entity;
 
 
-public class Medicine implements Comparable<Medicine>{
-    private String medicineID;
-    private String medicineName;
-    private String medicineCategory;
-    private String medicineDosage;
+public class Medicine{
+    private MedicineName medicineName;
+    private String medicineDescription;
+    private String medicineManufacturer;
     private double unitPrice;
     
-    public Medicine (String medicineID, String medicineName, String medicineCategory, String medicineDosage, double unitPrice){
-        this.medicineID = medicineID;
+    public Medicine (MedicineName medicineName, String medicineDescription, String medicineManufacturer, double unitPrice){
         this.medicineName = medicineName;
-        this.medicineCategory = medicineCategory;
-        this.medicineDosage = medicineDosage;
+        this.medicineDescription = medicineDescription;
+        this.medicineManufacturer = medicineManufacturer;
         this.unitPrice= unitPrice;
     }
     
-    public String getMedicineID(){
-        return medicineID;
-    }
-    
-    public String getMedicineName(){
+    public MedicineName getMedicineName(){
         return medicineName;
     }
     
-    public String getMedicineCategory(){
-        return medicineCategory;
+    public MedicineType getType(){
+        return medicineName.getType();
     }
     
-    public String getMedicineDosage(){
-        return medicineDosage;
+    public String getMedicineDescription(){
+        return medicineDescription;
+    }
+    
+    public String getMedicineManufacturer(){
+        return medicineManufacturer;
     }
     
     public double getUnitPrice(){
         return unitPrice;
     }
     
-    public void setMedicineName(String medicineName){
-        this.medicineName= medicineName;
+    public void setMedicineDescription (String medicineDescription){
+        this.medicineDescription = medicineDescription;
     }
     
-    public void setMedicineCategory (String medicineCategory){
-        this.medicineCategory = medicineCategory;
-    }
-    
-    public void setMedicineDosage (String medicineDosage){
-        this.medicineDosage = medicineDosage;
+    public void setMedicineManufacturer(String medicineManufacturer){
+        this.medicineManufacturer = medicineManufacturer;
     }
     
     public void setUnitPrice (double unitPrice) {
         this.unitPrice = unitPrice;
     }
     
-    @Override
-    public int compareTo(Medicine other) {
-        return this.medicineID.compareTo(other.medicineID);
-    }
-    
-    @Override
     public String toString() {
-        return medicineID + ", " + medicineName + ", " + medicineDosage + " (" + medicineCategory + ") " + ", min = " + unitPrice;
+        return String.format("%s (%s) - %s | Manufacturer: %s | Price: RM %.2f",
+                medicineName.name(),
+                medicineName.getType(),
+                medicineDescription != null ? medicineDescription : "No description",
+                medicineManufacturer != null ? medicineManufacturer : "Unknown",
+                unitPrice
+        );
     }
 }
