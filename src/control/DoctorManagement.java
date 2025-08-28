@@ -1,7 +1,6 @@
 package control;
 
-import adt.AVLInterface;
-import adt.AVLTree;
+import adt.*;
 import entity.Doctor;
 import entity.Specialization;
 import utility.*;
@@ -9,6 +8,7 @@ import utility.*;
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
     Validation validate = new Validation();
+    private final LinkedStack<Doctor> undoStack = new LinkedStack<>();
     
     public boolean isEmptyTree() {
         return doctorTree.isEmpty();
@@ -32,20 +32,40 @@ public class DoctorManagement {
             return found;
     }
     
-    public boolean updateDoctor(Doctor doctor, int infoSelected, String newName, String newPhone, String newEmail, Specialization newSpecialization){
-        Doctor selectedDoc = searchByKey(doctor);
-        
-        switch (infoSelected){
-            case 1:
-                return modifyName(selectedDoc, newName);
-            case 2:
-                return modifyPhone(selectedDoc, newPhone);
-            case 3:
-                return modifyEmail(selectedDoc, newEmail);
-            case 4:
-                return modifySpecialization(selectedDoc, newSpecialization);
+    public boolean updateDoctor(Doctor key, int infoSelected, String newName, String newPhone, String newEmail, Specialization newSpecialization) {
+        Doctor selectedDoc = searchByKey(key);
+        if (selectedDoc == null) return false;
+
+        Doctor snapshot = selectedDoc.clone();
+
+        boolean ok;
+        switch (infoSelected) {
+            case 1 -> ok = modifyName(selectedDoc, newName);
+            case 2 -> ok = modifyPhone(selectedDoc, newPhone);
+            case 3 -> ok = modifyEmail(selectedDoc, newEmail);
+            case 4 -> ok = modifySpecialization(selectedDoc, newSpecialization);
+            default -> { return false; }
         }
-        return false;
+
+        if (ok) {
+            undoStack.push(snapshot);
+        }
+        return ok;
+    }
+    
+    public boolean undoLastEdit() {
+        if (undoStack.isEmpty())
+            return false;
+        
+        Doctor prev = undoStack.pop();
+
+        // Replace current record with the previous snapshot
+        Doctor current = searchByKey(new Doctor(prev.getDoctorID(), "", "", "", prev.getSpecialization(), prev.getIcNo()));
+        if (current != null) {
+            doctorTree.delete(current);
+        }
+        doctorTree.insert(prev);
+        return true;
     }
     
     public boolean removeDoctor(Doctor doctor){
@@ -58,10 +78,37 @@ public class DoctorManagement {
         return doctorTree.toArrayInorder(doctors);
     }
     
+    public StringBuilder listDoctor(){
+        final int width = 130;
+        StringBuilder sb = new StringBuilder();
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Doctor List", width));
+        sb.append(String.format("%-15s %-25s %-15s %-10s %-15s %-25s %-20s\n", 
+                "Doctor ID", "Name", "IC Number", "Gender", "Contact", "Email", "Specialization"));
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+                
+        for (Doctor d : doctorTree) {
+            sb.append(String.format("%-15s %-25s %-15s %-10s %-15s %-25s %-20s\n",
+                d.getDoctorID(),
+                d.getDoctorName(),
+                d.getIcNo(),
+                validate.getGenderFromIC(d.getIcNo()),
+                d.getContactNo(),
+                d.getEmail(),
+                d.getSpecialization()
+            ));
+        }
+        
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+        return sb;
+    }
+    
     // Implementation Classes
     private boolean doctorRegistration(Doctor doctor){
         String phone = validate.standardizedPhone(doctor.getContactNo());
         doctor.setContactNo(phone);
+        String icNo = validate.standardizedIC(doctor.getIcNo());
+        doctor.setIcNo(icNo);
         return doctorTree.insert(doctor);
     }
     
@@ -75,6 +122,12 @@ public class DoctorManagement {
                 return doc;
             if (!doctor.getEmail().isEmpty() && doctor.getEmail().equals(doc.getEmail()))
                 return doc;
+            if (!doctor.getIcNo().isEmpty()) {
+                String a = doctor.getIcNo().replaceAll("\\D", "");
+                String b = doc.getIcNo().replaceAll("\\D", "");
+                if (a.length() == 12 && b.length() == 12 && a.equals(b)) 
+                    return doc;
+            }
         }
         return null;
     }

@@ -29,13 +29,13 @@ public class DoctorUI {
     
     public void taskSelection(){
         boolean newTask = true;
-        String[] menu = {"Register", "Search", "Duty By Date", "Report", "Back"};
-        String[] updateOption = {"Update", "Remove", "Duty", "Back"};
+        String[] menu = {"Register", "Search", "Doctor List", "Duty By Date", "Report", "Back"};
+        String[] updateOption = {"Update", "Remove", "Duty", "Update Last Edit", "Back"};
         
         // Hardcoded doctor information
-        Doctor A = new Doctor("D202408110001", "Nelson", "0182284609", "nelson@gmail.com", Specialization.PSYCHIATRY);
-        Doctor B = new Doctor(IDGenerator.next(IDType.DOCTOR), "Choonni", "0121234567", "cn@gmail.com", Specialization.NEUROLOGY);
-        Doctor C = new Doctor(IDGenerator.next(IDType.DOCTOR), "WeiJian", "0121234567", "wj@gmail.com", Specialization.CARDIOLOGY);
+        Doctor A = new Doctor("D202408110001", "Nelson", "0182284609", "nelson@gmail.com", Specialization.PSYCHIATRY, "050715070395");
+        Doctor B = new Doctor(IDGenerator.next(IDType.DOCTOR), "Khor Kai Yang", "0121234567", "ky@gmail.com", Specialization.NEUROLOGY, "050704070498");
+        Doctor C = new Doctor(IDGenerator.next(IDType.DOCTOR), "Ng Wei Jian", "0121234567", "wj@gmail.com", Specialization.CARDIOLOGY, "050123071233");
         dm.registerDoctor(A);
         dm.registerDoctor(B); 
         dm.registerDoctor(C);
@@ -196,12 +196,29 @@ public class DoctorUI {
                                         break;
                                 }
                             } while (update == 2 || update == 1 || update == 0 || update == 4);
+                        } else if (updateChoice == 3) {
+                            if (dm.undoLastEdit()) {
+                                JOptionPaneConsoleIO.showInfo("Last edit undone.");
+                                result = dm.findDoctor(new Doctor(result.getDoctorID(), "", "", "", null, ""));
+                            } else {
+                                JOptionPaneConsoleIO.showError("No edits to undo.");
+                            }
+                            update = 3;
+                            continue;
                         } else {
                             break;
                         }
                     } while (update == 3);
                     break;
                 case 2:
+                    // List all doctor
+                    if (doctors == null) {
+                        JOptionPaneConsoleIO.showError("No doctor found.");
+                    } else {
+                        JOptionPaneConsoleIO.showMonospaced("Doctor List", dm.listDoctor().toString());
+                    }
+                    break;
+                case 3:
                     int year = JOptionPaneConsoleIO.readIntInRange("Enter year: ", LocalDate.now().getYear(), LocalDate.now().getYear() + 5);
                     
                     if (year == -1){
@@ -259,7 +276,7 @@ public class DoctorUI {
                         for (int i = 0; i < arr.length; i++) {
                             DoctorDuty d = arr[i];
 
-                            Doctor searchKey = new Doctor(d.getDoctorID(), "", "", "", null);
+                            Doctor searchKey = new Doctor(d.getDoctorID(), "", "", "", null, "");
                             Doctor doctor = dm.findDoctor(searchKey);
 
                             String name = (doctor != null ? doctor.getDoctorName() : d.getDoctorID());
@@ -274,7 +291,7 @@ public class DoctorUI {
                     }
                     JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + sb + "</pre></html>");
                     break;
-                case 3:
+                case 4:
                     boolean repeatReport = false;
                     do {    
                         String[] reportOp = {"Annual Doctor Attendance Report", "Specialization Inventory Report", "Back"};
@@ -284,6 +301,7 @@ public class DoctorUI {
                             case 0:
                                 // Annual Doctor Attendance Report
                                 StringBuilder attReport = new StringBuilder(4096);
+                                boolean avaiDoc = false;
                                 int yearToGen = JOptionPaneConsoleIO.readIntInRange("Enter year: ", LocalDate.now().getYear() - 5, LocalDate.now().getYear());
 
                                 if (yearToGen == -1){
@@ -293,7 +311,7 @@ public class DoctorUI {
 
                                 attReport.append(JOptionPaneConsoleIO.reportHeader(
                                         "Doctor Management Module", 
-                                        "Doctor Yearly Attendance Report", 
+                                        "Doctor Annual Attendance Report", 
                                         WIDTH
                                 ));
                                 
@@ -304,12 +322,17 @@ public class DoctorUI {
 
                                     if (regDate.getYear() <= yearToGen) {
                                         ReportGen.yearlyAttendanceRate(doctors[i].getDoctorID().trim(), yearToGen, true, attReport);
+                                        avaiDoc = true;
                                     }
                                 }
                                 
                                 attReport.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
-
-                                JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + attReport + "</pre></html>");
+                                
+                                if (avaiDoc){
+                                    JOptionPaneConsoleIO.showMonospaced("Annual Attendance Report", attReport.toString());
+                                } else {
+                                    JOptionPaneConsoleIO.showError("No doctor available in this year.");
+                                }
                                 repeatReport = true;
                                 break;
                             case 1:
@@ -326,7 +349,7 @@ public class DoctorUI {
                                 
                                 inv.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
                                 
-                                JOptionPaneConsoleIO.showInfo("<html><pre style='font-family:monospace'>" + inv + "</pre></html>");
+                                JOptionPaneConsoleIO.showMonospaced("Clinic Specilization Inventory Report", inv.toString());
                                 repeatReport = true;
                                 break;
                             case 2:
@@ -337,7 +360,7 @@ public class DoctorUI {
                         }
                     } while (repeatReport);
                     break;
-                case 4:
+                case 5:
                     // End performing task
                     newTask = false;
                     break;
@@ -353,6 +376,7 @@ public class DoctorUI {
         String phone;
         String email;
         Specialization specialization;
+        String icNo;
         String id = IDGenerator.next(IDType.DOCTOR);
                 
         do {
@@ -364,13 +388,32 @@ public class DoctorUI {
             
             if (validate.validName(name)) {
                 name = validate.standardizedName(name);
-                doctor = new Doctor("", name, "","", null);
+                doctor = new Doctor("", name, "","", null, "");
                 if (dm.findDoctor(doctor) == null)
                     valid = true;
                 else
                     JOptionPaneConsoleIO.showError("Doctor name existed in the doctor record.");
             } else 
                 JOptionPaneConsoleIO.showError("Please enter a valid name.");
+        } while (!valid);
+        
+        do {
+            valid = false;
+            icNo = JOptionPaneConsoleIO.readNonEmpty("Enter IC Number: ");
+            
+            if (icNo == null)
+                return null;
+            
+            icNo = validate.standardizedIC(icNo);
+            
+            if (validate.validIC(icNo)) {
+                doctor = new Doctor("", "", "","", null, icNo);
+                if (dm.findDoctor(doctor) == null)
+                    valid = true;
+                else
+                    JOptionPaneConsoleIO.showError("Doctor name existed in the doctor record.");
+            } else 
+                JOptionPaneConsoleIO.showError("Please enter a valid IC number.");
         } while (!valid);
         
         do {
@@ -383,7 +426,7 @@ public class DoctorUI {
             phone = validate.standardizedPhone(phone);
             
             if (validate.validPhone(phone)) {
-                doctor = new Doctor("", "", phone, "", null);
+                doctor = new Doctor("", "", phone, "", null, "");
                 if (dm.findDoctor(doctor) == null)
                     valid = true;
                 else
@@ -400,7 +443,7 @@ public class DoctorUI {
                 return null;
             
             if (validate.validEmail(email)) {
-                doctor = new Doctor("", "", "", email, null);
+                doctor = new Doctor("", "", "", email, null, "");
                 if (dm.findDoctor(doctor) == null)
                     valid = true;
                 else
@@ -414,7 +457,7 @@ public class DoctorUI {
         if (specialization == null)
             return null;
         
-        doctor = new Doctor (id, name, phone, email, specialization);
+        doctor = new Doctor (id, name, phone, email, specialization, icNo);
         return doctor;
     }
     
@@ -423,7 +466,8 @@ public class DoctorUI {
         String name = "";
         String phone = "";
         String email = "";
-        String detail = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID / Name / Phone / Email): ");
+        String icNo = "";
+        String detail = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID / Name / Phone / Email / IC: ");
         
         if (detail == null)
             return null;
@@ -434,11 +478,15 @@ public class DoctorUI {
         } else if (validate.validPhone(detail)) {
             phone = detail.trim();
             phone = validate.standardizedPhone(phone);
-        }
-        else if (validate.validEmail(detail))
+        } else if (validate.validEmail(detail))
             email = detail.trim();
+        else if (validate.validIC(detail)) {
+            icNo = detail.trim();
+            icNo = validate.standardizedIC(icNo);
+        } else 
+            id = detail.trim();
         
-        doctor = new Doctor(id, name, phone, email, null);
+        doctor = new Doctor(id, name, phone, email, null, icNo);
         return doctor;
     }
     
@@ -457,7 +505,7 @@ public class DoctorUI {
         DoctorDuty[][] roster = DocDuty.MonthlyRosterTableMatrix(doctorID, year, month, true);
 
         StringBuilder sb = new StringBuilder(8192);
-        Doctor doctorDuty = new Doctor(doctorID.trim(), "", "", "", null);
+        Doctor doctorDuty = new Doctor(doctorID.trim(), "", "", "", null, "");
         sb.append("Duty Roster for Dr. ").append(dm.findDoctor(doctorDuty).getDoctorName())
           .append(" — ").append(ym).append('\n')
           .append("Legend: ✅ Available   ❌ Unavailable   ⭕ On Leave   - No record\n");
