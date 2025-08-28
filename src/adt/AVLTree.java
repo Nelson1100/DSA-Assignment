@@ -1,5 +1,9 @@
 package adt;
 
+/**
+ *
+ * @author Group 3
+ */
 import java.util.Iterator;
 
 public class AVLTree<T extends Comparable<T>> implements AVLInterface<T>{

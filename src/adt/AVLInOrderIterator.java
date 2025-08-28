@@ -3,6 +3,10 @@ package adt;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ *
+ * @author Group 3
+ */
 public class AVLInOrderIterator<T extends Comparable<T>> implements Iterator<T> {
     private LinkedStack<AVLNode<T>> stack = new LinkedStack<>();
 
