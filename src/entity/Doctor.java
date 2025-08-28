@@ -1,6 +1,7 @@
 package entity;
 
 import entity.Specialization;
+import utility.Validation;
 
 public class Doctor implements Comparable<Doctor> {
 
@@ -9,18 +10,21 @@ public class Doctor implements Comparable<Doctor> {
     private String contactNo;
     private String email;
     private Specialization specialization;
+    private String icNo;
+    Validation validate = new Validation();
     
     // Constructor
     public Doctor(){
-        this("","","","", null);
+        this("","","","", null, "");
     }
     
-    public Doctor(String doctorID, String doctorName, String contactNo, String email, Specialization specialization){
+    public Doctor(String doctorID, String doctorName, String contactNo, String email, Specialization specialization, String icNo){
         this.doctorID = doctorID;
         this.doctorName = doctorName;
         this.contactNo = contactNo;
         this.email = email;
         this.specialization = specialization;
+        this.icNo = icNo;
     }
     
     // Getter
@@ -44,6 +48,10 @@ public class Doctor implements Comparable<Doctor> {
         return this.specialization;
     }
     
+    public String getIcNo(){
+        return this.icNo;
+    }
+    
     // Setter
     public void setDoctorID(String doctorID){
         this.doctorID = doctorID;
@@ -65,7 +73,24 @@ public class Doctor implements Comparable<Doctor> {
         this.specialization = specialization;
     }
     
+    public void setIcNo(String icNo){
+        this.icNo = icNo;
+    }
+    
     // Other methods
+    public Doctor(Doctor other) {
+        this.doctorID = other.doctorID;
+        this.doctorName = other.doctorName;
+        this.contactNo = other.contactNo;
+        this.email = other.email;
+        this.specialization = other.specialization;
+        this.icNo = other.icNo;
+    }
+    
+    public Doctor clone() {
+        return new Doctor(this);
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,6 +108,8 @@ public class Doctor implements Comparable<Doctor> {
     public String toString() {
         return "Doctor ID: " + doctorID + "\n" +
                "Doctor Name: " + doctorName + "\n" +
+               "IC Number: " + icNo + "\n" +
+               "Gender: " + validate.getGenderFromIC(icNo) + "\n" +
                "Contact No: " + contactNo + "\n" +
                "Email Address: " + email + "\n" +
                "Specialization: " + specialization;
