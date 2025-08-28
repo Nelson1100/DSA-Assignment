@@ -1,5 +1,9 @@
 package adt;
 
+/**
+ *
+ * @author Group 3
+ */
 public class AVLNode<T extends Comparable<T>> {
     private T key;
     private int height = 1;

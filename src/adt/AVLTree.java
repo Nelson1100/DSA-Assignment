@@ -1,5 +1,9 @@
 package adt;
 
+/**
+ *
+ * @author Group 3
+ */
 import java.util.Iterator;
 
 public class AVLTree<T extends Comparable<T>> implements AVLInterface<T>{
@@ -202,18 +206,6 @@ public class AVLTree<T extends Comparable<T>> implements AVLInterface<T>{
     public void clear() {
         root = null;
     }
-    
-//    public java.util.List<T> toListInorder() {
-//        java.util.List<T> out = new java.util.ArrayList<>();
-//        toListInorder(root, out);
-//        return out;
-//    }
-//    private void toListInorder(AVLNode<T> n, java.util.List<T> out){
-//        if (n == null) return;
-//        toListInorder(n.getLeft(), out);
-//        out.add(n.getKey());
-//        toListInorder(n.getRight(), out);
-//    }
     
     @Override
     public Iterator<T> iterator() {
