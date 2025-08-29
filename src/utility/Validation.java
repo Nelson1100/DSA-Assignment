@@ -95,6 +95,21 @@ public final class Validation {
         return sb.toString();
     }
     
+     public static String standardizedIC(String ic) {
+        if (ic == null)
+            return null;
+        
+        String digits = ic.replaceAll("\\D", "");
+        if (digits.length() != 12) 
+            return null;
+        
+        return digits.substring(0,6) + "-" + digits.substring(6,8) + "-" + digits.substring(8);
+    }
+    
+    public boolean validBatchID(String batchID) {
+        return batchID != null && batchID.matches("^SB\\d{5}$");
+    }
+    
     
     public boolean validQuantity(String input) {
         try {

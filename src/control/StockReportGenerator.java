@@ -1,85 +1,65 @@
 package control;
 
-
 import entity.MedicineName;
-import entity.StockBatch;
 import utility.JOptionPaneConsoleIO;
 
-
-import java.time.LocalDate;
-
+import java.util.*;
 
 public class StockReportGenerator {
-private final StockMaintenance stock;
-private static final int WIDTH = 90;
 
+    private final StockMaintenance stock;
+    private static final int WIDTH = 100;
 
-public StockReportGenerator(StockMaintenance stock) {
-this.stock = stock;
-}
+    public StockReportGenerator(StockMaintenance stock) {
+        this.stock = stock;
+    }
 
+    public String stockBalanceSummary(int threshold) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(JOptionPaneConsoleIO.reportHeader("Pharmacy Management Module", "Low Stock Summary", WIDTH));
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Medicine Stock Balance", WIDTH));
 
-public String stockBalanceSummary(int threshold) {
-StringBuilder sb = new StringBuilder();
-sb.append(JOptionPaneConsoleIO.reportHeader("Pharmacy Management Module", "Pharmacy Stock Report", WIDTH));
-sb.append("Low Stock Threshold: ").append(threshold).append("\n\n");
+        boolean hasLowStock = false;
 
+        sb.append(String.format("%-20s %-15s %-10s\n", "Medicine", "Type", "Qty"));
+        sb.append("-".repeat(WIDTH)).append("\n");
 
-sb.append(String.format("%-15s %-10s %-15s %-6s%n", "Medicine", "TotalQty", "EarliestExpiry", "Flag"));
-sb.append("-".repeat(WIDTH)).append("\n");
+        for (MedicineName name : MedicineName.values()) {
+            int balance = stock.totalBalance(name);
+            if (balance < threshold) {
+                hasLowStock = true;
+                sb.append(String.format("%-20s %-15s %-10d\n",
+                        name.name(), name.getType(), balance));
+            }
+        }
 
+        if (!hasLowStock) {
+            sb.append("All medicines are above the threshold.\n");
+        }
 
-int total = 0;
-for (MedicineName name : MedicineName.values()) {
-int qty = stock.totalBalance(name);
-String expiry = "-";
-String flag = (qty < threshold) ? "LOW" : "OK";
+        sb.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
+        return sb.toString();
+    }
 
+    public String expiringMedicinesSummary(int days) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(JOptionPaneConsoleIO.reportHeader("Pharmacy Management Module", "Expiring Medicines Summary", WIDTH));
+        sb.append(JOptionPaneConsoleIO.sectionTitle("Expiring within " + days + " days", WIDTH));
 
-StockBatch earliest = stock.earliestBatch(name);
-if (earliest != null) {
-expiry = earliest.getExpiryDate().toString();
-}
+        String[][] records = stock.expiringWithin(days);
 
+        if (records.length == 0) {
+            sb.append("No medicines are expiring within the given period.\n");
+        } else {
+            sb.append(String.format("%-20s %-15s %-10s %-12s\n", "Medicine", "Batch ID", "Qty", "Expiry"));
+            sb.append("-".repeat(WIDTH)).append("\n");
+            for (String[] row : records) {
+                sb.append(String.format("%-20s %-15s %-10s %-12s\n",
+                        row[0], row[1], row[2], row[3]));
+            }
+        }
 
-sb.append(String.format("%-15s %-10d %-15s %-6s%n", name.name(), qty, expiry, flag));
-total += qty;
-}
-
-
-sb.append("-".repeat(WIDTH)).append("\n");
-sb.append(String.format("%-15s %-10d%n", "TOTAL UNITS", total));
-sb.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
-
-
-return sb.toString();
-}
-
-
-public String expiringMedicinesSummary(int days) {
-StringBuilder sb = new StringBuilder();
-sb.append(JOptionPaneConsoleIO.reportHeader("Pharmacy Management Module", "Expiring Medicines Report", WIDTH));
-sb.append("Expiry Range: Next ").append(days).append(" day(s)\n\n");
-
-
-sb.append(String.format("%-15s %-10s %-8s %-12s%n", "Medicine", "BatchID", "Qty", "Expiry"));
-sb.append("-".repeat(WIDTH)).append("\n");
-
-
-String[][] expiring = stock.expiringWithin(days);
-int total = 0;
-for (String[] row : expiring) {
-sb.append(String.format("%-15s %-10s %-8s %-12s%n",
-row[0], row[1], row[2], row[3]));
-total += Integer.parseInt(row[2]);
-}
-
-
-sb.append("-".repeat(WIDTH)).append("\n");
-sb.append(String.format("%-15s %-10d%n", "TOTAL UNITS", total));
-sb.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
-
-
-return sb.toString();
-}
+        sb.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
+        return sb.toString();
+    }
 }
