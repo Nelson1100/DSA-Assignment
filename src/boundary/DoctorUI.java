@@ -361,7 +361,8 @@ public class DoctorUI {
                                         }
                                     }
                                 }
-
+                                
+                                ReportGen.attendanceRanking(yearToGen, true, attReport);
                                 attReport.append(JOptionPaneConsoleIO.reportFooter(WIDTH));
 
                                 if (avaiDoc){
