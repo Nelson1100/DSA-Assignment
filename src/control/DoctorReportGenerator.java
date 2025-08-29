@@ -8,6 +8,8 @@ import entity.Availability;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import utility.Validation;
+import adt.LinkedQueue;
+import adt.AVLTree;
 
 /**
  *
@@ -25,7 +27,7 @@ public class DoctorReportGenerator {
     }
 
     /**
-     * Annual attendance summary for a single doctor (no visuals).
+     * Annual attendance summary for a single doctor (clean text).
      */
     public void yearlyAttendanceRate(String doctorID, int year, boolean autoCreateWeekdays, StringBuilder sb) {
         Shift[] shifts = Shift.values();
@@ -93,9 +95,6 @@ public class DoctorReportGenerator {
         }
     }
 
-    /**
-     * Clinic specialization inventory: clean table + percentage-scaled visual bars.
-     */
     public void specializationInventory(StringBuilder sb) {
         if (sb == null)
             return;
@@ -135,26 +134,105 @@ public class DoctorReportGenerator {
         specializationDistributionBars(specs, counts, totalDoctors, sb);
     }
 
-    // ---------- specialization visual (kept) ----------
-
+    // ---------- specialization visual (LinkedQueue) ----------
     private void specializationDistributionBars(Specialization[] specs, int[] counts, int totalDoctors, StringBuilder sb){
         sb.append(center("Specialization Distribution", WIDTH)).append('\n');
         sb.append(line('-', WIDTH)).append('\n');
 
         final int barW = 30; // 100% => 30 asterisks
+        LinkedQueue<String> lines = new LinkedQueue<>();
+
         for (int i = 0; i < specs.length; i++){
             double pct = (totalDoctors == 0 ? 0.0 : (counts[i] * 100.0 / totalDoctors));
             int stars = (int)Math.round((pct / 100.0) * barW);
             if (pct > 0.0 && stars == 0) stars = 1;
             String bar = repeat('*', stars);
             String right = String.format("(%.0f%%)", pct);
-            sb.append(String.format("%-28s: %-32s %s%n", specs[i].name(), bar, right));
+            lines.enqueue(String.format("%-28s: %-32s %s%n", specs[i].name(), bar, right));
+        }
+
+        for (String line : lines) {
+            sb.append(line);
         }
 
         sb.append(line('-', WIDTH)).append('\n');
     }
 
-    // ---------- helpers (formatting) ----------
+    public void attendanceRanking(int year, boolean autoCreateWeekdays, StringBuilder sb) {
+        if (sb == null) return;
+
+        AVLTree<DoctorAttendance> ranking = new AVLTree<>();
+
+        Doctor[] docs = dm.getAllDoctor();
+        if (docs != null) {
+            for (Doctor d : docs) {
+                if (d == null) continue;
+                int[] data = computeAttendance(d.getDoctorID(), year, autoCreateWeekdays);
+                double pct = (data[1]==0 ? 0.0 : (data[0]*100.0/data[1]));
+                ranking.insert(new DoctorAttendance(d, pct, data[0], data[1]));
+            }
+        }
+
+        sb.append(line('=', WIDTH)).append('\n');
+        sb.append(center("Doctor Attendance Ranking " + year, WIDTH)).append('\n');
+        sb.append(line('-', WIDTH)).append('\n');
+        sb.append(String.format("%-4s %-25s %-15s %-15s %-10s%n", "No.", "Doctor", "ID", "Present/Total", "Attend%"));
+        sb.append(line('-', WIDTH)).append('\n');
+
+        int rank = 1;
+        for (DoctorAttendance da : ranking) {
+            sb.append(String.format("%-4d %-25s %-15s %5d/%-8d %7.2f%%%n",
+                    rank++, da.name, da.id, da.present, da.total, da.pct));
+        }
+
+        sb.append(line('-', WIDTH)).append('\n').append('\n');
+    }
+
+    // ---------- helpers ----------
+    private int[] computeAttendance(String doctorID, int year, boolean autoCreateWeekdays){
+        Shift[] shifts = Shift.values();
+        int present = 0;
+        int total   = 0;
+
+        for (int m = 1; m <= 12; m++){
+            YearMonth ym = YearMonth.of(year, m);
+            int days = ym.lengthOfMonth();
+            for (int d = 1; d <= days; d++){
+                LocalDate date = ym.atDay(d);
+                for (Shift sh : shifts){
+                    DoctorDuty duty = DocDuty.searchDutyByDoctorDateShift(doctorID, date, sh);
+                    if (duty == null && autoCreateWeekdays && validate.isWeekday(date))
+                        duty = DocDuty.WeekdayDuty(doctorID, date, sh);
+                    if (duty == null) continue;
+                    total++;
+                    if (duty.getAvailability() == Availability.AVAILABLE) present++;
+                }
+            }
+        }
+        return new int[]{present,total};
+    }
+
+    private static class DoctorAttendance implements Comparable<DoctorAttendance> {
+        String name;
+        String id;
+        int present;
+        int total;
+        double pct;
+        DoctorAttendance(Doctor d, double pct, int present, int total){
+            this.name = (d.getDoctorName()==null||d.getDoctorName().isBlank())? d.getDoctorID() : d.getDoctorName();
+            this.id   = d.getDoctorID();
+            this.pct  = pct;
+            this.present = present;
+            this.total   = total;
+        }
+        @Override
+        public int compareTo(DoctorAttendance o){
+            // higher percentage first; if tie, name ascending
+            if (this.pct < o.pct) return 1;
+            if (this.pct > o.pct) return -1;
+            return this.name.compareTo(o.name);
+        }
+    }
 
     private String kv(String key, String value){
         return String.format("%-28s: %s%n", key, value == null ? "-" : value);
