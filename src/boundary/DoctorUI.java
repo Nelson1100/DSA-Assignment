@@ -129,7 +129,7 @@ public class DoctorUI {
                                 }
                                 case 4 -> {
                                     // Modify specialization
-                                    newSpecialization = JOptionPaneConsoleIO.readEnum("Enter new specialization: ", Specialization.class, specializationOp);
+                                    newSpecialization = JOptionPaneConsoleIO.readEnum("Select new specialization: ", Specialization.class, specializationOp);
                                     if (newSpecialization == null) {
                                         update = 3;
                                         continue;
@@ -452,7 +452,7 @@ public class DoctorUI {
                 JOptionPaneConsoleIO.showError("Please enter a valid email address.");
         } while (!valid);
         
-        specialization = JOptionPaneConsoleIO.readEnum("Enter new specialization: ", Specialization.class, specializationOp);
+        specialization = JOptionPaneConsoleIO.readEnum("Select specialization: ", Specialization.class, specializationOp);
 
         if (specialization == null)
             return null;

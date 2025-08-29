@@ -8,6 +8,10 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import utility.Validation;
 
+/**
+ *
+ * @author Nelson Cheng Ming Jian
+ */
 public class DoctorReportGenerator {
     private final DoctorDutyManagement DocDuty;
     Validation validate = new Validation();

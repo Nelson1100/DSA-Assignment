@@ -5,6 +5,10 @@ import entity.Doctor;
 import entity.Specialization;
 import utility.*;
 
+/**
+ *
+ * @author Nelson Cheng Ming Jian
+ */
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
     Validation validate = new Validation();

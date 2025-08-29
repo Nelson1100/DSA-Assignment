@@ -10,6 +10,10 @@ import utility.Validation;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 
+/**
+ *
+ * @author Nelson Cheng Ming Jian
+ */
 public class DoctorDutyManagement {
     // Unique index: (doctorID, date, shift) -> DoctorDuty
     private final AVLTree<DutyByDoctorDateShift> idxByDoctorDateShift = new AVLTree<>();
@@ -100,7 +104,7 @@ public class DoctorDutyManagement {
     
     // Update availability for an existing duty.
     public boolean updateAvailability(String doctorID, LocalDate date, Shift shift, Availability newAvailability) {
-        if (date.isAfter(LocalDate.now())){
+        if (!date.isBefore(LocalDate.now())){
             DutyByDoctorDateShift searchKey = new DutyByDoctorDateShift(doctorID, date, shift, null);
             DutyByDoctorDateShift found = idxByDoctorDateShift.find(searchKey);
 
