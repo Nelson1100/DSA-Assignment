@@ -3,6 +3,7 @@ package control;
 import adt.AVLTree;
 import entity.DoctorDuty;
 import entity.Availability;
+import entity.Doctor;
 import entity.Shift;
 import entity.keys.DutyByDoctorDateShift;
 import entity.keys.DutyByDateShift;
@@ -20,6 +21,7 @@ public class DoctorDutyManagement {
     // Grouped index: (date, shift) -> bucket of duties
     private final AVLTree<DutyByDateShift> idxByDateShift = new AVLTree<>();
     Validation validate = new Validation();
+    DoctorManagement dm = new DoctorManagement();
 
     // Adding a new duty
     public boolean addDuty(DoctorDuty duty) {
@@ -120,7 +122,103 @@ public class DoctorDutyManagement {
     }
 
     // Build a monthly duty roster
-    public DoctorDuty[][] MonthlyRosterTableMatrix(String doctorID, int year, int month, boolean autoCreateWeedays){
+    public String buildMonthlyRosterByWeeks(String doctorID, int year, int month) {
+        YearMonth ym = YearMonth.of(year, month);
+        int days = ym.lengthOfMonth();
+        Shift[] shifts = Shift.values();
+
+        // Auto-create weekday defaults = true (you can flip this to false if you don't want defaults)
+        DoctorDuty[][] roster = MonthlyRosterTableMatrix(doctorID, year, month, true);
+
+        StringBuilder sb = new StringBuilder(8192);
+        Doctor doctorDuty = new Doctor(doctorID.trim(), "", "", "", null, "");
+        Doctor found = dm.findDoctor(doctorDuty);
+        String doctorName = (found != null ? found.getDoctorName() : ("(" + doctorID + ")"));
+        sb.append("Duty Roster for Dr. ").append(doctorName)
+          .append(" — ").append(ym).append('\n')
+          .append("Legend: ✅ Available   ❌ Unavailable   ⭕ On Leave   - No record\n");
+
+        int weekNo = 1;
+        int day = 1;
+        while (day <= days) {
+            int start = day;
+            int end = Math.min(day + 6, days);
+
+            // Week header
+            sb.append('\n')
+              .append("Week ").append(weekNo++)
+              .append(" (").append(ym.atDay(start)).append(" – ").append(ym.atDay(end)).append(")\n");
+
+            // Column headers
+            sb.append(fixed("Shift", 10));
+            for (int d = start; d <= end; d++) {
+                LocalDate date = ym.atDay(d);
+                String hdr = two(d) + " " + dow3(date);
+                sb.append(fixed(hdr, 10));
+            }
+            sb.append('\n');
+
+            // Rows per shift
+            for (int s = 0; s < shifts.length; s++) {
+                sb.append(fixed(shifts[s].name(), 10));
+                for (int d = start; d <= end; d++) {
+                    DoctorDuty duty = roster[d - 1][s];
+                    sb.append(fixed(cell(duty), 10));
+                }
+                sb.append('\n');
+            }
+
+            day = end + 1;
+        }
+
+        return sb.toString();
+    }
+
+    private static String cell(DoctorDuty duty) {
+        if (duty == null)
+            return "-";
+        
+        return switch (duty.getAvailability()) {
+            case AVAILABLE -> "✅";
+            case UNAVAILABLE -> "❌";
+            case ON_LEAVE -> "⭕";
+            default -> "-";
+        };
+    }
+
+    // left-pad/truncate to fixed width so columns line up decently even in proportional fonts
+    private static String fixed(String s, int width) {
+        if (s == null)
+            s = "";
+        
+        if (s.length() >= width)
+            return s.substring(0, width);
+        
+        StringBuilder b = new StringBuilder(width);
+        b.append(s);
+        while (b.length() < width)
+            b.append(' ');
+        
+        return b.toString();
+    }
+
+    private static String two(int n) {
+        return (n < 10) ? ("0" + n) : Integer.toString(n);
+    }
+
+    private static String dow3(LocalDate d) {
+        return switch (d.getDayOfWeek()) {
+            case MONDAY -> "Mon";
+            case TUESDAY -> "Tue";
+            case WEDNESDAY -> "Wed";
+            case THURSDAY -> "Thu";
+            case FRIDAY -> "Fri";
+            case SATURDAY -> "Sat";
+            default -> "Sun";
+        };
+    }
+    
+    private DoctorDuty[][] MonthlyRosterTableMatrix(String doctorID, int year, int month, boolean autoCreateWeedays){
         YearMonth ym = YearMonth.of(year, month);
         int days = ym.lengthOfMonth();
         Shift[] shifts = Shift.values();
@@ -141,19 +239,25 @@ public class DoctorDutyManagement {
     // Assuming every weekday has duty
     public DoctorDuty WeekdayDuty(String doctorID, LocalDate date, Shift shift){
         DoctorDuty docDuty = findDuty(doctorID, date, shift);
-        
-        String regDateStr = doctorID.substring(1, doctorID.length() - 4);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate regDate = LocalDate.parse(regDateStr, formatter);
-        
-        if (date.isBefore(regDate))
-            return null;
-        
+
+        // guard: if already exists, return
         if (docDuty != null)
             return docDuty;
 
+        // only weekdays
         if (!validate.isWeekday(date))
             return null;
+
+        // safe parse of registration date from doctorID (if format matches), else skip
+        try {
+            String regDateStr = doctorID.substring(1, doctorID.length() - 4);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDate regDate = LocalDate.parse(regDateStr, formatter);
+            if (date.isBefore(regDate))
+                return null;
+        } catch (Exception ignore) {
+            // ignore if format not as expected
+        }
 
         DoctorDuty created = new DoctorDuty(doctorID, date, shift, Availability.AVAILABLE);
         return addDuty(created) ? created : null;
