@@ -216,4 +216,12 @@ public final class JOptionPaneConsoleIO {
                center("END OF REPORT", width) + "\n" +
                line('=', width);
     }
+    
+    public static String readOptional(String message) {
+        String input = JOptionPane.showInputDialog(null, message);
+        if (input == null) {
+            return null; // Cancel pressed
+        }
+        return input.trim(); // Allow empty input
+    }
 }
