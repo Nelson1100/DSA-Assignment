@@ -36,7 +36,6 @@ public class DoctorUI {
         String[] menu = {"Register", "Search", "Doctor List", "Duty By Date", "Report", "Back"};
         String[] updateOption = {"Update", "Remove", "Duty", "Update Last Edit", "Back"};
         
-
         // Hardcoded doctor information (seed once)
         if (!seeded) {
             Doctor A = new Doctor("D202408110001", "Nelson Cheng Ming Jian", "0182284609", "nelson@gmail.com", Specialization.PSYCHIATRY, "050715070395");
