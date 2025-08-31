@@ -143,6 +143,7 @@ public final class Validation {
         return batchID != null && batchID.matches("^SB\\d{5}$");
     }
     
+    
     public boolean validQuantity(String input) {
         try {
             int qty = Integer.parseInt(input);

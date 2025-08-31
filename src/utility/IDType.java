@@ -8,9 +8,9 @@ public enum IDType {
     CONSULTATION("C"),
     TREATMENT("T"),
     PRESCRIPTION("PR"),
-    DISPENSE("DP"),
+    DISPENSEDRECORD("DR"),
     MEDICINE("M"),
-    STOCKBATCH("B"),
+    STOCKBATCH("SB"),
     INVOICE("INV");
     
     private final String prefix;

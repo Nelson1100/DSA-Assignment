@@ -9,11 +9,11 @@ public class PharmacistManagement {
     private AVLInterface<Pharmacist> pharmacistTree = new AVLTree<>();
 
     // CREATE (Register new pharmacist)
-    public boolean registerPharmacist(String id, String name, String phoneNo, String email) {
+    public boolean registerPharmacist(String id, String name, String phone, String email) {
         if (findPharmacist(id) != null) {
             return false; // duplicate ID
         }
-        pharmacistTree.insert(new Pharmacist(id, name, phoneNo, email));
+        pharmacistTree.insert(new Pharmacist(id, name, phone, email));
         return true;
     }
     
@@ -21,7 +21,7 @@ public class PharmacistManagement {
         return registerPharmacist(
             pharmacist.getPharmacistID(),
             pharmacist.getPharmacistName(),
-            pharmacist.getPharmacistPhoneNo(),
+            pharmacist.getPharmacistPhone(),
             pharmacist.getPharmacistEmail()
         );
     }
@@ -30,6 +30,24 @@ public class PharmacistManagement {
     public Pharmacist findPharmacist(String id) {
         return pharmacistTree.find(new Pharmacist(id, "", "", ""));
     }
+    
+    public Pharmacist getPharmacistByName(String name) {
+        for (Pharmacist p : pharmacistTree) {
+            if (p.getPharmacistName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
+    public Pharmacist findPharmacistByPhone(String phone) {
+    for (Pharmacist p : pharmacistTree) {
+        if (p.getPharmacistPhone().equals(phone)) {
+            return p;
+        }
+    }
+    return null;
+}
 
     // READ ALL (Display all pharmacists)
     public String ViewAllPharmacistReport() {
@@ -42,11 +60,11 @@ public class PharmacistManagement {
     }
 
     // UPDATE (Modify name, phone number, or email)
-    public boolean updatePharmacist(String id, String newName, String newPhoneNo, String newEmail) {
+    public boolean updatePharmacist(String id, String newName, String newPhone, String newEmail) {
         Pharmacist pharmacist = findPharmacist(id);
         if (pharmacist != null) {
             pharmacist.setPharmacistName(newName);
-            pharmacist.setPharmacistPhoneNo(newPhoneNo);
+            pharmacist.setPharmacistPhone(newPhone);
             pharmacist.setpharmacistEmail(newEmail);
             return true;
         }

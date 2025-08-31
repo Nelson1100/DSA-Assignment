@@ -72,4 +72,31 @@ public class LinkedQueue<T> implements QueueInterface<T>, Iterable<T>{
     public QueueIterator<T> getIterator() {
         return new QueueIterator<>(front);
     }
+    
+    public T peek() {
+        if (isEmpty()) {
+            return null;
+        }
+        return front.getData();
+    }
+    
+    public T[] toArray(T[] a) {
+    if (a.length < size) {
+        // Create a new array of the correct type
+        a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+    }
+
+    QueueNode<T> current = front;
+    int index = 0;
+    while (current != null) {
+        a[index++] = current.getData();
+        current = current.getNext();
+    }
+
+    if (a.length > size) {
+        a[size] = null;
+    }
+
+    return a;
+}
 }

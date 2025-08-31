@@ -3,12 +3,12 @@ package entity;
 public class PrescriptionItem {
     private MedicineName medicineName;
     private int prescribedQty;
-    private String dosageInstruction;  // for example this kind "2 tablets twice daily"
+    private Instruction instructions; // for example this kind "2 tablets twice daily"
 
-    public PrescriptionItem(MedicineName medicineName, int prescribedQty, String dosageInstruction) {
+    public PrescriptionItem(MedicineName medicineName, int prescribedQty, Instruction instructions) {
         this.medicineName = medicineName;
         this.prescribedQty = prescribedQty;
-        this.dosageInstruction = dosageInstruction;
+        this.instructions = instructions;
     }
 
     public MedicineName getMedicineName() {
@@ -19,13 +19,13 @@ public class PrescriptionItem {
         return prescribedQty;
     }
 
-    public String getDosageInstruction() {
-        return dosageInstruction;
+    public Instruction getInstructions() {
+        return instructions;
     }
-
+    
     @Override
     public String toString() {
-        return medicineName + " x" + prescribedQty + " (" + dosageInstruction + ")";
+        return medicineName + " x" + prescribedQty + " (" + instructions + ")";
     }
 }
 

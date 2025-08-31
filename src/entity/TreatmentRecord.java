@@ -12,9 +12,10 @@ public class TreatmentRecord {
     private final String treatment;
     private Prescription prescription;
     private LocalDateTime consultationTime;
+    private LocalDateTime dateTime;
 
     public TreatmentRecord(String treatmentID, String patientID, String doctorID, 
-                           String diagnosis, String treatment, Prescription prescription) {
+                           String diagnosis, String treatment, Prescription prescription, LocalDateTime dateTime) {
         this.treatmentID = treatmentID;
         this.patientID = patientID;
         this.doctorID = doctorID;
@@ -31,7 +32,10 @@ public class TreatmentRecord {
     public String getTreatment()   { return treatment; }
     public Prescription getPrescription() {return prescription; }
     public LocalDateTime getconsultationTime() { return consultationTime; }
-
+    
+    public LocalDateTime getDateTime() {
+        return dateTime;
+    }
     @Override
     public String toString() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");

@@ -3,13 +3,13 @@ package entity;
 public class Pharmacist implements Comparable<Pharmacist> {
     private String pharmacistID;
     private String pharmacistName;
-    private String pharmacistPhoneNo;
+    private String pharmacistPhone;
     private String pharmacistEmail;
 
-    public Pharmacist(String pharmacistID, String pharmacistName, String pharmacistPhoneNo, String pharmacistemail) {
+    public Pharmacist(String pharmacistID, String pharmacistName, String pharmacistPhone, String pharmacistemail) {
         this.pharmacistID = pharmacistID;
         this.pharmacistName = pharmacistName;
-        this.pharmacistPhoneNo = pharmacistPhoneNo;
+        this.pharmacistPhone = pharmacistPhone;
         this.pharmacistEmail = pharmacistemail;
     }
 
@@ -29,12 +29,12 @@ public class Pharmacist implements Comparable<Pharmacist> {
         this.pharmacistName = pharmacistName;
     }
 
-    public String getPharmacistPhoneNo() {
-        return pharmacistPhoneNo;
+    public String getPharmacistPhone() {
+        return pharmacistPhone;
     }
 
-    public void setPharmacistPhoneNo(String pharmacistPhoneNo) {
-        this.pharmacistPhoneNo = pharmacistPhoneNo;
+    public void setPharmacistPhone(String pharmacistPhone) {
+        this.pharmacistPhone = pharmacistPhone;
     }
 
     public String getPharmacistEmail() {
@@ -61,8 +61,8 @@ public class Pharmacist implements Comparable<Pharmacist> {
     @Override
     public String toString() {
         return String.format(
-                "Pharmacist ID: %s\npharmacistName: %s\npharmacistPhoneNo: %s\npharmacistEmail:",
-                pharmacistID, pharmacistName, pharmacistPhoneNo, pharmacistEmail
+                "Pharmacist ID: %s\npharmacistName: %s\npharmacistPhoneNo: %s\npharmacistEmail: %s",
+                pharmacistID, pharmacistName, pharmacistPhone, pharmacistEmail
         );
     }
 }
