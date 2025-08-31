@@ -5,9 +5,11 @@ import adt.QueueInterface;
 import control.MedicineDispenser;
 import entity.Prescription;
 import entity.PrescriptionItem;
+import entity.DispensedRecord;
 import utility.JOptionPaneConsoleIO;
 
 import java.util.Iterator;
+import java.time.LocalDate;
 
 public class MedicineDispenserUI {
 
@@ -149,14 +151,20 @@ public class MedicineDispenserUI {
     }
 
     private void viewDispensingLabels() {
-        if (dispensingLabels.isEmpty()) {
-            JOptionPaneConsoleIO.showError("No dispensing labels available.");
-            return;
+        StringBuilder sb = new StringBuilder();
+        boolean found = false;
+
+        for (DispensedRecord record : dispenser.getRecordLog()) {
+            if (record.getTimestamp().toLocalDate().equals(LocalDate.now())) {
+                String label = dispenser.generateDispensingLabel(record.getPrescriptionID());
+                sb.append(label).append("\n").append("-".repeat(40)).append("\n");
+                found = true;
+            }
         }
 
-        StringBuilder sb = new StringBuilder();
-        for (String label : dispensingLabels) {
-            sb.append(label).append("\n").append("-".repeat(40)).append("\n");
+        if (!found) {
+            JOptionPaneConsoleIO.showError("No dispensing labels available for today.");
+            return;
         }
 
         JOptionPaneConsoleIO.showMonospaced("Daily Dispensing Labels", sb.toString());

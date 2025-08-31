@@ -5,10 +5,15 @@ import entity.Doctor;
 import entity.Specialization;
 import utility.*;
 
+/**
+ *
+ * @author Nelson Cheng Ming Jian
+ */
 public class DoctorManagement {
     AVLInterface<Doctor> doctorTree = new AVLTree<>();
     Validation validate = new Validation();
     private final LinkedStack<Doctor> undoStack = new LinkedStack<>();
+    final int width = 130;
     
     public boolean isEmptyTree() {
         return doctorTree.isEmpty();
@@ -79,15 +84,31 @@ public class DoctorManagement {
     }
     
     public StringBuilder listDoctor(){
-        final int width = 130;
         StringBuilder sb = new StringBuilder();
-        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
-        sb.append(JOptionPaneConsoleIO.sectionTitle("Doctor List", width));
-        sb.append(String.format("%-15s %-25s %-15s %-10s %-15s %-25s %-20s\n", 
-                "Doctor ID", "Name", "IC Number", "Gender", "Contact", "Email", "Specialization"));
-        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+        sb.append(headerBuilder());
                 
         for (Doctor d : doctorTree) {
+            sb.append(String.format("%-15s %-25s %-15s %-10s %-15s %-25s %-20s\n",
+                d.getDoctorID(),
+                d.getDoctorName(),
+                d.getIcNo(),
+                validate.getGenderFromIC(d.getIcNo()),
+                d.getContactNo(),
+                d.getEmail(),
+                d.getSpecialization()
+            ));
+        }
+        
+        sb.append(JOptionPaneConsoleIO.line('-', width)).append("\n");
+        return sb;
+    }
+    
+    public StringBuilder listDoctorBySpecialization(Specialization s){
+        StringBuilder sb = new StringBuilder();
+        sb.append(headerBuilder());
+        Doctor[] doctors = findBySpecialization(s);
+        
+        for (Doctor d : doctors) {
             sb.append(String.format("%-15s %-25s %-15s %-10s %-15s %-25s %-20s\n",
                 d.getDoctorID(),
                 d.getDoctorName(),
@@ -166,5 +187,31 @@ public class DoctorManagement {
     
     private boolean eraseDoctor(Doctor doctor){
         return doctorTree.delete(doctor);
+    }
+    
+    private Doctor[] findBySpecialization(Specialization s) {
+        int n = doctorTree.size();
+        Doctor[] buf = new Doctor[n];
+        int k = 0;
+        
+        for (Doctor d : doctorTree)
+            if (d.getSpecialization() == s) buf[k++] = d;
+        
+        Doctor[] out = new Doctor[k];
+        
+        for (int i=0; i < k; i++)
+            out[i] = buf[i];
+        
+        return out;
+    }
+        
+    private String headerBuilder(){
+        String header = JOptionPaneConsoleIO.line('-', width) + "\n" +
+        JOptionPaneConsoleIO.sectionTitle("Doctor List", width) +
+        String.format("%-15s %-25s %-15s %-10s %-15s %-25s %-20s\n", 
+                "Doctor ID", "Name", "IC Number", "Gender", "Contact", "Email", "Specialization") +
+        JOptionPaneConsoleIO.line('-', width) + "\n";
+        
+        return header;
     }
 }
