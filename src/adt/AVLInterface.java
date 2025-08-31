@@ -1,5 +1,9 @@
 package adt;
 
+/**
+ *
+ * @author Group 3
+ */
 public interface AVLInterface<T extends Comparable<T>> extends Iterable<T>{
     boolean insert(T data);
     boolean delete(T data);

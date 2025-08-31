@@ -224,4 +224,11 @@ public final class JOptionPaneConsoleIO {
         }
         return input.trim(); // Allow empty input
     }
+    
+    public static String readDropdown(String message, String[] options) {
+        return (String) JOptionPane.showInputDialog(
+                null, message, "Select Option",
+                JOptionPane.QUESTION_MESSAGE, null, options, options[0]
+        );
+    }
 }

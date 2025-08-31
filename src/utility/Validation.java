@@ -58,6 +58,39 @@ public final class Validation {
             return false;
         }
     }
+
+    public static boolean validIC(String ic) {
+        if (ic == null)
+            return false;
+        
+        String digits = ic.replaceAll("\\D", "");
+        if (digits.length() != 12)
+            return false;
+
+        int yy = Integer.parseInt(digits.substring(0,2));
+        int mm = Integer.parseInt(digits.substring(2,4));
+        int dd = Integer.parseInt(digits.substring(4,6));
+
+        int thisYear = java.time.LocalDate.now().getYear();
+        int currentYY = thisYear % 100;
+        int year = (yy <= currentYY) ? 2000 + yy : 1900 + yy;
+
+        java.time.LocalDate dob;
+        try { 
+            dob = java.time.LocalDate.of(year, mm, dd); 
+        } catch (Exception e) { 
+            return false; 
+        }
+
+        return !dob.isAfter(java.time.LocalDate.now());
+    }
+    
+    public static Gender getGenderFromIC(String ic) {
+        String digits = ic.replaceAll("\\D", "");
+
+        int lastDigit = digits.charAt(11) - '0';
+        return (lastDigit % 2 == 1) ? Gender.MALE : Gender.FEMALE;
+    }
     
     public boolean isWeekday(LocalDate date){
         DayOfWeek day = date.getDayOfWeek();
@@ -95,7 +128,7 @@ public final class Validation {
         return sb.toString();
     }
     
-     public static String standardizedIC(String ic) {
+    public static String standardizedIC(String ic) {
         if (ic == null)
             return null;
         

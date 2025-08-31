@@ -8,7 +8,7 @@ public enum IDType {
     CONSULTATION("C"),
     TREATMENT("T"),
     PRESCRIPTION("PR"),
-    DISPENSE("DP"),
+    DISPENSEDRECORD("DR"),
     MEDICINE("M"),
     STOCKBATCH("SB"),
     INVOICE("INV");

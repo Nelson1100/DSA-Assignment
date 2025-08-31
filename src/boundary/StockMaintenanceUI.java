@@ -1,7 +1,9 @@
 package boundary;
 
 import control.StockMaintenance;
-import control.StockReportGenerator;
+import control.PharmacistReportGenerator;
+
+import dao.StockInitializer;
 
 import entity.MedicineName;
 import entity.StockBatch;
@@ -15,15 +17,23 @@ import java.time.format.DateTimeParseException;
 
 public class StockMaintenanceUI {
 
-    private  StockMaintenance stock = new StockMaintenance();
-    private  StockReportGenerator reports;
+    private  StockMaintenance stock;
+    private  PharmacistReportGenerator reports;
     private static final Validation validate = new Validation();
+    private static boolean seeded = false; 
 
     public StockMaintenanceUI(StockMaintenance stock) {
         this.stock = stock;
-        this.reports = new StockReportGenerator(stock);
+        ensureSeeded(); 
     }
-
+    
+    private void ensureSeeded() {
+    if (!seeded) {
+        StockInitializer.initialize(stock);   // call your initializer here
+        seeded = true;
+        }
+    }
+    
     public void run() {
         int choice;
         do {              
@@ -35,7 +45,6 @@ public class StockMaintenanceUI {
                     "Search Batch",
                     "Search Medicine",
                     "View All Batches",
-                    "Reports",
                     "Exit"
                 }
             );
@@ -45,11 +54,10 @@ public class StockMaintenanceUI {
                 case 1 -> searchBatch();
                 case 2 -> searchByMedicine();
                 case 3 -> viewAllBatches();
-                case 4 -> showReports();
-                case 5 -> JOptionPaneConsoleIO.showInfo("Exiting Stock Maintenance.");
+                case 4 -> JOptionPaneConsoleIO.showInfo("Exiting Stock Maintenance.");
                 default -> JOptionPaneConsoleIO.showError("Invalid option selected.");
             }
-        } while (choice != 5);
+        } while (choice != 4);
     }
 
     // ========== OPTION 1 ==========
@@ -131,11 +139,11 @@ public class StockMaintenanceUI {
 
         // Format monospaced table
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-15s %-18s %-6s %-12s %-12s%n", "Medicine", "BatchID", "Qty", "Expiry", "Received"));
+        sb.append(String.format("%-15s %-14s %-8s %-12s %-12s%n", "Medicine", "BatchID", "Qty", "Received", "Expiry"));
         sb.append("----------------------------------------------------------------------\n");
 
         for (String[] row : records) {
-            sb.append(String.format("%-15s %-18s %-6s %-12s %-12s%n",
+            sb.append(String.format("%-15s %-14s %-8s %-12s %-12s%n",
                     row[0], row[1], row[2], row[3], row[4]));
         }
 
@@ -151,57 +159,6 @@ public class StockMaintenanceUI {
         } else {
             JOptionPaneConsoleIO.showMonospaced("Search Result",report);
         }
-    }
-
-    // ========== OPTION 5 ==========
-    private void showReports() {
-        int choice;
-        do {
-            choice = JOptionPaneConsoleIO.readOption(
-                "=== REPORT MENU ===",
-                "Reports Selection",    
-                new String[]{
-                    "Low Stock Summary",
-                    "Expiring Medicines Summary",
-                    "Back"
-                }
-            );
-
-            switch (choice) {
-                case 0 -> showLowStockReport();
-                case 1 -> showExpiringMedicinesReport();
-                case 2 -> JOptionPaneConsoleIO.showInfo("Exiting Report Selection.");
-                default -> JOptionPaneConsoleIO.showError("Invalid option selected.");
-            }
-        } while (choice != 2);
-    }
-
-    private void showLowStockReport() {
-        String thresholdStr = JOptionPaneConsoleIO.readNonEmpty("Enter low stock threshold (default 50):");
-        int threshold = 50;
-        if (!thresholdStr.isEmpty()) {
-            if (!validate.validQuantity(thresholdStr)) {
-                JOptionPaneConsoleIO.showError("Invalid threshold. Using default (50).");
-            } else {
-                threshold = Integer.parseInt(thresholdStr);
-            }
-        }
-        String report = reports.stockBalanceSummary(threshold);
-        JOptionPaneConsoleIO.showMonospaced("Search Result",report);
-    }
-
-    private void showExpiringMedicinesReport() {
-        String daysStr = JOptionPaneConsoleIO.readNonEmpty("Enter number of days to check expiry (default 30):");
-        int days = 30;
-        if (!daysStr.isEmpty()) {
-            if (!validate.isValidISODate(daysStr)) {
-                JOptionPaneConsoleIO.showError("Invalid number. Using default (30).");
-            } else {
-                days = Integer.parseInt(daysStr);
-            }
-        }
-        String report = reports.expiringMedicinesSummary(days);
-        JOptionPaneConsoleIO.showMonospaced("Search Result",report);
     }
 
     // ========== SHARED ==========

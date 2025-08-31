@@ -69,7 +69,7 @@ public class DoctorReportGenerator {
         int denom = present + unavailable + onLeave;
         double rate = (denom == 0) ? 0.0 : ((double) present / (double) denom) * 100.00;
 
-        Doctor found = dm.findDoctor(new Doctor(doctorID.trim(), "", "", "", null));
+        Doctor found = dm.findDoctor(new Doctor(doctorID.trim(), "", "", "", null, ""));
 
         String name = (found != null && found.getDoctorName() != null && !found.getDoctorName().isBlank())
                         ? found.getDoctorName()
