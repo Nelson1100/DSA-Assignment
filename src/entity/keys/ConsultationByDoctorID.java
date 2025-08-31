@@ -4,7 +4,7 @@ import entity.Consultation;
 
 public class ConsultationByDoctorID implements Comparable<ConsultationByDoctorID> {
     private final String doctorID;
-    private final String consultationID; // for uniqueness when same doctor has multiple consultations
+    private final String consultationID; 
     private final Consultation consultation;
     
     public ConsultationByDoctorID(String doctorID, String consultationID, Consultation consultation) {
