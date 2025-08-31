@@ -152,4 +152,12 @@ public final class Validation {
             return false;
         }
     }
+    
+    public static boolean validId(String id) {
+    if (id == null)
+        return false;
+    return id.matches("^P\\d{12}$");
+}
+
+    
 }
