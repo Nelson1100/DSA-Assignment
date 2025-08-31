@@ -1,98 +1,186 @@
 package boundary;
 
+import adt.LinkedQueue;
+import adt.QueueInterface;
 import control.MedicineDispenser;
-import control.StockMaintenance;
-import entity.MedicineName;
 import entity.Prescription;
 import entity.PrescriptionItem;
-import entity.StockBatch;
+import entity.DispensedRecord;
 import utility.JOptionPaneConsoleIO;
-import utility.Validation;
+
+import java.util.Iterator;
+import java.time.LocalDate;
 
 public class MedicineDispenserUI {
 
-    private static final Validation validate = new Validation();
+    private final MedicineDispenser dispenser;
+    private final LinkedQueue<Prescription> prescriptionQueue;
+    private final LinkedQueue<String> dispensingLabels = new LinkedQueue<>();
 
-    public static void run(MedicineDispenser dispenser) {
-        StockMaintenance stock = getStock(dispenser); // access shared stock
-        if (stock == null) {
-            JOptionPaneConsoleIO.showError("StockMaintenance not accessible.");
+    public MedicineDispenserUI(MedicineDispenser dispenser, QueueInterface<Prescription> prescriptionQueue) {
+        this.dispenser = dispenser;
+        this.prescriptionQueue = (LinkedQueue<Prescription>) prescriptionQueue;
+    }
+
+    public void run() {
+        int choice;
+
+        do {
+            choice = JOptionPaneConsoleIO.readOption(
+                    "=== MEDICINE DISPENSING MENU ===",
+                    "SELECT AN OPTION",
+                    new String[]{
+                        "Dispense Prescription",
+                        "View Daily Dispensing Labels",
+                        "View Audit Trail",
+                        "Exit"
+                    }
+            );
+            switch (choice) {
+                case 0 ->
+                    dispensePrescription();
+                case 1 ->
+                    viewDispensingLabels();
+                case 2 ->
+                    viewAuditTrail();
+                case 3 ->
+                    JOptionPaneConsoleIO.showInfo("Exiting Medicine Dispensing.");
+                default ->
+                    JOptionPaneConsoleIO.showError("Invalid option selected.");
+            }
+        } while (choice != 3);
+    }
+
+    private void dispensePrescription() {
+        if (prescriptionQueue.isEmpty()) {
+            JOptionPaneConsoleIO.showError("No prescriptions available.");
             return;
         }
 
-        JOptionPaneConsoleIO.showInfo("=== DISPENSING MEDICINE ===");
+        // Prepare dropdown options
+        Prescription[] prescriptions = prescriptionQueue.toArray(new Prescription[0]);
+        String[] options = new String[prescriptions.length];
+        for (int i = 0; i < prescriptions.length; i++) {
+            options[i] = prescriptions[i].getPrescriptionID();
+        }
 
-        String input = JOptionPaneConsoleIO.readNonEmpty("Enter number of medicines to dispense:");
-        if (!validate.validNumber(input, 1, 100)) {
-            JOptionPaneConsoleIO.showError("Invalid number. Please enter a positive integer.");
+        // Dropdown selection
+        String selectedValue = JOptionPaneConsoleIO.readDropdown("Select a prescription to dispense:", options);
+        if (selectedValue == null) {
             return;
         }
 
-        int count = Integer.parseInt(input);
-        Prescription prescription = new Prescription("PS0001", "DR0001");
+        // Find selected prescription
+        Prescription current = null;
+        for (Prescription p : prescriptions) {
+            String value = p.getPrescriptionID();
+            if (value.equals(selectedValue)) {
+                current = p;
+                break;
+            }
+        }
 
-        for (int i = 0; i < count; i++) {
-            MedicineName selected = null;
-            StockBatch testBatch = null;
+        if (current == null) {
+            JOptionPaneConsoleIO.showError("Selected prescription not found.");
+            return;
+        }
 
-            // Keep prompting until medicine with available stock is selected
-            do {
-                selected = JOptionPaneConsoleIO.readEnum(
-                        "Select medicine #" + (i + 1),
-                        MedicineName.class,
-                        getMedicineNameOptions()
-                );
+        // Already dispensed check
+        if (current.getStatus().isDispensed()) {
+            JOptionPaneConsoleIO.showError("⚠ This prescription has already been dispensed.");
+            return;
+        }
 
-                if (selected == null) {
-                    JOptionPaneConsoleIO.showError("Selection cancelled.");
-                    return;
+        // Confirm
+        StringBuilder sb = new StringBuilder();
+        sb.append(current.toString())
+                .append("\n\nConfirm Dispensing?");
+        boolean confirmed = JOptionPaneConsoleIO.confirmDialog(sb.toString(), "Dispense Confirmation");
+        if (!confirmed) {
+            return;
+        }
+
+        // Clinical validation
+        if (!dispenser.clinicalCheck(current)) {
+            JOptionPaneConsoleIO.showError("⚠ Clinical check failed. Dispensing aborted.");
+            return;
+        }
+
+        // Stock check
+        if (!dispenser.isDispensable(current)) {
+            StringBuilder error = new StringBuilder("❌ Not enough stock to dispense:\n\n");
+            Iterator<PrescriptionItem> iterator = current.iterator();
+            while (iterator.hasNext()) {
+                PrescriptionItem item = iterator.next();
+                if (!dispenser.hasStockFor(item)) {
+                    int shortage = dispenser.calculateShortage(item.getMedicineName(), item.getPrescribedQty());
+                    error.append("- ").append(item.getMedicineName())
+                            .append(": short by ").append(shortage).append(" units\n");
                 }
+            }
+            JOptionPaneConsoleIO.showError(error.toString());
+            return;
+        }
 
-                testBatch = stock.earliestBatch(selected);
-                if (testBatch == null) {
-                    JOptionPaneConsoleIO.showError("No available stock for " + selected.name() + ". Please choose another.");
+        // Dispense
+        boolean success = dispenser.dispense(current);
+        if (success) {
+            // Ask for pharmacist name
+            String pharmacistName = JOptionPaneConsoleIO.readNonEmpty("Enter pharmacist name:");
+
+            // Generate label with pharmacist name
+            String label = dispenser.generateDispensingLabel(current, pharmacistName);
+            dispensingLabels.enqueue(label);
+
+            // Remove prescription from queue
+            LinkedQueue<Prescription> tempQueue = new LinkedQueue<>();
+            for (Prescription p : prescriptionQueue) {
+                if (!p.getPrescriptionID().equals(current.getPrescriptionID())) {
+                    tempQueue.enqueue(p);
                 }
-
-            } while (testBatch == null);
-
-            String qtyStr = JOptionPaneConsoleIO.readNonEmpty("Enter quantity for " + selected.name() + ":");
-            if (!validate.validNumber(qtyStr, 1, Integer.MAX_VALUE)) {
-                JOptionPaneConsoleIO.showError("Invalid quantity entered.");
-                return;
+            }
+            prescriptionQueue.clear();
+            for (Prescription p : tempQueue) {
+                prescriptionQueue.enqueue(p);
             }
 
-            int qty = Integer.parseInt(qtyStr);
-            new PrescriptionItem(selected, qty, prescription.getPrescriptionID());
-        }
-
-        // Call dispenser to perform FEFO dispensing
-        boolean success = dispenser.dispense(prescription);
-
-        if (success) {
-            JOptionPaneConsoleIO.showInfo("✅ All medicines dispensed successfully.");
+            JOptionPaneConsoleIO.showInfo("✓ Dispensing successful!");
         } else {
-            JOptionPaneConsoleIO.showError("⚠️ Some medicines could not be fully dispensed due to insufficient stock.");
+            JOptionPaneConsoleIO.showError("⚠ Dispensing failed. Already dispensed or insufficient stock.");
         }
     }
 
-    // Extract StockMaintenance from the dispenser object (if accessible)
-    private static StockMaintenance getStock(MedicineDispenser dispenser) {
-        try {
-            java.lang.reflect.Field stockField = MedicineDispenser.class.getDeclaredField("stockMaintenance");
-            stockField.setAccessible(true);
-            return (StockMaintenance) stockField.get(dispenser);
-        } catch (Exception e) {
-            return null;
+    private void viewDispensingLabels() {
+        StringBuilder sb = new StringBuilder();
+        boolean found = false;
+
+        for (DispensedRecord record : dispenser.getRecordLog()) {
+            if (record.getTimestamp().toLocalDate().equals(LocalDate.now())) {
+                String label = dispenser.generateDispensingLabel(record.getPrescriptionID());
+                sb.append(label).append("\n").append("-".repeat(40)).append("\n");
+                found = true;
+            }
         }
+
+        if (!found) {
+            JOptionPaneConsoleIO.showError("No dispensing labels available for today.");
+            return;
+        }
+
+        JOptionPaneConsoleIO.showMonospaced("Daily Dispensing Labels", sb.toString());
     }
 
-    // Helper to convert MedicineName enum to string options
-    private static String[] getMedicineNameOptions() {
-        MedicineName[] names = MedicineName.values();
-        String[] options = new String[names.length];
-        for (int i = 0; i < names.length; i++) {
-            options[i] = names[i].name();
+    private void viewAuditTrail() {
+        String[] audit = dispenser.getAuditTrail();
+        if (audit == null || audit.length == 0) {
+            JOptionPaneConsoleIO.showError("No audit trail available.");
+            return;
         }
-        return options;
+
+        StringBuilder sb = new StringBuilder();
+        for (String entry : audit) {
+            sb.append(entry).append("\n");
+        }
+        JOptionPaneConsoleIO.showMonospaced("Dispense Audit Log", sb.toString());
     }
 }

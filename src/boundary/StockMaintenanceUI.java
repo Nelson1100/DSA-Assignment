@@ -1,11 +1,15 @@
 package boundary;
 
 import control.StockMaintenance;
-import control.StockReportGenerator;
+import control.PharmacistReportGenerator;
+
+import dao.StockInitializer;
+
 import entity.MedicineName;
-import utility.JOptionPaneConsoleIO;
-import utility.Validation;
 import entity.StockBatch;
+
+import utility.*;
+
 import javax.swing.JOptionPane;
 
 import java.time.LocalDate;
@@ -13,15 +17,23 @@ import java.time.format.DateTimeParseException;
 
 public class StockMaintenanceUI {
 
-    private  StockMaintenance stock = new StockMaintenance();
-    private  StockReportGenerator reports;
+    private  StockMaintenance stock;
+    private  PharmacistReportGenerator reports;
     private static final Validation validate = new Validation();
+    private static boolean seeded = false; 
 
     public StockMaintenanceUI(StockMaintenance stock) {
         this.stock = stock;
-        this.reports = new StockReportGenerator(stock);
+        ensureSeeded(); 
     }
-
+    
+    private void ensureSeeded() {
+    if (!seeded) {
+        StockInitializer.initialize(stock);   // call your initializer here
+        seeded = true;
+        }
+    }
+    
     public void run() {
         int choice;
         do {              
@@ -33,7 +45,6 @@ public class StockMaintenanceUI {
                     "Search Batch",
                     "Search Medicine",
                     "View All Batches",
-                    "Reports",
                     "Exit"
                 }
             );
@@ -43,24 +54,22 @@ public class StockMaintenanceUI {
                 case 1 -> searchBatch();
                 case 2 -> searchByMedicine();
                 case 3 -> viewAllBatches();
-                case 4 -> showReports();
-                case 5 -> JOptionPaneConsoleIO.showInfo("Exiting Stock Maintenance.");
+                case 4 -> JOptionPaneConsoleIO.showInfo("Exiting Stock Maintenance.");
                 default -> JOptionPaneConsoleIO.showError("Invalid option selected.");
             }
-        } while (choice != 5);
+        } while (choice != 4);
     }
 
     // ========== OPTION 1 ==========
     private void addStockBatch() {
-        MedicineName med = chooseMedicine();
-        if (med == null) return;
-
-        String batchID = JOptionPaneConsoleIO.readNonEmpty("Enter Batch ID (SB#####):");
+        MedicineName med = JOptionPaneConsoleIO.readEnum(
+                "Select the medicine for this batch:",
+                MedicineName.class,
+                getMedicineNameOptions()
+        );
         
-        if (stock.findBatch(med, batchID) != null) {
-            JOptionPaneConsoleIO.showError("Batch ID already exists.");
+        if (med == null)
             return;
-        }
 
         String qtyStr = JOptionPaneConsoleIO.readNonEmpty("Enter Quantity:");
         if (!validate.validNumber(qtyStr,1, Integer.MAX_VALUE)) {
@@ -69,26 +78,12 @@ public class StockMaintenanceUI {
         }
         int qty = Integer.parseInt(qtyStr);
 
-        String receivedStr = JOptionPaneConsoleIO.readNonEmpty("Enter Received Date (YYYY-MM-DD):");
-        if (!validate.isValidISODate(receivedStr)) {
-            JOptionPaneConsoleIO.showError("Invalid received date format.");
-            return;
-        }
-        LocalDate received = LocalDate.parse(receivedStr);
+        LocalDate received = LocalDate.now();
 
-        String expiryStr = JOptionPaneConsoleIO.readNonEmpty("Enter Expiry Date (YYYY-MM-DD):");
-        if (!validate.isValidISODate(expiryStr)) {
-            JOptionPaneConsoleIO.showError("Invalid expiry date format.");
-            return;
-        }
-        LocalDate expiry = LocalDate.parse(expiryStr);
-
-        if (!expiry.isAfter(received)) {
-            JOptionPaneConsoleIO.showError("Expiry date must be after received date.");
-            return;
-        }
-
-        boolean success = stock.addBatch(med, batchID, qty, received, expiry);
+        LocalDate expiry = received.plusYears(2);
+        
+        String id = IDGenerator.next(IDType.STOCKBATCH);
+        boolean success = stock.addBatch(med, id, qty, received, expiry);
         if (success)
             JOptionPaneConsoleIO.showInfo("Batch added successfully.");
         else
@@ -97,35 +92,33 @@ public class StockMaintenanceUI {
 
     // ========== OPTION 2 ==========
     private void searchBatch() {
-    String batchID = JOptionPaneConsoleIO.readNonEmpty("Enter Batch ID to search:");
-    if (!validate.validBatchID(batchID)) {
-        JOptionPaneConsoleIO.showError("Invalid Batch ID format. Must be like SB00001.");
-        return;
-    }
+        String batchID = JOptionPaneConsoleIO.readNonEmpty("Enter Batch ID to search:");
 
-    StockBatch result = stock.findBatchByID(batchID);
-    
-    if (result == null) {
-        JOptionPaneConsoleIO.showError("Batch not found.");
-    } else {
-        String info = String.format("""
-            === Batch Found ===
-            Medicine    : %s
-            Batch ID    : %s
-            Quantity    : %d
-            Received    : %s
-            Expiry      : %s
-            """,
-            result.getMedicineName().name(),
-            result.getBatchID(),
-            result.getStockQty(),
-            result.getReceivedDate(),
-            result.getExpiryDate()
+        // Remove format validation, search directly
+        StockBatch result = stock.findBatchByID(batchID);
+
+        if (result == null) {
+            JOptionPaneConsoleIO.showError("Batch not found.");
+            return;
+        }
+
+        String display = String.format("""
+        === BATCH FOUND ===
+        Medicine    : %s
+        Batch ID    : %s
+        Quantity    : %d
+        Received    : %s
+        Expiry      : %s
+        """,
+                result.getMedicineName(),
+                result.getBatchID(),
+                result.getStockQty(),
+                result.getReceivedDate(),
+                result.getExpiryDate()
         );
-        JOptionPaneConsoleIO.showMonospaced("Search Result",info);
-    }
-}
 
+        JOptionPaneConsoleIO.showMonospaced("Batch Info", display);
+    }
     // ========== OPTION 3 ==========
     private void searchByMedicine() {
         MedicineName selected = JOptionPaneConsoleIO.readEnum(
@@ -133,7 +126,7 @@ public class StockMaintenanceUI {
                 MedicineName.class,
                 getMedicineNameOptions()
         );
-
+ 
         if (selected == null) {
             return; // User cancelled
         }
@@ -146,11 +139,11 @@ public class StockMaintenanceUI {
 
         // Format monospaced table
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%-15s %-10s %-8s %-12s %-12s%n", "Medicine", "BatchID", "Qty", "Expiry", "Received"));
-        sb.append("---------------------------------------------------------------\n");
+        sb.append(String.format("%-15s %-14s %-8s %-12s %-12s%n", "Medicine", "BatchID", "Qty", "Received", "Expiry"));
+        sb.append("----------------------------------------------------------------------\n");
 
         for (String[] row : records) {
-            sb.append(String.format("%-15s %-10s %-8s %-12s %-12s%n",
+            sb.append(String.format("%-15s %-14s %-8s %-12s %-12s%n",
                     row[0], row[1], row[2], row[3], row[4]));
         }
 
@@ -168,78 +161,26 @@ public class StockMaintenanceUI {
         }
     }
 
-    // ========== OPTION 5 ==========
-    private void showReports() {
-        int choice;
-        do {
-            choice = JOptionPaneConsoleIO.readOption(
-                "=== REPORT MENU ===",
-                "Reports Selection",    
-                new String[]{
-                    "Low Stock Summary",
-                    "Expiring Medicines Summary",
-                    "Back"
-                }
-            );
-
-            switch (choice) {
-                case 0 -> showLowStockReport();
-                case 1 -> showExpiringMedicinesReport();
-                case 2 -> JOptionPaneConsoleIO.showInfo("Exiting Report Selection.");
-                default -> JOptionPaneConsoleIO.showError("Invalid option selected.");
-            }
-        } while (choice != 2);
-    }
-
-    private void showLowStockReport() {
-        String thresholdStr = JOptionPaneConsoleIO.readNonEmpty("Enter low stock threshold (default 50):");
-        int threshold = 50;
-        if (!thresholdStr.isEmpty()) {
-            if (!validate.validQuantity(thresholdStr)) {
-                JOptionPaneConsoleIO.showError("Invalid threshold. Using default (50).");
-            } else {
-                threshold = Integer.parseInt(thresholdStr);
-            }
-        }
-        String report = reports.stockBalanceSummary(threshold);
-        JOptionPaneConsoleIO.showMonospaced("Search Result",report);
-    }
-
-    private void showExpiringMedicinesReport() {
-        String daysStr = JOptionPaneConsoleIO.readNonEmpty("Enter number of days to check expiry (default 30):");
-        int days = 30;
-        if (!daysStr.isEmpty()) {
-            if (!validate.isValidISODate(daysStr)) {
-                JOptionPaneConsoleIO.showError("Invalid number. Using default (30).");
-            } else {
-                days = Integer.parseInt(daysStr);
-            }
-        }
-        String report = reports.expiringMedicinesSummary(days);
-        JOptionPaneConsoleIO.showMonospaced("Search Result",report);
-    }
-
     // ========== SHARED ==========
-    private MedicineName chooseMedicine() {
-        MedicineName[] meds = MedicineName.values();
-        String[] options = new String[meds.length + 1];  // +1 for Cancel option
-
-        for (int i = 0; i < meds.length; i++) {
-            options[i] = meds[i].name() + " (" + meds[i].getType().name() + ")";
+    private MedicineName chooseMedicineByInput() {
+        StringBuilder sb = new StringBuilder("Available Medicines:\n");
+        for (MedicineName m : MedicineName.values()) {
+            sb.append("- ").append(m.name()).append(" (")
+                    .append(m.getType().name()).append(")\n");
         }
-        options[meds.length] = "Cancel";  // Last option is cancel
+        JOptionPaneConsoleIO.showInfo(sb.toString());
 
-        int choice = JOptionPaneConsoleIO.readOption(
-                "Select a medicine:", 
-                "Medicine Selection", 
-                options 
-        );
-
-        if (choice == meds.length || choice == JOptionPane.CLOSED_OPTION) {
-            return null; // Cancelled or closed
+        String input = JOptionPaneConsoleIO.readNonEmpty("Enter Medicine Name (e.g., PARACETAMOL):");
+        if (input == null) {
+            return null;
         }
 
-        return meds[choice];
+        try {
+            return MedicineName.valueOf(input.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            JOptionPaneConsoleIO.showError("Invalid medicine name. Please try again.");
+            return null;
+        }
     }
     
     // helpter method

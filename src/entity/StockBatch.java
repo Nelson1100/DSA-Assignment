@@ -7,16 +7,17 @@ public class StockBatch implements Comparable<StockBatch> {
     private final String batchID;
     private final MedicineName medicineName;
     private int stockQty;
-    private LocalDate expiryDate;
     private LocalDate receivedDate;
+    private LocalDate expiryDate;
+    
 
     public StockBatch(String batchID, MedicineName medicineName, int stockQty,
-            LocalDate expiryDate, LocalDate receivedDate) {
+            LocalDate receivedDate, LocalDate expiryDate) {
         this.batchID = batchID;
         this.medicineName = medicineName;
         this.stockQty = stockQty;
-        this.expiryDate = expiryDate;
         this.receivedDate = receivedDate;
+        this.expiryDate = expiryDate;
     }
 
     // Getters & setters (no validation)
@@ -80,7 +81,7 @@ public class StockBatch implements Comparable<StockBatch> {
 
     @Override
     public String toString() {
-        return String.format("StockBatch{batch=%s, med=%s, stockQty=%d, expiry=%s, received=%s}",
-                batchID, medicineName, stockQty, expiryDate, receivedDate);
+        return String.format("StockBatch{batch=%s, med=%s, stockQty=%d, received=%s, expiry=%s}",
+                batchID, medicineName, stockQty, receivedDate, expiryDate);
     }
 }

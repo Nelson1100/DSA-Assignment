@@ -216,4 +216,19 @@ public final class JOptionPaneConsoleIO {
                center("END OF REPORT", width) + "\n" +
                line('=', width);
     }
+    
+    public static String readOptional(String message) {
+        String input = JOptionPane.showInputDialog(null, message);
+        if (input == null) {
+            return null; // Cancel pressed
+        }
+        return input.trim(); // Allow empty input
+    }
+    
+    public static String readDropdown(String message, String[] options) {
+        return (String) JOptionPane.showInputDialog(
+                null, message, "Select Option",
+                JOptionPane.QUESTION_MESSAGE, null, options, options[0]
+        );
+    }
 }
