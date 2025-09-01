@@ -84,4 +84,14 @@ public class PharmacistManagement {
     public Pharmacist getPharmacist(String id) {
         return pharmacistTree.find(new Pharmacist(id, "", "", ""));
     }
+    
+    public Pharmacist[] toArray() {
+        int n = pharmacistTree.size();   // assuming your AVLTree has size()
+        Pharmacist[] arr = new Pharmacist[n];
+        int i = 0;
+        for (Pharmacist p : pharmacistTree) {  // your AVLTree implements Iterable
+            arr[i++] = p;
+        }
+        return arr;
+    }
 }

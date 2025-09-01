@@ -5,8 +5,8 @@ import adt.LinkedQueue;
 import control.MedicineDispenser;
 import control.PharmacistReportGenerator;
 import control.StockMaintenance;
-import dao.PrescriptionInitializer;
-import dao.StockInitializer;
+import control.PharmacistManagement;
+import dao.*;
 import entity.DispensedRecord;
 import entity.Prescription;
 import utility.JOptionPaneConsoleIO;
@@ -15,12 +15,14 @@ public class PharmacyModuleUI {
 
     StockMaintenance stock = new StockMaintenance();
     private LinkedQueue<Prescription> prescriptionQueue = new LinkedQueue<>();
-    MedicineDispenser dispenser = new MedicineDispenser(stock);
+    private final PharmacistManagement pharmacistManagement = new PharmacistManagement();
+    private final MedicineDispenser dispenser = new MedicineDispenser(stock, prescriptionQueue);
 
     
     public void run() {
         StockInitializer.initialize(stock);
         PrescriptionInitializer.initialize(prescriptionQueue, dispenser);
+        PharmacistInitializer.initialize(pharmacistManagement);
         
         int choice;
         do {
@@ -38,11 +40,11 @@ public class PharmacyModuleUI {
 
             switch (choice) {
                 case 0 ->
-                    new PharmacistUI().run();
+                    new PharmacistUI(pharmacistManagement).run();
                 case 1 ->
                     new StockMaintenanceUI(stock).run();
                 case 2 ->
-                    new MedicineDispenserUI(dispenser, prescriptionQueue).run();
+                    new MedicineDispenserUI(dispenser, pharmacistManagement, prescriptionQueue).run();
                 case 3 -> {
                     int reportChoice = JOptionPaneConsoleIO.readOption(
                             "=== Pharmacy Report Menu ===",
