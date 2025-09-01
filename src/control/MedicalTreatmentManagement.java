@@ -1,91 +1,126 @@
 package control;
 
-import adt.AVLTree;
 import adt.LinkedQueue;
-import adt.QueueInterface;
 import adt.QueueIterator;
-import dao.PatientInitializer;
 import entity.Patient;
 import entity.PatientHistory;
 import entity.TreatmentRecord;
+import utility.Validation;
+import utility.IDGenerator;
+import utility.IDType;
 
-import java.time.LocalTime;
+import javax.swing.JOptionPane;
+import java.time.LocalDateTime;
 
 public class MedicalTreatmentManagement {
+    private final PatientManagement patientMgmt;
+    private final PatientHistoryManagement historyMgmt;
+    private final Validation validate = new Validation();
 
-    private final QueueInterface<Patient> waitingQueue = new LinkedQueue<>();        // arrival order
-    private final AVL_Tree<PatientHistory> historyIndex = new AVL_Tree<>();         // search by patientID
-    private final QueueInterface<PatientHistory> historyList = new LinkedQueue<>(); // iterable list for reports
+    public MedicalTreatmentManagement(PatientManagement pm, PatientHistoryManagement phm) {
+        this.patientMgmt = pm;
+        this.historyMgmt = phm;
+    }
 
-    /** Load sample patients into waiting queue and index them. */
-    public void initializePatients() {
-        PatientInitializer.initialize(waitingQueue);
-        QueueIterator<Patient> it = ((LinkedQueue<Patient>) waitingQueue).getIterator();
-        while (it.hasNext()) {
-            Patient p = it.getNext();
-            ensureHistoryExists(p);
+    public MedicalTreatmentManagement(PatientManagement pm) {
+        this(pm, new PatientHistoryManagement());
+    }
+
+    public MedicalTreatmentManagement() {
+        this(new PatientManagement(), new PatientHistoryManagement());
+    }
+
+    public void preloadSampleTreatmentsFromPatients() {
+        historyMgmt.preloadSampleTreatments(patientMgmt);
+    }
+
+    public boolean registerTreatment(Patient p, String diagnosis, String treatment) {
+        if (p == null || p.getPatientID() == null || p.getPatientName() == null) {
+            JOptionPane.showMessageDialog(null, "Provide patient ID and name.");
+            return false;
         }
-    }
-
-    /** Add patient to waiting queue and create history index if new. */
-    public void addPatient(Patient p) {
-        waitingQueue.enqueue(p);
-        ensureHistoryExists(p);
-    }
-
-    /**
-     * Serve next waiting patient and record diagnosis & treatment.
-     * Returns the served Patient, or null if queue empty.
-     */
-    public Patient serveNextPatient(String diagnosis, String treatment) {
-        if (waitingQueue.isEmpty()) return null;
-        Patient served = waitingQueue.dequeue();
-        PatientHistory ph = ensureHistoryExists(served);
-        
-        ph.addRecord(new TreatmentRecord("T-PLACEHOLDER", served.getPatientID(), diagnosis, treatment, java.time.LocalDateTime.now()));
-        return served;
-    }
-
-    public boolean addTreatmentById(String patientID, TreatmentRecord record) {
-        // find patient history via dummy key
-        Patient dummy = new Patient(patientID, "", "", "", null, 0, null, LocalTime.now());
-        PatientHistory key = new PatientHistory(dummy);
-        PatientHistory found = historyIndex.search(key);
-        if (found == null) return false;
-        found.addRecord(record);
+        if (!validate.validId(p.getPatientID()) || !validate.validName(p.getPatientName())) {
+            JOptionPane.showMessageDialog(null, "Invalid ID or name format.");
+            return false;
+        }
+        Patient reg = patientMgmt.findPatientByID(p.getPatientID());
+        if (reg == null) {
+            JOptionPane.showMessageDialog(null, "Patient ID not found. Register first in Patient module.");
+            return false;
+        }
+        if (!reg.getPatientName().equalsIgnoreCase(p.getPatientName())) {
+            JOptionPane.showMessageDialog(null, "Patient name does not match registered record.");
+            return false;
+        }
+        if (diagnosis == null || diagnosis.trim().isEmpty() || treatment == null || treatment.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Diagnosis and treatment cannot be empty.");
+            return false;
+        }
+        String tid;
+        try { tid = IDGenerator.next(IDType.TREATMENT); } catch (Exception e) {
+            tid = java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase();
+        }
+        TreatmentRecord tr = new TreatmentRecord(tid, reg.getPatientID(), diagnosis.trim(), treatment.trim(), LocalDateTime.now());
+        historyMgmt.addRecordByPatient(reg, tr);
+        JOptionPane.showMessageDialog(null, "Treatment recorded: " + tid);
         return true;
     }
 
+    public void viewTreatments(String patientID) {
+        if (!validate.validId(patientID)) {
+            JOptionPane.showMessageDialog(null, "Invalid Patient ID.");
+            return;
+        }
+        PatientHistory ph = historyMgmt.findByPatientID(patientID);
+        if (ph == null) {
+            JOptionPane.showMessageDialog(null, "No history found for " + patientID);
+            return;
+        }
+        if (ph.getRecords().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No treatments found for " + patientID);
+            return;
+        }
+        StringBuilder sb = new StringBuilder("Treatment History for " + patientID + ":\n");
+        QueueIterator<TreatmentRecord> it = ((LinkedQueue<TreatmentRecord>) ph.getRecords()).getIterator();
+        int i = 0;
+        while (it.hasNext()) sb.append(++i).append(". ").append(it.getNext()).append("\n");
+        JOptionPane.showMessageDialog(null, sb.toString());
+    }
+
+    public boolean updateTreatment(String patientID, String treatmentID, String newDiagnosis, String newTreatment) {
+        if (!validate.validId(patientID) || treatmentID == null || treatmentID.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Invalid input.");
+            return false;
+        }
+        PatientHistory ph = historyMgmt.findByPatientID(patientID);
+        if (ph == null) {
+            JOptionPane.showMessageDialog(null, "No history for " + patientID);
+            return false;
+        }
+        boolean ok = historyMgmt.updateRecord(patientID, treatmentID, newDiagnosis, newTreatment);
+        JOptionPane.showMessageDialog(null, ok ? "Updated." : "Update failed (not found).");
+        return ok;
+    }
+
+    public boolean removeTreatment(String patientID, String treatmentID) {
+        if (!validate.validId(patientID) || treatmentID == null || treatmentID.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Invalid input.");
+            return false;
+        }
+        boolean ok = historyMgmt.removeRecord(patientID, treatmentID);
+        JOptionPane.showMessageDialog(null, ok ? "Removed." : "Not found.");
+        return ok;
+    }
+
+    public PatientHistory[] listAllHistories() {
+        return historyMgmt.listAllHistories();
+    }
+
+    public TreatmentRecord[] listAllRecords() {
+        return historyMgmt.listAllRecords();
+    }
+
     public PatientHistory findHistory(String patientID) {
-        Patient dummy = new Patient(patientID, "", "", "", null, 0, null, LocalTime.now());
-        PatientHistory key = new PatientHistory(dummy);
-        return historyIndex.search(key);
-    }
-
-    public QueueIterator<Patient> waitingIterator() {
-        return ((LinkedQueue<Patient>) waitingQueue).getIterator();
-    }
-
-    /** Iterator for all patient histories (used by reports). */
-    public QueueIterator<PatientHistory> historiesIterator() {
-        return ((LinkedQueue<PatientHistory>) historyList).getIterator();
-    }
-
-    /** Is waiting queue empty? */
-    public boolean isWaitingEmpty() {
-        return waitingQueue.isEmpty();
-    }
-
-    private PatientHistory ensureHistoryExists(Patient p) {
-        // Create a probe PatientHistory using patientID only (compareTo uses ID)
-        Patient probePatient = new Patient(p.getPatientID(), "", "", "", p.getGender(), 0, p.getVisitType(), LocalTime.now());
-        PatientHistory probe = new PatientHistory(probePatient);
-        PatientHistory found = historyIndex.search(probe);
-        if (found != null) return found;
-
-        PatientHistory ph = new PatientHistory(p);
-        historyIndex.insert(ph);
-        historyList.enqueue(ph);
-        return ph;
+        return historyMgmt.findByPatientID(patientID);
     }
 }
