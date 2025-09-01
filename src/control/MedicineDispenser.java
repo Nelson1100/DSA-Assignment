@@ -2,15 +2,17 @@ package control;
 
 import adt.LinkedQueue;
 import entity.*;
-import entity.Instruction;
 import utility.IDGenerator;
 import utility.IDType;
 import utility.JOptionPaneConsoleIO;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
 
+/**
+ *
+ * @author Khor Kai Yang
+ */
 public class MedicineDispenser {
 
     private final StockMaintenance stock;
@@ -77,7 +79,11 @@ public class MedicineDispenser {
     }
 
     public boolean clinicalCheck(Prescription p) {
-        if (p == null || p.getItems() == null || p.getItems().isEmpty()) {
+        if (p == null) {
+            return false;
+        }
+
+        if (p.getItems() == null || p.getItems().isEmpty()) {
             p.setRejectionReason("Invalid prescription: No items found.");
             return false;
         }
@@ -135,7 +141,9 @@ public class MedicineDispenser {
         sb.append(String.format("%-18s: %s\n", "Patient ID", p.getPatientID()));
         sb.append(String.format("%-18s: %s\n", "Doctor ID", p.getDoctorID()));
         sb.append(String.format("%-18s: %s\n", "Pharmacist", pharmacistName));
-        sb.append("\n" + "-".repeat(WIDTH) + "\n");
+        sb.append("\n");
+        sb.append("-".repeat(WIDTH));
+        sb.append("\n");
         sb.append(String.format("%-20s%-10s%s\n", "Medicine", "Qty", "Instructions"));
         sb.append("-".repeat(WIDTH)).append("\n");
 

@@ -1,20 +1,18 @@
 package boundary;
 
-import adt.QueueInterface;
 import adt.LinkedQueue;
 import control.MedicineDispenser;
 import control.PharmacistReportGenerator;
 import control.StockMaintenance;
 import control.PharmacistManagement;
 import dao.*;
-import entity.DispensedRecord;
 import entity.Prescription;
 import utility.JOptionPaneConsoleIO;
 
 public class PharmacyModuleUI {
 
     StockMaintenance stock = new StockMaintenance();
-    private LinkedQueue<Prescription> prescriptionQueue = new LinkedQueue<>();
+    private final LinkedQueue<Prescription> prescriptionQueue = new LinkedQueue<>();
     private final PharmacistManagement pharmacistManagement = new PharmacistManagement();
     private final MedicineDispenser dispenser = new MedicineDispenser(stock, prescriptionQueue);
 
@@ -28,7 +26,7 @@ public class PharmacyModuleUI {
         do {
             choice = JOptionPaneConsoleIO.readOption(
                     "=== Pharmacy Module ===",
-                    "Admin Control Panel",
+                    "Phamacist Management Module",
                     new String[]{
                         "Pharmacist Management",
                         "Stock Maintenance",

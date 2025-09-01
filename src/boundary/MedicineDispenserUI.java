@@ -7,10 +7,7 @@ import control.PharmacistManagement;
 import entity.*;
 import utility.JOptionPaneConsoleIO;
 
-import java.util.Iterator;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class MedicineDispenserUI {
 
@@ -33,7 +30,7 @@ public class MedicineDispenserUI {
         do {
             choice = JOptionPaneConsoleIO.readOption(
                     "=== MEDICINE DISPENSING MENU ===",
-                    "SELECT AN OPTION",
+                    "Medicine Dispensing",
                     new String[]{
                         "Dispense Prescription",
                         "View Daily Dispensing Labels",

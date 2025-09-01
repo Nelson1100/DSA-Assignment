@@ -5,8 +5,12 @@ import adt.AVLTree;
 import entity.Pharmacist;
 import java.util.Iterator;
 
+/**
+ *
+ * @author Khor Kai Yang
+ */
 public class PharmacistManagement {
-    private AVLInterface<Pharmacist> pharmacistTree = new AVLTree<>();
+    private final AVLInterface<Pharmacist> pharmacistTree = new AVLTree<>();
 
     // CREATE (Register new pharmacist)
     public boolean registerPharmacist(String id, String name, String phone, String email) {

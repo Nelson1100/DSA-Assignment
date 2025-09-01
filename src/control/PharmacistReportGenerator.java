@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 
+/**
+ *
+ * @author Khor Kai Yang
+ */
 public class PharmacistReportGenerator {
 
     private static final int WIDTH = 100;
