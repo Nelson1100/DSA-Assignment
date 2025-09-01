@@ -35,7 +35,8 @@ public class PatientUI {
                 case 1 -> new PatientQueueUI(pm).run();
                 case 2 -> new PatientReportUI(pm).run();
                 case 3, -1 -> repeat = false;
-                default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");            }
+                default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");            
+            }
         }
     }
 }
