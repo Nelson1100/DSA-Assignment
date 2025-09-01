@@ -47,45 +47,58 @@ public class PharmacistUI {
     }
 
     private void registerPharmacist() {
+        String name;
+        String phone;
+        String email;
+
         // === NAME INPUT ===
-        String name = JOptionPaneConsoleIO.readNonEmpty("Enter Pharmacist Name:");
-        if (name == null) {
-            return;
-        }
-        if (!validate.validName(name)) {
-            JOptionPaneConsoleIO.showError("Please enter a valid name.");
-            return;
-        }
-        name = validate.standardizedName(name);
-        if (pharmacistMgmt.findPharmacist(name) != null) {
-            JOptionPaneConsoleIO.showError("Pharmacist name already exists.");
-            return;
-        }
+        do {
+            name = JOptionPaneConsoleIO.readNonEmpty("Enter Pharmacist Name:");
+            if (name == null) {
+                return; // user pressed cancel
+            }
+            if (!validate.validName(name)) {
+                JOptionPaneConsoleIO.showError("Please enter a valid name.");
+                continue;
+            }
+            name = validate.standardizedName(name);
+            if (pharmacistMgmt.getPharmacistByName(name) != null) { // use byName, not byID
+                JOptionPaneConsoleIO.showError("Pharmacist name already exists.");
+                continue;
+            }
+            break; // valid input
+        } while (true);
 
         // === PHONE INPUT ===
-        String phone = JOptionPaneConsoleIO.readNonEmpty("Enter Phone Number:");
-        if (phone == null) {
-            return;
-        }
-        phone = validate.standardizedPhone(phone);
-        if (!validate.validPhone(phone)) {
-            JOptionPaneConsoleIO.showError("Please enter a valid phone number.");
-            return;
-        }
-        if (pharmacistMgmt.findPharmacistByPhone(phone) != null) {
-            JOptionPaneConsoleIO.showError("Phone number already exists.");
-            return;
-        }
+        do {
+            phone = JOptionPaneConsoleIO.readNonEmpty("Enter Phone Number:");
+            if (phone == null) {
+                return;
+            }
+            phone = validate.standardizedPhone(phone);
+            if (!validate.validPhone(phone)) {
+                JOptionPaneConsoleIO.showError("Please enter a valid phone number.");
+                continue;
+            }
+            if (pharmacistMgmt.findPharmacistByPhone(phone) != null) {
+                JOptionPaneConsoleIO.showError("Phone number already exists.");
+                continue;
+            }
+            break;
+        } while (true);
 
         // === EMAIL INPUT ===
-        String email = JOptionPaneConsoleIO.readNonEmpty("Enter Email:");
-        if (email == null) {
-            return;
-        }
-        if (!validate.validEmail(email)) {
-            JOptionPaneConsoleIO.showError("Please enter a valid email address.");
-            return;
-        }
+        do {
+            email = JOptionPaneConsoleIO.readNonEmpty("Enter Email:");
+            if (email == null) {
+                return;
+            }
+            if (!validate.validEmail(email)) {
+                JOptionPaneConsoleIO.showError("Please enter a valid email address.");
+                continue;
+            }
+            break;
+        } while (true);
 
         // === REGISTRATION ===
         String id = IDGenerator.next(IDType.PHARMACIST);
@@ -93,6 +106,7 @@ public class PharmacistUI {
         pharmacistMgmt.addPharmacist(p);
         JOptionPaneConsoleIO.showInfo("Pharmacist registered successfully.");
     }
+
 
     private void viewPharmacist() {
         String input = JOptionPaneConsoleIO.readNonEmpty("Enter Pharmacist ID or Name to search:");
