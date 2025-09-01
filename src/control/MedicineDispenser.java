@@ -16,11 +16,13 @@ public class MedicineDispenser {
     private final StockMaintenance stock;
     private final LinkedQueue<DispensedRecord> recordLog;
     private final LinkedQueue<String> auditLog;
+    private final LinkedQueue<Prescription> prescriptionQueue;
 
-    public MedicineDispenser(StockMaintenance stock) {
+    public MedicineDispenser(StockMaintenance stock, LinkedQueue<Prescription> prescriptionQueue) {
         this.stock = stock;
         this.recordLog = new LinkedQueue<>();
         this.auditLog = new LinkedQueue<>();
+        this.prescriptionQueue = prescriptionQueue;
     }
 
     public boolean dispense(Prescription p) {
@@ -33,12 +35,16 @@ public class MedicineDispenser {
             String recordID = IDGenerator.next(IDType.DISPENSEDRECORD);
             DispensedRecord record = new DispensedRecord(
                     recordID, p.getPrescriptionID(), p.getPatientID(), p.getDoctorID(),
-                    LocalDateTime.now(), new MedicineName[0], new int[0], false, p.getRejectionReason()
+                    LocalDateTime.now(), new MedicineName[0], new int[0], false, p.getRejectionReason(), null
             );
             recordLog.enqueue(record);
-            auditLog.enqueue("[FAILED] " + p.getPrescriptionID() + " — " + p.getRejectionReason());
+
+            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+            auditLog.enqueue("[" + now + "] [FAILED] " + p.getPrescriptionID() + " — " + p.getRejectionReason());
+
             return false;
         }
+
 
         int size = 0;
         for (PrescriptionItem i : p.getItems()) {
@@ -60,12 +66,14 @@ public class MedicineDispenser {
         String recordID = IDGenerator.next(IDType.DISPENSEDRECORD);
         DispensedRecord record = new DispensedRecord(
                 recordID, p.getPrescriptionID(), p.getPatientID(), p.getDoctorID(),
-                LocalDateTime.now(), meds, qtys, true, null
+                LocalDateTime.now(), meds, qtys, true, null, p
         );
         recordLog.enqueue(record);
-        auditLog.enqueue("[DISPENSED] " + p.getPrescriptionID());
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+        auditLog.enqueue("[" + now + "] [DISPENSED] " + p.getPrescriptionID());
 
         return true;
+
     }
 
     public boolean clinicalCheck(Prescription p) {
@@ -163,5 +171,17 @@ public class MedicineDispenser {
 
     public LinkedQueue<String> getAuditLog() {
         return auditLog;
+    }
+    
+    public Prescription findPrescriptionById(String id) {
+        if (id == null) {
+            return null;
+        }
+        for (Prescription p : prescriptionQueue) {
+            if (p != null && id.equals(p.getPrescriptionID())) {
+                return p;
+            }
+        }
+        return null;
     }
 }
