@@ -3,19 +3,23 @@ package boundary;
 import control.ConsultationManagement;
 import control.PatientManagement;
 import control.DoctorManagement;
+import control.ConsultationReportGenerator;
 import entity.*;
 import utility.JOptionPaneConsoleIO;
 import adt.*;
 
 import javax.swing.JOptionPane;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+
+/**
+ *
+ * @author Sim Jia Quan
+ */
 
 public class ConsultationUI {
     private final ConsultationManagement consultationManagement;
     private final PatientManagement patientManagement;
     private final DoctorManagement doctorManagement;
+    private final ConsultationReportGenerator reportGenerator;
     
     public ConsultationUI(ConsultationManagement consultationManagement, 
                          PatientManagement patientManagement,
@@ -23,6 +27,7 @@ public class ConsultationUI {
         this.consultationManagement = consultationManagement;
         this.patientManagement = patientManagement;
         this.doctorManagement = doctorManagement;
+        this.reportGenerator = new ConsultationReportGenerator(consultationManagement, patientManagement, doctorManagement);
     }
     
     public void run() {
@@ -34,9 +39,6 @@ public class ConsultationUI {
             "Update Consultation Details",
             "Complete Consultation",
             "Cancel Consultation",
-            "Schedule Appointment",
-            "Schedule Follow-up Appointment",
-            "Manage Appointments",
             "Search Consultations",
             "View Reports",
             "Back"
@@ -55,12 +57,9 @@ public class ConsultationUI {
                 case 2 -> updateConsultationDetails();
                 case 3 -> completeConsultation();
                 case 4 -> cancelConsultation();
-                case 5 -> scheduleAppointment();
-                case 6 -> scheduleFollowUpAppointment();
-                case 7 -> manageAppointments();
-                case 8 -> searchConsultations();
-                case 9 -> viewReports();
-                case 10, -1 -> repeat = false;
+                case 5 -> searchConsultations();
+                case 6 -> viewReports();
+                case 7, -1 -> repeat = false;
                 default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
             }
         }
@@ -264,298 +263,6 @@ public class ConsultationUI {
         }
     }
     
-    private void scheduleAppointment() {
-        try {
-            String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
-            if (patientID == null || patientID.trim().isEmpty()) {
-                JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
-                return;
-            }
-            
-            Patient patient = patientManagement.findPatientByID(patientID.trim());
-            if (patient == null) {
-                JOptionPaneConsoleIO.showError("Patient not found with ID: " + patientID);
-                return;
-            }
-            
-            Doctor[] doctors = doctorManagement.getAllDoctor();
-            if (doctors.length == 0) {
-                JOptionPaneConsoleIO.showError("No doctors available in the system.");
-                return;
-            }
-            
-            String[] doctorOptions = new String[doctors.length];
-            for (int i = 0; i < doctors.length; i++) {
-                doctorOptions[i] = doctors[i].getDoctorID() + " - " + doctors[i].getDoctorName() + 
-                                 " (" + doctors[i].getSpecialization() + ")";
-            }
-            
-            int doctorChoice = JOptionPaneConsoleIO.readOption(
-                "Select a doctor:", "Available Doctors", doctorOptions
-            );
-            
-            if (doctorChoice == -1) return;
-            
-            String doctorID = doctors[doctorChoice].getDoctorID();
-            
-            String dateTimeStr = JOptionPaneConsoleIO.readNonEmpty("Enter Appointment Date and Time (YYYY-MM-DD HH:mm):");
-            if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) {
-                JOptionPaneConsoleIO.showError("Date and time cannot be empty.");
-                return;
-            }
-            
-            LocalDateTime appointmentDateTime;
-            try {
-                appointmentDateTime = LocalDateTime.parse(dateTimeStr.trim(), 
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-            } catch (DateTimeParseException e) {
-                JOptionPaneConsoleIO.showError("Invalid date format. Please use YYYY-MM-DD HH:mm");
-                return;
-            }
-            
-            if (appointmentDateTime.isBefore(LocalDateTime.now())) {
-                JOptionPaneConsoleIO.showError("Appointment time cannot be in the past.");
-                return;
-            }
-            
-            String purpose = JOptionPane.showInputDialog("Enter Appointment Purpose:");
-            if (purpose == null || purpose.trim().isEmpty()) {
-                purpose = "Regular checkup";
-            }
-            
-            String result = consultationManagement.scheduleAppointment(patientID.trim(), 
-                                                                     doctorID, 
-                                                                     appointmentDateTime, 
-                                                                     purpose.trim());
-            
-            if (result.startsWith("Error:")) {
-                JOptionPaneConsoleIO.showError(result);
-            } else {
-                JOptionPaneConsoleIO.showPlain(result, "Success");
-            }
-            
-        } catch (Exception e) {
-            JOptionPaneConsoleIO.showError("An error occurred: " + e.getMessage());
-        }
-    }
-    
-    private void scheduleFollowUpAppointment() {
-        try {
-            String consultationID = JOptionPaneConsoleIO.readNonEmpty("Enter Consultation ID:");
-            if (consultationID == null || consultationID.trim().isEmpty()) {
-                JOptionPaneConsoleIO.showError("Consultation ID cannot be empty.");
-                return;
-            }
-            
-            Consultation consultation = consultationManagement.getConsultationByID(consultationID.trim());
-            if (consultation == null) {
-                JOptionPaneConsoleIO.showError("Consultation not found with ID: " + consultationID);
-                return;
-            }
-            
-            if (!consultation.isCompleted()) {
-                JOptionPaneConsoleIO.showError("Can only schedule follow-up appointments for completed consultations.");
-                return;
-            }
-            
-            JOptionPaneConsoleIO.showPlain(consultation.toString(), "Original Consultation");
-            
-            String dateTimeStr = JOptionPaneConsoleIO.readNonEmpty("Enter Follow-up Appointment Date and Time (YYYY-MM-DD HH:mm):");
-            if (dateTimeStr == null || dateTimeStr.trim().isEmpty()) {
-                JOptionPaneConsoleIO.showError("Date and time cannot be empty.");
-                return;
-            }
-            
-            LocalDateTime appointmentDateTime;
-            try {
-                appointmentDateTime = LocalDateTime.parse(dateTimeStr.trim(), 
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-            } catch (DateTimeParseException e) {
-                JOptionPaneConsoleIO.showError("Invalid date format. Please use YYYY-MM-DD HH:mm");
-                return;
-            }
-            
-            if (appointmentDateTime.isBefore(LocalDateTime.now())) {
-                JOptionPaneConsoleIO.showError("Appointment time cannot be in the past.");
-                return;
-            }
-            
-            String purpose = JOptionPane.showInputDialog("Enter Follow-up Purpose:");
-            if (purpose == null || purpose.trim().isEmpty()) {
-                purpose = "Follow-up consultation";
-            }
-            
-            String result = consultationManagement.scheduleFollowUpAppointment(consultationID.trim(), 
-                                                                             appointmentDateTime, 
-                                                                             purpose.trim());
-            
-            if (result.startsWith("Error:")) {
-                JOptionPaneConsoleIO.showError(result);
-            } else {
-                JOptionPaneConsoleIO.showPlain(result, "Success");
-            }
-            
-        } catch (Exception e) {
-            JOptionPaneConsoleIO.showError("An error occurred: " + e.getMessage());
-        }
-    }
-    
-    private void manageAppointments() {
-        String[] appointmentOptions = {
-            "View All Appointments",
-            "View Upcoming Appointments",
-            "Update Appointment Status",
-            "View Appointments by Patient",
-            "View Appointments by Doctor",
-            "Back"
-        };
-        
-        int choice = JOptionPaneConsoleIO.readOption(
-            "Select appointment management option:", "Appointment Management", appointmentOptions
-        );
-        
-        switch (choice) {
-            case 0 -> viewAllAppointments();
-            case 1 -> viewUpcomingAppointments();
-            case 2 -> updateAppointmentStatus();
-            case 3 -> viewAppointmentsByPatient();
-            case 4 -> viewAppointmentsByDoctor();
-            case 5, -1 -> { /* Back */ }
-            default -> JOptionPaneConsoleIO.showError("Please choose a valid option.");
-        }
-    }
-    
-    private void viewAllAppointments() {
-        JOptionPaneConsoleIO.showPlain("This feature displays all appointments in the system.\nCurrently showing upcoming appointments instead.", "All Appointments");
-        viewUpcomingAppointments();
-    }
-    
-    private void viewUpcomingAppointments() {
-        AVLTree<Appointment> upcomingAppointments = consultationManagement.getUpcomingAppointments();
-        
-        if (upcomingAppointments.isEmpty()) {
-            JOptionPaneConsoleIO.showPlain("No upcoming appointments found.", "Upcoming Appointments");
-            return;
-        }
-        
-        StringBuilder sb = new StringBuilder("=== Upcoming Appointments ===\n\n");
-        
-        for (Appointment appointment : upcomingAppointments) {
-            Patient patient = patientManagement.findPatientByID(appointment.getPatientID());
-            String patientName = patient != null ? patient.getPatientName() : "Unknown";
-            
-            sb.append(String.format("ID: %s | Patient: %s | Doctor: %s | Date: %s | Purpose: %s\n",
-                appointment.getAppointmentID(),
-                patientName,
-                appointment.getDoctorID(),
-                appointment.getAppointmentDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                appointment.getPurpose()
-            ));
-        }
-        
-        JOptionPaneConsoleIO.showPlain(sb.toString(), "Upcoming Appointments");
-    }
-    
-    private void updateAppointmentStatus() {
-        String appointmentID = JOptionPaneConsoleIO.readNonEmpty("Enter Appointment ID:");
-        if (appointmentID == null || appointmentID.trim().isEmpty()) {
-            JOptionPaneConsoleIO.showError("Appointment ID cannot be empty.");
-            return;
-        }
-        
-        String appointmentInfo = consultationManagement.getAppointmentInfo(appointmentID.trim());
-        if (appointmentInfo.startsWith("Error:")) {
-            JOptionPaneConsoleIO.showError(appointmentInfo);
-            return;
-        }
-        
-        JOptionPaneConsoleIO.showPlain(appointmentInfo, "Current Appointment");
-        
-        String[] statusOptions = {
-            "CONFIRMED",
-            "COMPLETED", 
-            "CANCELLED",
-            "NO_SHOW"
-        };
-        
-        int statusChoice = JOptionPaneConsoleIO.readOption(
-            "Select new status:", "Update Status", statusOptions
-        );
-        
-        if (statusChoice == -1) return;
-        
-        AppointmentStatus newStatus = AppointmentStatus.valueOf(statusOptions[statusChoice]);
-        String notes = JOptionPane.showInputDialog("Enter notes (optional):");
-        
-        String result = consultationManagement.updateAppointmentStatus(appointmentID.trim(), 
-                                                                      newStatus, 
-                                                                      notes != null ? notes.trim() : "");
-        
-        if (result.startsWith("Error:")) {
-            JOptionPaneConsoleIO.showError(result);
-        } else {
-            JOptionPaneConsoleIO.showPlain(result, "Success");
-        }
-    }
-    
-    private void viewAppointmentsByPatient() {
-        String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
-        if (patientID == null || patientID.trim().isEmpty()) {
-            JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
-            return;
-        }
-        
-        AVLTree<Appointment> appointments = consultationManagement.getAppointmentsByPatient(patientID.trim());
-        if (appointments.isEmpty()) {
-            JOptionPaneConsoleIO.showPlain("No appointments found for patient ID: " + patientID, "Patient Appointments");
-            return;
-        }
-        
-        StringBuilder sb = new StringBuilder("=== Appointments for Patient " + patientID + " ===\n\n");
-        
-        for (Appointment appointment : appointments) {
-            sb.append(String.format("ID: %s | Doctor: %s | Date: %s | Status: %s | Purpose: %s\n",
-                appointment.getAppointmentID(),
-                appointment.getDoctorID(),
-                appointment.getAppointmentDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                appointment.getStatus(),
-                appointment.getPurpose()
-            ));
-        }
-        
-        JOptionPaneConsoleIO.showPlain(sb.toString(), "Patient Appointments");
-    }
-    
-    private void viewAppointmentsByDoctor() {
-        String doctorID = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID:");
-        if (doctorID == null || doctorID.trim().isEmpty()) {
-            JOptionPaneConsoleIO.showError("Doctor ID cannot be empty.");
-            return;
-        }
-        
-        AVLTree<Appointment> appointments = consultationManagement.getAppointmentsByDoctor(doctorID.trim());
-        if (appointments.isEmpty()) {
-            JOptionPaneConsoleIO.showPlain("No appointments found for doctor ID: " + doctorID, "Doctor Appointments");
-            return;
-        }
-        
-        StringBuilder sb = new StringBuilder("=== Appointments for Doctor " + doctorID + " ===\n\n");
-        
-        for (Appointment appointment : appointments) {
-            Patient patient = patientManagement.findPatientByID(appointment.getPatientID());
-            String patientName = patient != null ? patient.getPatientName() : "Unknown";
-            
-            sb.append(String.format("ID: %s | Patient: %s | Date: %s | Status: %s | Purpose: %s\n",
-                appointment.getAppointmentID(),
-                patientName,
-                appointment.getAppointmentDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
-                appointment.getStatus(),
-                appointment.getPurpose()
-            ));
-        }
-        
-        JOptionPaneConsoleIO.showPlain(sb.toString(), "Doctor Appointments");
-    }
     
     private void searchConsultations() {
         String[] searchOptions = {
@@ -676,7 +383,60 @@ public class ConsultationUI {
     }
     
     private void viewReports() {
-        String summary = consultationManagement.getConsultationSummary();
-        JOptionPaneConsoleIO.showPlain(summary, "Consultation Summary");
+        String[] reportOptions = {
+            "Consultation Summary",
+            "Doctor Consultation Report",
+            "Patient Consultation Report",
+            "Back"
+        };
+        
+        int choice = JOptionPaneConsoleIO.readOption(
+            "Select report type:", "Consultation Reports", reportOptions
+        );
+        
+        switch (choice) {
+            case 0:
+                showConsultationSummary();
+                break;
+            case 1:
+                showDoctorReport();
+                break;
+            case 2:
+                showPatientReport();
+                break;
+            case 3:
+            case -1:
+                return;
+            default:
+                JOptionPaneConsoleIO.showError("Please choose a valid option.");
+                break;
+        }
+    }
+    
+    private void showConsultationSummary() {
+        String summary = reportGenerator.generateDetailedSummary();
+        JOptionPaneConsoleIO.showPlain(summary, "Consultation Summary Report");
+    }
+    
+    private void showDoctorReport() {
+        String doctorID = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID:");
+        if (doctorID == null || doctorID.trim().isEmpty()) {
+            JOptionPaneConsoleIO.showError("Doctor ID cannot be empty.");
+            return;
+        }
+        
+        String doctorReport = reportGenerator.generateDoctorReport(doctorID.trim());
+        JOptionPaneConsoleIO.showPlain(doctorReport, "Doctor Consultation Report");
+    }
+    
+    private void showPatientReport() {
+        String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
+        if (patientID == null || patientID.trim().isEmpty()) {
+            JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
+            return;
+        }
+        
+        String patientReport = reportGenerator.generatePatientReport(patientID.trim());
+        JOptionPaneConsoleIO.showPlain(patientReport, "Patient Consultation Report");
     }
 }

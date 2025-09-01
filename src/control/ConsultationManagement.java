@@ -2,24 +2,20 @@ package control;
 
 import adt.*;
 import entity.*;
-import static entity.AppointmentStatus.CANCELLED;
-import static entity.AppointmentStatus.COMPLETED;
-import static entity.AppointmentStatus.CONFIRMED;
-import static entity.AppointmentStatus.NO_SHOW;
-import static entity.AppointmentStatus.SCHEDULED;
 import entity.keys.*;
 import utility.IDGenerator;
 import utility.IDType;
 
-import java.time.LocalDateTime;
+/**
+ *
+ * @author Sim Jia Quan
+ */
 
 public class ConsultationManagement {
     private final AVLTree<ConsultationByID> idxByID = new AVLTree<>();
     private final AVLTree<ConsultationByPatientID> idxByPatientID = new AVLTree<>();
     private final AVLTree<ConsultationByDoctorID> idxByDoctorID = new AVLTree<>();
-    
-    private final AVLTree<Appointment> appointments = new AVLTree<>();
-    
+        
     private final PatientManagement patientManagement;
     private final DoctorManagement doctorManagement;
     
@@ -123,50 +119,7 @@ public class ConsultationManagement {
             doctor.getEmail()
         );
     }
-    
-    /*Gets detailed information about an appointment */
-    public String getAppointmentInfo(String appointmentID) {
-        if (appointmentID == null || appointmentID.trim().isEmpty()) {
-            return "Error: Appointment ID cannot be null or empty.";
-        }
         
-        Appointment appointment = getAppointmentByID(appointmentID);
-        if (appointment == null) {
-            return "Error: Appointment not found - " + appointmentID;
-        }
-        
-        /* Validate appointment ID format using entity method */
-        if (!appointment.hasValidAppointmentID()) {
-            return "Error: Invalid appointment ID format - " + appointmentID;
-        }
-        
-        /* Get patient and doctor information */
-        Patient patient = patientManagement.findPatientByID(appointment.getPatientID());
-        Doctor doctor = getDoctorByID(appointment.getDoctorID());
-        
-        String patientName = (patient != null) ? patient.getPatientName() : "Unknown Patient";
-        String doctorName = (doctor != null) ? doctor.getDoctorName() : "Unknown Doctor";
-        
-        return String.format(
-            "Appointment ID: %s\n" +
-            "Patient: %s (%s)\n" +
-            "Doctor: %s (%s)\n" +
-            "Date/Time: %s\n" +
-            "Purpose: %s\n" +
-            "Status: %s\n" +
-            "Notes: %s",
-            appointmentID,
-            patientName,
-            appointment.getPatientID(),
-            doctorName,
-            appointment.getDoctorID(),
-            appointment.getAppointmentDateTime().toString(),
-            appointment.getPurpose(),
-            appointment.getStatus(),
-            appointment.getNotes().isEmpty() ? "None" : appointment.getNotes()
-        );
-    }
-    
     /*Checks if a patient has any active consultations*/
     public boolean hasActiveConsultation(String patientID) {
         if (!isValidPatientID(patientID)) {
@@ -196,47 +149,7 @@ public class ConsultationManagement {
         }
         return false;
     }
-    
-    /*Validates appointment status transitions*/
-    public ValidationResult validateAppointmentStatusTransition(Appointment appointment, AppointmentStatus newStatus) {
-        ValidationResult result = new ValidationResult();
         
-        if (appointment == null) {
-            result.addError("Appointment cannot be null.");
-            return result;
-        }
-        
-        AppointmentStatus currentStatus = appointment.getStatus();
-        
-        /* Define valid transitions */
-        switch (currentStatus) {
-            case SCHEDULED:
-                if (newStatus != AppointmentStatus.CONFIRMED && 
-                    newStatus != AppointmentStatus.CANCELLED) {
-                    result.addError("Scheduled appointments can only be confirmed or cancelled.");
-                }
-                break;
-            case CONFIRMED:
-                if (newStatus != AppointmentStatus.COMPLETED && 
-                    newStatus != AppointmentStatus.CANCELLED &&
-                    newStatus != AppointmentStatus.NO_SHOW) {
-                    result.addError("Confirmed appointments can only be completed, cancelled, or marked as no-show.");
-                }
-                break;
-            case COMPLETED:
-                result.addError("Completed appointments cannot be modified.");
-                break;
-            case CANCELLED:
-                result.addError("Cancelled appointments cannot be modified.");
-                break;
-            case NO_SHOW:
-                result.addError("No-show appointments cannot be modified.");
-                break;
-        }
-        
-        return result;
-    }
-    
     /* ---------- Indexing Methods ---------- */
     
     private void indexConsultation(Consultation consultation) {
@@ -406,51 +319,30 @@ public class ConsultationManagement {
     /* ---------- Statistics and Reports ---------- */
     
     public int getTotalConsultationsCount() {
-        int count = 0;
-        for (ConsultationByID consultation : idxByID) {
-            count++;
-        }
-        return count;
+        return idxByID.size();
     }
     
     public int getActiveConsultationsCount() {
-        int count = 0;
         AVLTree<Consultation> activeConsultations = getActiveConsultations();
-        for (Consultation consultation : activeConsultations) {
-            count++;
-        }
-        return count;
+        return activeConsultations.size();
     }
     
     public int getCompletedConsultationsCount() {
-        int count = 0;
         AVLTree<Consultation> completedConsultations = getCompletedConsultations();
-        for (Consultation consultation : completedConsultations) {
-            count++;
-        }
-        return count;
+        return completedConsultations.size();
     }
     
     public int getConsultationsCountByDoctor(String doctorID) {
-        int count = 0;
         AVLTree<Consultation> doctorConsultations = getConsultationsByDoctorID(doctorID);
-        for (Consultation consultation : doctorConsultations) {
-            count++;
-        }
-        return count;
+        return doctorConsultations.size();
     }
     
     public int getConsultationsCountByPatient(String patientID) {
-        int count = 0;
         AVLTree<Consultation> patientConsultations = getConsultationsByPatientID(patientID);
-        for (Consultation consultation : patientConsultations) {
-            count++;
-        }
-        return count;
+        return patientConsultations.size();
     }
     
-    /* ---------- Helper Methods ---------- */
-    
+    /* ---------- Helper Methods ---------- */  
     private Doctor getDoctorByID(String doctorID) {
         Doctor searchKey = new Doctor();
         searchKey.setDoctorID(doctorID);
@@ -458,7 +350,6 @@ public class ConsultationManagement {
     }
     
     /* ---------- Utility Methods ---------- */
-    
     public String getConsultationSummary() {
         int total = getTotalConsultationsCount();
         int active = getActiveConsultationsCount();
@@ -485,203 +376,7 @@ public class ConsultationManagement {
         return null;
     }
     
-    /* ---------- Appointment Management ---------- */
-    
-    public String scheduleFollowUpAppointment(String consultationID, LocalDateTime appointmentDateTime, String purpose) {
-        /* Validate consultation ID format */
-        if (consultationID == null || consultationID.trim().isEmpty()) {
-            return "Error: Consultation ID cannot be null or empty.";
-        }
-        
-        Consultation consultation = getConsultationByID(consultationID);
-        if (consultation == null) {
-            return "Error: Consultation not found with ID: " + consultationID;
-        }
-        
-        /* Validate consultation ID format using entity method */
-        if (!consultation.hasValidConsultationID()) {
-            return "Error: Invalid consultation ID format. Expected format: CYYYYMMDD####";
-        }
-        
-        if (!consultation.isCompleted()) {
-            return "Error: Can only schedule follow-up appointments for completed consultations.";
-        }
-        
-        /* Validate that the consultation's patient and doctor still exist */
-        if (!isValidPatientID(consultation.getPatientID())) {
-            return "Error: Patient from consultation no longer exists in the system.";
-        }
-        
-        if (!isValidDoctorID(consultation.getDoctorID())) {
-            return "Error: Doctor from consultation no longer exists in the system.";
-        }
-        
-        Doctor doctor = getDoctorByID(consultation.getDoctorID());
-        Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
-        
-        String appointmentID = IDGenerator.next(IDType.APPOINTMENT);
-        
-        Appointment appointment = new Appointment(
-            appointmentID,
-            consultation.getPatientID(),
-            consultation.getDoctorID(),
-            consultationID,
-            appointmentDateTime,
-            purpose
-        );
-        
-        appointments.insert(appointment);
-        
-        return String.format(
-            "Follow-up appointment scheduled successfully.\n" +
-            "Appointment ID: %s\n" +
-            "Patient: %s (%s)\n" +
-            "Doctor: %s (%s)\n" +
-            "Date/Time: %s\n" +
-            "Purpose: %s",
-            appointmentID,
-            patient.getPatientName(),
-            consultation.getPatientID(),
-            doctor.getDoctorName(),
-            consultation.getDoctorID(),
-            appointmentDateTime.toString(),
-            purpose
-        );
-    }
-    
-    public String scheduleAppointment(String patientID, String doctorID, LocalDateTime appointmentDateTime, String purpose) {
-        ValidationResult validationResult = validateConsultationIDs(patientID, doctorID);
-        if (!validationResult.isValid()) {
-            return "Validation Error:\n" + validationResult.getErrorMessage();
-        }
-        
-        Patient patient = patientManagement.findPatientByID(patientID);
-        Doctor doctor = getDoctorByID(doctorID);
-        
-        String appointmentID = IDGenerator.next(IDType.APPOINTMENT);
-        
-        Appointment appointment = new Appointment(
-            appointmentID,
-            patientID,
-            doctorID,
-            null, 
-            appointmentDateTime,
-            purpose
-        );
-        
-        appointments.insert(appointment);
-        
-        return String.format(
-            "Appointment scheduled successfully.\n" +
-            "Appointment ID: %s\n" +
-            "Patient: %s (%s)\n" +
-            "Doctor: %s (%s)\n" +
-            "Date/Time: %s\n" +
-            "Purpose: %s",
-            appointmentID,
-            patient.getPatientName(),
-            patientID,
-            doctor.getDoctorName(),
-            doctorID,
-            appointmentDateTime.toString(),
-            purpose
-        );
-    }
-    
-    public String updateAppointmentStatus(String appointmentID, AppointmentStatus newStatus, String notes) {
-        if (appointmentID == null || appointmentID.trim().isEmpty()) {
-            return "Error: Appointment ID cannot be null or empty.";
-        }
-        
-        Appointment appointment = getAppointmentByID(appointmentID);
-        if (appointment == null) {
-            return "Error: Appointment not found - " + appointmentID;
-        }
-        
-        /* Validate appointment ID format using entity method */
-        if (!appointment.hasValidAppointmentID()) {
-            return "Error: Invalid appointment ID format - " + appointmentID;
-        }
-        
-        ValidationResult validation = validateAppointmentStatusTransition(appointment, newStatus);
-        if (!validation.isValid()) {
-            return "Error: " + validation.getErrorMessage();
-        }
-        
-        /* Update the appointment status */
-        appointment.setStatus(newStatus);
-        if (notes != null && !notes.trim().isEmpty()) {
-            String currentNotes = appointment.getNotes();
-            String updatedNotes = currentNotes.isEmpty() ? notes : currentNotes + "\n" + notes;
-            appointment.setNotes(updatedNotes);
-        }
-        
-        return String.format(
-            "Appointment status updated successfully.\n" +
-            "Appointment ID: %s\n" +
-            "New Status: %s\n" +
-            "Previous Status: %s",
-            appointmentID,
-            newStatus,
-            appointment.getStatus()
-        );
-    }
-    
-    public Appointment getAppointmentByID(String appointmentID) {
-        if (appointmentID == null || appointmentID.trim().isEmpty()) {
-            return null; // Return null for invalid appointment ID
-        }
-        
-        for (Appointment apt : appointments) {
-            if (apt.getAppointmentID().equals(appointmentID)) {
-                return apt;
-            }
-        }
-        return null;
-    }
-    
-    public AVLTree<Appointment> getAppointmentsByPatient(String patientID) {
-        if (!isValidPatientID(patientID)) {
-            return new AVLTree<>(); // Return empty tree for invalid patient ID
-        }
-        
-        AVLTree<Appointment> patientAppointments = new AVLTree<>();
-        for (Appointment apt : appointments) {
-            if (apt.getPatientID().equals(patientID)) {
-                patientAppointments.insert(apt);
-            }
-        }
-        return patientAppointments;
-    }
-    
-    public AVLTree<Appointment> getAppointmentsByDoctor(String doctorID) {
-        if (!isValidDoctorID(doctorID)) {
-            return new AVLTree<>(); // Return empty tree for invalid doctor ID
-        }
-        
-        AVLTree<Appointment> doctorAppointments = new AVLTree<>();
-        for (Appointment apt : appointments) {
-            if (apt.getDoctorID().equals(doctorID)) {
-                doctorAppointments.insert(apt);
-            }
-        }
-        return doctorAppointments;
-    }
-    
-    public AVLTree<Appointment> getUpcomingAppointments() {
-        AVLTree<Appointment> upcomingAppointments = new AVLTree<>();
-        LocalDateTime now = LocalDateTime.now();
-        
-        for (Appointment apt : appointments) {
-            if (apt.getAppointmentDateTime().isAfter(now) && !apt.isCancelled()) {
-                upcomingAppointments.insert(apt);
-            }
-        }
-        return upcomingAppointments;
-    }
-    
     /* ---------- Validation Result Inner Class ---------- */
-    
     /* Hold validation results with error messages */
     public static class ValidationResult {
         private boolean valid = true;

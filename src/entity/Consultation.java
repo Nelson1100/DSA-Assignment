@@ -3,6 +3,11 @@ package entity;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ *
+ * @author Sim Jia Quan
+ */
+
 public class Consultation implements Comparable<Consultation> {
     private final String consultationID;
     private final String patientID;
