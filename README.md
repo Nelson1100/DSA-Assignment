@@ -23,14 +23,14 @@ Modules Overview
 
 2. Doctor Management Module
 	- Manage doctor profiles: add, update, remove, search.
-	- Doctors indexed in AVLTree by ID and key fields.
-	- Duty schedules managed with DoctorDutyManagement (indexed by doctor/date/shift).
+	- Duty schedules managed with DoctorDutyManagement.
 	- Undo support for doctor updates via LinkedStack<Doctor>.
+ 	- Doctor listing features.
+  	- Duty Checking by date and shift.
 
    Reports:
-	- Annual Attendance Report: Per-doctor yearly attendance summary.
-	- Specialization Inventory Report: Count and percentage of doctors by specialization, with percentage bar visualization.
-	- Attendance Ranking: Doctors ranked by annual attendance using AVLTree.
+	- Annual Attendance Report & Attendance Ranking: Per-doctor yearly attendance summary & Doctors ranked by annual attendance.
+	- Specialization Inventory Report: Count and percentage of doctors by specialization.
 
 3. Consultation Management Module
 	- Add, list, update, delete consultation records.
