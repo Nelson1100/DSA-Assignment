@@ -55,28 +55,27 @@ Modules Overview
 	- This module combines Stock Maintenance, Pharmacist Management, and Medicine Dispensing into one integrated workflow.
 
 a) Stock Maintenance
-	- Manage medicine stock batches: add, update, delete, display.
-	- Batches sorted by expiry date (AVLTree), dispensed using FEFO (First Expiry, First Out).
+	- Maintain and manage the medicine stock batches using AVLTree<StockBatch>.
+	- Support FEFO (First-Expired, First-Out) logic for batch dispensing.
+	- Add new stock batches and update quantities.
+	- Identify batches that are expired, low in stock, or matching specific criteria.
 
    Reports:
-	- Stock Health Report: Displays stock level and flags low/critical items.
 	- Inventory & Demand Forecast Report: Predicts demand and identifies risk levels.
 
 b) Pharmacist Management
-	- Register pharmacists and manage their contact information.
-	- Schedule pharmacist duties by date and shift (AVLTree index).
-
-   Reports:
-	- Pharmacist Duty Report: Overview of duty schedules and availability.
+	- Manage pharmacist records using custom AVLTree<Pharmacist>.
+	- Support pharmacist registration, update, removal, and searching by ID.
 
 c) Medicine Dispensing
-	- Dispense medicines based on prescriptions using FEFO (First Expired, First Out) logic.
-	- Supports stock simulation, shortage calculation, and instruction summary.
-	- Keeps an audit log of all dispensing attempts (successful or failed).
+	- Dispense prescribed medicines from stock using FEFO.
+	- Perform clinical checks before dispensing.
+	- Manage audit logs for failed/successful dispensing.
+	- Generate batch usage summaries and dispensing labels.
 
    Reports:
-	- Dispensing Activity Summary: Daily labels and dispensed records.
-	- Inventory & Usage Report: Summary of prescription demand vs. stock availability.
+	- Dispensing Activity Summary: Shows number of prescriptions dispensed each day and displays daily totals and weekly summaries.
+
 
 Project Flow
 1. Pharmacy stock is initialized with medicine batches.
