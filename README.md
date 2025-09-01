@@ -43,15 +43,15 @@ Modules Overview
 	- Consultation by Doctor Report: Percentage of consultations per doctor.
 
 4. Medical Treatment Management Module
+	- Needs valid / registered patient to proceed with treatments (exists)
 	- Doctors prescribe treatments after consultations.
-	- Treatment requires Patient ID, Date, Visit Number, and prescribed medicines.
-	- Medicines deducted from pharmacy stock (FEFO logic).
+	- Treatment requires Patient ID, Date, Diagnosis, and prescribed treatments.
 
    Reports:
-	- Patient Visit Summary: All registered patients with their total visits.
+	- Patient Visit Summary: Total amount of unique patients with their total visits and treatments number.
 	- Most Common Symptoms Report: Symptoms frequency and percentage distribution.
 
-5. Pharmacy Management Module
+6. Pharmacy Management Module
 	- This module combines Stock Maintenance, Pharmacist Management, and Medicine Dispensing into one integrated workflow.
 
 a) Stock Maintenance
