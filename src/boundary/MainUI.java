@@ -12,7 +12,7 @@ public class MainUI {
         PatientManagement pm = new PatientManagement();
         DoctorManagement dm = new DoctorManagement();
         //MedicalTreatmentManagement tm = new MedicalTreatmentManagement();
-        //ConsultationManagement cm = new ConsultationManagement(pm, dm, tm);
+        ConsultationManagement cm = new ConsultationManagement(pm, dm);
         
         String welcome = 
                 """
@@ -53,7 +53,7 @@ public class MainUI {
             switch (choice) {
                 case 0 -> new PatientUI(pm).run();
                 case 1 -> new DoctorUI().taskSelection();
-                //case 2 -> new ConsultationUI(cm, pm, dm).run();
+                case 2 -> new ConsultationUI(cm, pm, dm).run();
                 case 3 -> { 
                     PatientHistoryManagement phm = new PatientHistoryManagement(); 
                     MedicalTreatmentManagement mtm = new MedicalTreatmentManagement(pm, phm); 

@@ -2,6 +2,11 @@ package entity.keys;
 
 import entity.Consultation;
 
+/**
+ *
+ * @author Sim Jia Quan
+ */
+
 public class ConsultationByID implements Comparable<ConsultationByID> {
     private final String consultationID;
     private final Consultation consultation;
