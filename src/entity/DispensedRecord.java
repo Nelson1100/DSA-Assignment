@@ -8,6 +8,7 @@ public class DispensedRecord {
     private final String prescriptionID;
     private final String patientID;
     private final String doctorID;
+    private String pharmacistName;
     private final LocalDateTime timestamp;
 
     private final MedicineName[] medicines; // snapshot of items at dispense time
@@ -15,6 +16,7 @@ public class DispensedRecord {
 
     private final boolean dispensed;        // true = success, false = failed
     private final String rejectionReason;   // null if success
+    private final Prescription prescription;
 
     public DispensedRecord(
             String recordID,
@@ -25,7 +27,8 @@ public class DispensedRecord {
             MedicineName[] medicines,
             int[] quantities,
             boolean dispensed,
-            String rejectionReason
+            String rejectionReason,
+            Prescription prescription 
     ) {
         this.recordID = recordID;
         this.prescriptionID = prescriptionID;
@@ -36,6 +39,7 @@ public class DispensedRecord {
         this.quantities = quantities;
         this.dispensed = dispensed;
         this.rejectionReason = rejectionReason;
+        this.prescription = prescription;
     }
 
     public String getRecordID() {
@@ -73,4 +77,16 @@ public class DispensedRecord {
     public String getRejectionReason() {
         return rejectionReason;
     }
+    
+    public String getPharmacistName() {
+        return pharmacistName;
+    }
+    
+    public Prescription getPrescription() {
+        return prescription;
+    }
+    public void setPharmacistName(String pharmacistName) {
+        this.pharmacistName = pharmacistName;
+    }
+    
 }

@@ -3,24 +3,29 @@ package boundary;
 import adt.LinkedQueue;
 import adt.QueueInterface;
 import control.MedicineDispenser;
-import entity.Prescription;
-import entity.PrescriptionItem;
-import entity.DispensedRecord;
+import control.PharmacistManagement;
+import entity.*;
 import utility.JOptionPaneConsoleIO;
 
 import java.util.Iterator;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class MedicineDispenserUI {
 
     private final MedicineDispenser dispenser;
+    private final PharmacistManagement pharmacistMgmt;
     private final LinkedQueue<Prescription> prescriptionQueue;
     private final LinkedQueue<String> dispensingLabels = new LinkedQueue<>();
 
-    public MedicineDispenserUI(MedicineDispenser dispenser, QueueInterface<Prescription> prescriptionQueue) {
+        
+    public MedicineDispenserUI(MedicineDispenser dispenser, PharmacistManagement pharmacistMgmt, QueueInterface<Prescription> prescriptionQueue) {
         this.dispenser = dispenser;
+        this.pharmacistMgmt = pharmacistMgmt;
         this.prescriptionQueue = (LinkedQueue<Prescription>) prescriptionQueue;
     }
+    
 
     public void run() {
         int choice;
@@ -73,8 +78,7 @@ public class MedicineDispenserUI {
         // Find selected prescription
         Prescription current = null;
         for (Prescription p : prescriptions) {
-            String value = p.getPrescriptionID();
-            if (value.equals(selectedValue)) {
+            if (p.getPrescriptionID().equals(selectedValue)) {
                 current = p;
                 break;
             }
@@ -85,7 +89,6 @@ public class MedicineDispenserUI {
             return;
         }
 
-        // Already dispensed check
         if (current.getStatus().isDispensed()) {
             JOptionPaneConsoleIO.showError("⚠ This prescription has already been dispensed.");
             return;
@@ -93,83 +96,123 @@ public class MedicineDispenserUI {
 
         // Confirm
         StringBuilder sb = new StringBuilder();
-        sb.append(current.toString())
-                .append("\n\nConfirm Dispensing?");
+        sb.append(current.toString()).append("\n\nConfirm Dispensing?");
         boolean confirmed = JOptionPaneConsoleIO.confirmDialog(sb.toString(), "Dispense Confirmation");
         if (!confirmed) {
             return;
         }
 
-        // Clinical validation
         if (!dispenser.clinicalCheck(current)) {
-            JOptionPaneConsoleIO.showError("⚠ Clinical check failed. Dispensing aborted.");
+            dispenser.dispense(current);  // simulate failure record insertion
+            String reason = current.getRejectionReason();
+            JOptionPaneConsoleIO.showError("⚠ Clinical check failed: " + (reason != null ? reason : "Unknown reason") + ". Dispensing aborted.");
             return;
         }
 
-        // Stock check
         if (!dispenser.isDispensable(current)) {
             StringBuilder error = new StringBuilder("❌ Not enough stock to dispense:\n\n");
-            Iterator<PrescriptionItem> iterator = current.iterator();
-            while (iterator.hasNext()) {
-                PrescriptionItem item = iterator.next();
+            for (PrescriptionItem item : current) {
                 if (!dispenser.hasStockFor(item)) {
                     int shortage = dispenser.calculateShortage(item.getMedicineName(), item.getPrescribedQty());
-                    error.append("- ").append(item.getMedicineName())
-                            .append(": short by ").append(shortage).append(" units\n");
+                    error.append("- ").append(item.getMedicineName()).append(": short by ").append(shortage).append(" units\n");
                 }
             }
             JOptionPaneConsoleIO.showError(error.toString());
             return;
         }
 
-        // Dispense
         boolean success = dispenser.dispense(current);
         if (success) {
-            // Ask for pharmacist name
-            String pharmacistName = JOptionPaneConsoleIO.readNonEmpty("Enter pharmacist name:");
-
-            // Generate label with pharmacist name
-            String label = dispenser.generateDispensingLabel(current, pharmacistName);
-            dispensingLabels.enqueue(label);
-
-            // Remove prescription from queue
-            LinkedQueue<Prescription> tempQueue = new LinkedQueue<>();
-            for (Prescription p : prescriptionQueue) {
-                if (!p.getPrescriptionID().equals(current.getPrescriptionID())) {
-                    tempQueue.enqueue(p);
+            DispensedRecord target = null;
+            for (DispensedRecord r : dispenser.getRecordLog()) {
+                if (r.getPrescriptionID().equals(current.getPrescriptionID())
+                        && r.getPharmacistName() == null
+                        && r.isDispensed()) {
+                    target = r;
+                    break;
                 }
             }
-            prescriptionQueue.clear();
-            for (Prescription p : tempQueue) {
-                prescriptionQueue.enqueue(p);
-            }
 
-            JOptionPaneConsoleIO.showInfo("✓ Dispensing successful!");
+            if (target != null) {
+                Pharmacist[] pharmacists = (pharmacistMgmt != null) ? pharmacistMgmt.toArray() : null;
+                if (pharmacists == null || pharmacists.length == 0) {
+                    JOptionPaneConsoleIO.showError("⚠ No pharmacists available in the system.");
+                    return;
+                }
+
+                String[] pharmacistOptions = new String[pharmacists.length];
+                for (int i = 0; i < pharmacists.length; i++) {
+                    pharmacistOptions[i] = pharmacists[i].getPharmacistID() + " - " + pharmacists[i].getPharmacistName();
+                }
+
+                String picked = JOptionPaneConsoleIO.readDropdown("Select dispensing pharmacist:", pharmacistOptions);
+                if (picked == null) {
+                    JOptionPaneConsoleIO.showError("⚠ Dispensing cancelled. No pharmacist selected.");
+                    return;
+                }
+
+                String pharmacistName = picked.substring(picked.indexOf(" - ") + 3);
+                target.setPharmacistName(pharmacistName); // ✅ FIXED: Set name
+
+                String label = dispenser.generateDispensingLabel(current, pharmacistName);
+                dispensingLabels.enqueue(label);
+
+                // Remove from queue
+                LinkedQueue<Prescription> tempQueue = new LinkedQueue<>();
+                for (Prescription p : prescriptionQueue) {
+                    if (!p.getPrescriptionID().equals(current.getPrescriptionID())) {
+                        tempQueue.enqueue(p);
+                    }
+                }
+                prescriptionQueue.clear();
+                for (Prescription p : tempQueue) {
+                    prescriptionQueue.enqueue(p);
+                }
+
+                JOptionPaneConsoleIO.showInfo("✓ Dispensing successful!");
+            } else {
+                JOptionPaneConsoleIO.showError("⚠ Dispensing failed. No valid record found.");
+            }
         } else {
             JOptionPaneConsoleIO.showError("⚠ Dispensing failed. Already dispensed or insufficient stock.");
         }
     }
 
-    private void viewDispensingLabels() {
+
+    public void viewDispensingLabels() {
         StringBuilder sb = new StringBuilder();
-        boolean found = false;
+        final int WIDTH = 60;
+
+        sb.append("=".repeat(WIDTH)).append("\n");
+        sb.append(String.format("%" + ((WIDTH + 20) / 2) + "s\n", "ALL DISPENSING LABELS"));
+        sb.append("=".repeat(WIDTH)).append("\n\n");
+
+        boolean any = false;
+        LocalDate today = LocalDate.now();
 
         for (DispensedRecord record : dispenser.getRecordLog()) {
-            if (record.getTimestamp().toLocalDate().equals(LocalDate.now())) {
-                String label = dispenser.generateDispensingLabel(record.getPrescriptionID());
-                sb.append(label).append("\n").append("-".repeat(40)).append("\n");
-                found = true;
+            if (record.getTimestamp().toLocalDate().equals(today) && record.isDispensed()) {
+                Prescription p = record.getPrescription(); // ✅ Use stored prescription
+
+                if (p != null) {
+                    sb.append(dispenser.generateDispensingLabel(p, record.getPharmacistName()));
+                    sb.append("\n\n");
+                    any = true;
+                } 
             }
         }
 
-        if (!found) {
-            JOptionPaneConsoleIO.showError("No dispensing labels available for today.");
-            return;
+        if (!any) {
+            sb.append("No dispensed prescriptions found.\n");
+            sb.append("=".repeat(WIDTH)).append("\n");
         }
 
-        JOptionPaneConsoleIO.showMonospaced("Daily Dispensing Labels", sb.toString());
+        JOptionPaneConsoleIO.showMonospaced("Dispensing Labels", sb.toString());
     }
 
+
+
+    
     private void viewAuditTrail() {
         String[] audit = dispenser.getAuditTrail();
         if (audit == null || audit.length == 0) {
