@@ -8,8 +8,12 @@ import entity.MedicineName;
 import java.time.LocalDate;
 import java.util.Iterator;
 
+/**
+ *
+ * @author Khor Kai Yang
+ */
 public class StockMaintenance {
-    private AVLInterface<StockBatch> idxByStockKey = new AVLTree<>();
+    private final AVLInterface<StockBatch> idxByStockKey = new AVLTree<>();
       
     // add a stock batch
     public boolean addBatch(MedicineName medicineName, String batchID, int qty,
