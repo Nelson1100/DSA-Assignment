@@ -1,129 +1,95 @@
 package control;
 
+import adt.LinkedQueue;
+import adt.QueueInterface;
 import adt.QueueIterator;
-import entity.Gender;
-import entity.Patient;
 import entity.PatientHistory;
 import entity.TreatmentRecord;
-import entity.VisitType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Locale;
 
 public class TreatmentReport {
-
     private final MedicalTreatmentManagement mtm;
 
     public TreatmentReport(MedicalTreatmentManagement mtm) {
         this.mtm = mtm;
     }
 
-    /** Report #1 — Waiting summary (count + earliest arrival) */
-    public String reportWaitingSummary() {
-        int count = 0;
-        java.time.LocalTime earliest = null;
-
-        QueueIterator<Patient> it = mtm.waitingIterator();
-        while (it.hasNext()) {
-            Patient p = it.getNext();
-            count++;
-            if (earliest == null || p.getArrivalTime().isBefore(earliest)) {
-                earliest = p.getArrivalTime();
-            }
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Report: Waiting Summary ===\n");
-        sb.append("Patients currently waiting : ").append(count).append("\n");
-        sb.append("Earliest arrival time      : ").append(earliest == null ? "-" : earliest).append("\n");
-        sb.append("--------------------------------");
-        return sb.toString();
-    }
-
     public String reportDailyTreatmentSummary(LocalDate date) {
-        if (date == null) date = LocalDate.now();
+        PatientHistory[] all = mtm.listAllHistories();
+        int total = 0;
+        int uniquePatients = 0;
 
-        int patientsTreatedToday = 0;
-        int totalTreatmentsToday = 0;
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("=== Daily Treatment Summary (%s) ===%n", date));
 
-        int walkInCount = 0;
-        int appointmentCount = 0;
+        for (PatientHistory ph : all) {
+            int c = ph.countRecordsOn(date);
+            if (c > 0) uniquePatients++;
+            total += c;
+        }
 
-        int maleCount = 0;
-        int femaleCount = 0;
-        int otherGenderCount = 0;
+        sb.append(String.format("Date            : %s%n", date));
+        sb.append(String.format("Unique patients : %d%n", uniquePatients));
+        sb.append(String.format("Total treatments: %d%n", total));
+        sb.append("\nDetailed records:\n");
 
-        int ageSum = 0;
-        int ageCount = 0;
-
-        QueueIterator<PatientHistory> histIt = mtm.historiesIterator();
-        while (histIt.hasNext()) {
-            PatientHistory ph = histIt.getNext();
-            int n = countRecordsOnDate(ph, date);
-            if (n > 0) {
-                patientsTreatedToday++;
-                totalTreatmentsToday += n;
-
-                VisitType vt = ph.getPatient().getVisitType();
-                if (vt == VisitType.WALK_IN) walkInCount++;
-                else appointmentCount++;
-
-                Gender g = ph.getPatient().getGender();
-                if (g == Gender.MALE) maleCount++;
-                else if (g == Gender.FEMALE) femaleCount++;
-                else otherGenderCount++;
-
-                ageSum += ph.getPatient().getAge();
-                ageCount++;
+        // list treatments for that date
+        for (PatientHistory ph : all) {
+            QueueIterator<TreatmentRecord> it = ((LinkedQueue<TreatmentRecord>) ph.getRecords()).getIterator();
+            while (it.hasNext()) {
+                TreatmentRecord tr = it.getNext();
+                if (tr.getDateTime().toLocalDate().equals(date)) {
+                    sb.append(String.format("%-10s | %-8s | %s | %s%n",
+                            tr.getTreatmentID(), tr.getPatientID(),
+                            tr.getDateTime().toLocalTime().truncatedTo(java.time.temporal.ChronoUnit.MINUTES),
+                            tr.getDiagnosis() + " / " + tr.getTreatment()));
+                }
             }
         }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("=== Report: Daily Treatment Summary (").append(date).append(") ===\n");
-        sb.append("Patients treated today       : ").append(patientsTreatedToday).append("\n");
-        sb.append("Total treatment events today : ").append(totalTreatmentsToday).append("\n");
-        sb.append("By visit type -> WALK_IN     : ").append(walkInCount).append("\n");
-        sb.append("               APPOINTMENT   : ").append(appointmentCount).append("\n");
-        sb.append("By gender     -> MALE        : ").append(maleCount).append("\n");
-        sb.append("               FEMALE        : ").append(femaleCount).append("\n");
-        sb.append("               OTHER         : ").append(otherGenderCount).append("\n");
-        sb.append("Average age of treated       : ").append(ageCount == 0 ? "-" : (ageSum / ageCount)).append("\n");
-        sb.append("--------------------------------------------------------");
         return sb.toString();
     }
 
-    public String patientHistoryReport(String patientID) {
-        PatientHistory ph = mtm.findHistory(patientID);
-        if (ph == null) {
-            return "Patient with ID '" + patientID + "' not found.";
+    public String reportDiagnosisFrequency() {
+        DiagnosisCountList counts = new DiagnosisCountList();
+        PatientHistory[] all = mtm.listAllHistories();
+        for (PatientHistory ph : all) {
+            QueueIterator<TreatmentRecord> it = ((LinkedQueue<TreatmentRecord>) ph.getRecords()).getIterator();
+            while (it.hasNext()) {
+                String dx = it.getNext().getDiagnosis();
+                if (dx != null && !dx.trim().isEmpty()) counts.increment(dx.trim());
+            }
         }
-
         StringBuilder sb = new StringBuilder();
-        sb.append(ph.getPatient()).append("\n");
-        sb.append("Treatment History:\n");
-
-        var q = ph.getRecords();
-        if (q.isEmpty()) {
-            sb.append("  (No treatment history)");
-            return sb.toString();
-        }
-
-        QueueIterator<TreatmentRecord> rit = ((adt.LinkedQueue<TreatmentRecord>) q).getIterator();
-        while (rit.hasNext()) {
-            sb.append("  - ").append(rit.getNext()).append("\n");
-        }
+        sb.append("=== Diagnosis Frequency (All Time) ===\n");
+        counts.appendLines(sb);
+        if (counts.isEmpty()) sb.append("(No data)\n");
         return sb.toString();
     }
 
-    private int countRecordsOnDate(PatientHistory ph, LocalDate date) {
-        int count = 0;
-        var q = ph.getRecords();
-        var it = ((adt.LinkedQueue<TreatmentRecord>) q).getIterator();
-        while (it.hasNext()) {
-            TreatmentRecord tr = it.getNext();
-            java.time.LocalDate trDate = tr.getDateTime().toLocalDate();
-            if (trDate.equals(date)) count++;
+    private static class DiagnosisCountList {
+        private static class E { String d; int c; E(String d,int c){this.d=d;this.c=c;} }
+        private final QueueInterface<E> q = new LinkedQueue<>();
+
+        void increment(String diagnosis) {
+            QueueIterator<E> it = ((LinkedQueue<E>) q).getIterator();
+            while (it.hasNext()) {
+                E e = it.getNext();
+                if (e.d.equalsIgnoreCase(diagnosis)) { e.c++; return; }
+            }
+            q.enqueue(new E(diagnosis,1));
         }
-        return count;
+
+        boolean isEmpty() { return !((LinkedQueue<E>) q).getIterator().hasNext(); }
+
+        void appendLines(StringBuilder sb) {
+            QueueIterator<E> it = ((LinkedQueue<E>) q).getIterator();
+            int i = 1;
+            while (it.hasNext()) {
+                E e = it.getNext();
+                sb.append(String.format("%2d) %-30s : %d%n", i++, e.d, e.c));
+            }
+        }
     }
 }
