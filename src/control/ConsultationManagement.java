@@ -2,6 +2,11 @@ package control;
 
 import adt.*;
 import entity.*;
+import static entity.AppointmentStatus.CANCELLED;
+import static entity.AppointmentStatus.COMPLETED;
+import static entity.AppointmentStatus.CONFIRMED;
+import static entity.AppointmentStatus.NO_SHOW;
+import static entity.AppointmentStatus.SCHEDULED;
 import entity.keys.*;
 import utility.IDGenerator;
 import utility.IDType;
@@ -17,15 +22,222 @@ public class ConsultationManagement {
     
     private final PatientManagement patientManagement;
     private final DoctorManagement doctorManagement;
-    private final MedicalTreatmentManagement treatmentManagement;
     
     public ConsultationManagement(PatientManagement patientManagement, 
-                                 DoctorManagement doctorManagement,
-                                 MedicalTreatmentManagement treatmentManagement) {
+                                 DoctorManagement doctorManagement) {
         this.patientManagement = patientManagement;
         this.doctorManagement = doctorManagement;
-        this.treatmentManagement = treatmentManagement;
     }
+    
+    /* ---------- Validation Methods ---------- */
+    /*Validates if a patient ID exists in the Patient Management module*/
+    public boolean isValidPatientID(String patientID) {
+        if (patientID == null || patientID.trim().isEmpty()) {
+            return false;
+        }
+        
+        // Verify the patient exists in the Patient Management module
+        return patientManagement.existsByID(patientID);
+    }
+    
+    /*Validates if a doctor ID exists in the Doctor Management module*/
+    public boolean isValidDoctorID(String doctorID) {
+        if (doctorID == null || doctorID.trim().isEmpty()) {
+            return false;
+        }
+        
+        /* Verify the doctor exists in the Doctor Management module */
+        Doctor searchKey = new Doctor();
+        searchKey.setDoctorID(doctorID);
+        Doctor foundDoctor = doctorManagement.findDoctor(searchKey);
+        return foundDoctor != null;
+    }
+    
+    /*Validates both patient and doctor IDs for consultation creation*/
+    public ValidationResult validateConsultationIDs(String patientID, String doctorID) {
+        ValidationResult result = new ValidationResult();
+        
+        // Validate patient ID
+        if (!isValidPatientID(patientID)) {
+            result.addError("Invalid patient ID: " + patientID + 
+                          ". Patient ID must exist in the Patient Management module and follow format PYYYYMMDD####");
+        }
+        
+        // Validate doctor ID
+        if (!isValidDoctorID(doctorID)) {
+            result.addError("Invalid doctor ID: " + doctorID + 
+                          ". Doctor ID must exist in the Doctor Management module and follow format DYYYYMMDD####");
+        }
+        
+        return result;
+    }
+    
+    /*Gets detailed information about a patient for consultation purposes*/
+    public String getPatientInfoForConsultation(String patientID) {
+        if (!isValidPatientID(patientID)) {
+            return "Error: Invalid patient ID - " + patientID;
+        }
+        
+        Patient patient = patientManagement.findPatientByID(patientID);
+        if (patient == null) {
+            return "Error: Patient not found - " + patientID;
+        }
+        
+        return String.format(
+            "Patient ID: %s\n" +
+            "Name: %s\n" +
+            "Age: %d\n" +
+            "Gender: %s\n" +
+            "Contact: %s\n" +
+            "Email: %s",
+            patient.getPatientID(),
+            patient.getPatientName(),
+            patient.getAge(),
+            patient.getGender(),
+            patient.getContactNo(),
+            patient.getEmail()
+        );
+    }
+    
+    /*Gets detailed information about a doctor for consultation purposes*/
+    public String getDoctorInfoForConsultation(String doctorID) {
+        if (!isValidDoctorID(doctorID)) {
+            return "Error: Invalid doctor ID - " + doctorID;
+        }
+        
+        Doctor doctor = getDoctorByID(doctorID);
+        if (doctor == null) {
+            return "Error: Doctor not found - " + doctorID;
+        }
+        
+        return String.format(
+            "Doctor ID: %s\n" +
+            "Name: %s\n" +
+            "Specialization: %s\n" +
+            "Contact: %s\n" +
+            "Email: %s",
+            doctor.getDoctorID(),
+            doctor.getDoctorName(),
+            doctor.getSpecialization(),
+            doctor.getContactNo(),
+            doctor.getEmail()
+        );
+    }
+    
+    /*Gets detailed information about an appointment */
+    public String getAppointmentInfo(String appointmentID) {
+        if (appointmentID == null || appointmentID.trim().isEmpty()) {
+            return "Error: Appointment ID cannot be null or empty.";
+        }
+        
+        Appointment appointment = getAppointmentByID(appointmentID);
+        if (appointment == null) {
+            return "Error: Appointment not found - " + appointmentID;
+        }
+        
+        /* Validate appointment ID format using entity method */
+        if (!appointment.hasValidAppointmentID()) {
+            return "Error: Invalid appointment ID format - " + appointmentID;
+        }
+        
+        /* Get patient and doctor information */
+        Patient patient = patientManagement.findPatientByID(appointment.getPatientID());
+        Doctor doctor = getDoctorByID(appointment.getDoctorID());
+        
+        String patientName = (patient != null) ? patient.getPatientName() : "Unknown Patient";
+        String doctorName = (doctor != null) ? doctor.getDoctorName() : "Unknown Doctor";
+        
+        return String.format(
+            "Appointment ID: %s\n" +
+            "Patient: %s (%s)\n" +
+            "Doctor: %s (%s)\n" +
+            "Date/Time: %s\n" +
+            "Purpose: %s\n" +
+            "Status: %s\n" +
+            "Notes: %s",
+            appointmentID,
+            patientName,
+            appointment.getPatientID(),
+            doctorName,
+            appointment.getDoctorID(),
+            appointment.getAppointmentDateTime().toString(),
+            appointment.getPurpose(),
+            appointment.getStatus(),
+            appointment.getNotes().isEmpty() ? "None" : appointment.getNotes()
+        );
+    }
+    
+    /*Checks if a patient has any active consultations*/
+    public boolean hasActiveConsultation(String patientID) {
+        if (!isValidPatientID(patientID)) {
+            return false;
+        }
+        
+        AVLTree<Consultation> patientConsultations = getConsultationsByPatientID(patientID);
+        for (Consultation consultation : patientConsultations) {
+            if (consultation.isInProgress()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /*Checks if a doctor has any active consultations*/
+    public boolean hasActiveConsultationByDoctor(String doctorID) {
+        if (!isValidDoctorID(doctorID)) {
+            return false;
+        }
+        
+        AVLTree<Consultation> doctorConsultations = getConsultationsByDoctorID(doctorID);
+        for (Consultation consultation : doctorConsultations) {
+            if (consultation.isInProgress()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /*Validates appointment status transitions*/
+    public ValidationResult validateAppointmentStatusTransition(Appointment appointment, AppointmentStatus newStatus) {
+        ValidationResult result = new ValidationResult();
+        
+        if (appointment == null) {
+            result.addError("Appointment cannot be null.");
+            return result;
+        }
+        
+        AppointmentStatus currentStatus = appointment.getStatus();
+        
+        /* Define valid transitions */
+        switch (currentStatus) {
+            case SCHEDULED:
+                if (newStatus != AppointmentStatus.CONFIRMED && 
+                    newStatus != AppointmentStatus.CANCELLED) {
+                    result.addError("Scheduled appointments can only be confirmed or cancelled.");
+                }
+                break;
+            case CONFIRMED:
+                if (newStatus != AppointmentStatus.COMPLETED && 
+                    newStatus != AppointmentStatus.CANCELLED &&
+                    newStatus != AppointmentStatus.NO_SHOW) {
+                    result.addError("Confirmed appointments can only be completed, cancelled, or marked as no-show.");
+                }
+                break;
+            case COMPLETED:
+                result.addError("Completed appointments cannot be modified.");
+                break;
+            case CANCELLED:
+                result.addError("Cancelled appointments cannot be modified.");
+                break;
+            case NO_SHOW:
+                result.addError("No-show appointments cannot be modified.");
+                break;
+        }
+        
+        return result;
+    }
+    
+    /* ---------- Indexing Methods ---------- */
     
     private void indexConsultation(Consultation consultation) {
         idxByID.insert(new ConsultationByID(consultation.getConsultationID(), consultation));
@@ -35,26 +247,21 @@ public class ConsultationManagement {
                                                        consultation.getConsultationID(), consultation));
     }
     
-    private void unindexConsultation(Consultation consultation) {
-        idxByID.delete(new ConsultationByID(consultation.getConsultationID(), null));
-        idxByPatientID.delete(new ConsultationByPatientID(consultation.getPatientID(), 
-                                                         consultation.getConsultationID(), null));
-        idxByDoctorID.delete(new ConsultationByDoctorID(consultation.getDoctorID(), 
-                                                       consultation.getConsultationID(), null));
-    }
-    
     /* ---------- Core Operations ---------- */
     
     public String startConsultation(String patientID, String doctorID) {
-        Patient patient = patientManagement.findPatientByID(patientID);
-        if (patient == null) {
-            return "Error: Patient not found with ID: " + patientID;
+        ValidationResult validationResult = validateConsultationIDs(patientID, doctorID);
+        if (!validationResult.isValid()) {
+            return "Validation Error:\n" + validationResult.getErrorMessage();
         }
         
-        Doctor doctor = getDoctorByID(doctorID);
-        if (doctor == null) {
-            return "Error: Doctor not found with ID: " + doctorID;
+        /* Check for active consultations */
+        if (hasActiveConsultation(patientID)) {
+            return "Error: Patient " + patientID + " already has an active consultation.";
         }
+        
+        Patient patient = patientManagement.findPatientByID(patientID);
+        Doctor doctor = getDoctorByID(doctorID);
 
         String consultationID = IDGenerator.next(IDType.CONSULTATION);
         
@@ -62,7 +269,17 @@ public class ConsultationManagement {
         
         indexConsultation(consultation);
         
-        return "Consultation started successfully. Consultation ID: " + consultationID;
+        return String.format(
+            "Consultation started successfully.\n" +
+            "Consultation ID: %s\n" +
+            "Patient: %s (%s)\n" +
+            "Doctor: %s (%s)",
+            consultationID,
+            patient.getPatientName(),
+            patientID,
+            doctor.getDoctorName(),
+            doctorID
+        );
     }
     
     public String updateConsultationDetails(String consultationID, String symptoms, 
@@ -258,16 +475,6 @@ public class ConsultationManagement {
         );
     }
     
-    public boolean hasActiveConsultation(String patientID) {
-        AVLTree<Consultation> patientConsultations = getConsultationsByPatientID(patientID);
-        for (Consultation consultation : patientConsultations) {
-            if (consultation.isInProgress()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     public Consultation getActiveConsultationByPatient(String patientID) {
         AVLTree<Consultation> patientConsultations = getConsultationsByPatientID(patientID);
         for (Consultation consultation : patientConsultations) {
@@ -281,19 +488,36 @@ public class ConsultationManagement {
     /* ---------- Appointment Management ---------- */
     
     public String scheduleFollowUpAppointment(String consultationID, LocalDateTime appointmentDateTime, String purpose) {
+        /* Validate consultation ID format */
+        if (consultationID == null || consultationID.trim().isEmpty()) {
+            return "Error: Consultation ID cannot be null or empty.";
+        }
+        
         Consultation consultation = getConsultationByID(consultationID);
         if (consultation == null) {
             return "Error: Consultation not found with ID: " + consultationID;
+        }
+        
+        /* Validate consultation ID format using entity method */
+        if (!consultation.hasValidConsultationID()) {
+            return "Error: Invalid consultation ID format. Expected format: CYYYYMMDD####";
         }
         
         if (!consultation.isCompleted()) {
             return "Error: Can only schedule follow-up appointments for completed consultations.";
         }
         
-        Doctor doctor = getDoctorByID(consultation.getDoctorID());
-        if (doctor == null) {
-            return "Error: Doctor not found for consultation.";
+        /* Validate that the consultation's patient and doctor still exist */
+        if (!isValidPatientID(consultation.getPatientID())) {
+            return "Error: Patient from consultation no longer exists in the system.";
         }
+        
+        if (!isValidDoctorID(consultation.getDoctorID())) {
+            return "Error: Doctor from consultation no longer exists in the system.";
+        }
+        
+        Doctor doctor = getDoctorByID(consultation.getDoctorID());
+        Patient patient = patientManagement.findPatientByID(consultation.getPatientID());
         
         String appointmentID = IDGenerator.next(IDType.APPOINTMENT);
         
@@ -308,19 +532,31 @@ public class ConsultationManagement {
         
         appointments.insert(appointment);
         
-        return "Follow-up appointment scheduled successfully. Appointment ID: " + appointmentID;
+        return String.format(
+            "Follow-up appointment scheduled successfully.\n" +
+            "Appointment ID: %s\n" +
+            "Patient: %s (%s)\n" +
+            "Doctor: %s (%s)\n" +
+            "Date/Time: %s\n" +
+            "Purpose: %s",
+            appointmentID,
+            patient.getPatientName(),
+            consultation.getPatientID(),
+            doctor.getDoctorName(),
+            consultation.getDoctorID(),
+            appointmentDateTime.toString(),
+            purpose
+        );
     }
     
     public String scheduleAppointment(String patientID, String doctorID, LocalDateTime appointmentDateTime, String purpose) {
-        Patient patient = patientManagement.findPatientByID(patientID);
-        if (patient == null) {
-            return "Error: Patient not found with ID: " + patientID;
+        ValidationResult validationResult = validateConsultationIDs(patientID, doctorID);
+        if (!validationResult.isValid()) {
+            return "Validation Error:\n" + validationResult.getErrorMessage();
         }
         
+        Patient patient = patientManagement.findPatientByID(patientID);
         Doctor doctor = getDoctorByID(doctorID);
-        if (doctor == null) {
-            return "Error: Doctor not found with ID: " + doctorID;
-        }
         
         String appointmentID = IDGenerator.next(IDType.APPOINTMENT);
         
@@ -335,10 +571,80 @@ public class ConsultationManagement {
         
         appointments.insert(appointment);
         
-        return "Appointment scheduled successfully. Appointment ID: " + appointmentID;
+        return String.format(
+            "Appointment scheduled successfully.\n" +
+            "Appointment ID: %s\n" +
+            "Patient: %s (%s)\n" +
+            "Doctor: %s (%s)\n" +
+            "Date/Time: %s\n" +
+            "Purpose: %s",
+            appointmentID,
+            patient.getPatientName(),
+            patientID,
+            doctor.getDoctorName(),
+            doctorID,
+            appointmentDateTime.toString(),
+            purpose
+        );
+    }
+    
+    public String updateAppointmentStatus(String appointmentID, AppointmentStatus newStatus, String notes) {
+        if (appointmentID == null || appointmentID.trim().isEmpty()) {
+            return "Error: Appointment ID cannot be null or empty.";
+        }
+        
+        Appointment appointment = getAppointmentByID(appointmentID);
+        if (appointment == null) {
+            return "Error: Appointment not found - " + appointmentID;
+        }
+        
+        /* Validate appointment ID format using entity method */
+        if (!appointment.hasValidAppointmentID()) {
+            return "Error: Invalid appointment ID format - " + appointmentID;
+        }
+        
+        ValidationResult validation = validateAppointmentStatusTransition(appointment, newStatus);
+        if (!validation.isValid()) {
+            return "Error: " + validation.getErrorMessage();
+        }
+        
+        /* Update the appointment status */
+        appointment.setStatus(newStatus);
+        if (notes != null && !notes.trim().isEmpty()) {
+            String currentNotes = appointment.getNotes();
+            String updatedNotes = currentNotes.isEmpty() ? notes : currentNotes + "\n" + notes;
+            appointment.setNotes(updatedNotes);
+        }
+        
+        return String.format(
+            "Appointment status updated successfully.\n" +
+            "Appointment ID: %s\n" +
+            "New Status: %s\n" +
+            "Previous Status: %s",
+            appointmentID,
+            newStatus,
+            appointment.getStatus()
+        );
+    }
+    
+    public Appointment getAppointmentByID(String appointmentID) {
+        if (appointmentID == null || appointmentID.trim().isEmpty()) {
+            return null; // Return null for invalid appointment ID
+        }
+        
+        for (Appointment apt : appointments) {
+            if (apt.getAppointmentID().equals(appointmentID)) {
+                return apt;
+            }
+        }
+        return null;
     }
     
     public AVLTree<Appointment> getAppointmentsByPatient(String patientID) {
+        if (!isValidPatientID(patientID)) {
+            return new AVLTree<>(); // Return empty tree for invalid patient ID
+        }
+        
         AVLTree<Appointment> patientAppointments = new AVLTree<>();
         for (Appointment apt : appointments) {
             if (apt.getPatientID().equals(patientID)) {
@@ -349,6 +655,10 @@ public class ConsultationManagement {
     }
     
     public AVLTree<Appointment> getAppointmentsByDoctor(String doctorID) {
+        if (!isValidDoctorID(doctorID)) {
+            return new AVLTree<>(); // Return empty tree for invalid doctor ID
+        }
+        
         AVLTree<Appointment> doctorAppointments = new AVLTree<>();
         for (Appointment apt : appointments) {
             if (apt.getDoctorID().equals(doctorID)) {
@@ -370,12 +680,27 @@ public class ConsultationManagement {
         return upcomingAppointments;
     }
     
-    public Appointment getAppointmentByID(String appointmentID) {
-        for (Appointment apt : appointments) {
-            if (apt.getAppointmentID().equals(appointmentID)) {
-                return apt;
-            }
+    /* ---------- Validation Result Inner Class ---------- */
+    
+    /* Hold validation results with error messages */
+    public static class ValidationResult {
+        private boolean valid = true;
+        private StringBuilder errorMessages = new StringBuilder();
+        
+        public boolean isValid() {
+            return valid;
         }
-        return null;
+        
+        public void addError(String error) {
+            valid = false;
+            if (errorMessages.length() > 0) {
+                errorMessages.append("\n");
+            }
+            errorMessages.append(error);
+        }
+        
+        public String getErrorMessage() {
+            return errorMessages.toString();
+        }
     }
 }

@@ -25,6 +25,8 @@ public class Appointment implements Comparable<Appointment> {
         this.notes = "";
     }
     
+    /* ---------- Getters ---------- */
+    
     public String getAppointmentID() { return appointmentID; }
     public String getPatientID() { return patientID; }
     public String getDoctorID() { return doctorID; }
@@ -34,9 +36,13 @@ public class Appointment implements Comparable<Appointment> {
     public AppointmentStatus getStatus() { return status; }
     public String getNotes() { return notes; }
     
+    /* ---------- Setters ---------- */
+    
     public void setPurpose(String purpose) { this.purpose = purpose; }
     public void setStatus(AppointmentStatus status) { this.status = status; }
     public void setNotes(String notes) { this.notes = notes; }
+    
+    /* ---------- Business Logic Methods ---------- */
     
     public void confirmAppointment() {
         this.status = AppointmentStatus.CONFIRMED;
@@ -55,6 +61,62 @@ public class Appointment implements Comparable<Appointment> {
     public boolean isConfirmed() { return status == AppointmentStatus.CONFIRMED; }
     public boolean isCancelled() { return status == AppointmentStatus.CANCELLED; }
     public boolean isCompleted() { return status == AppointmentStatus.COMPLETED; }
+    
+    /* ---------- ID Validation Methods ---------- */
+    
+    /* Validates if the appointment ID follows the expected format */
+    public boolean hasValidAppointmentID() {
+        return appointmentID != null && appointmentID.matches("^APT\\d{12}$");
+    }
+    
+    /* Validates if the patient ID follows the expected format */
+    public boolean hasValidPatientID() {
+        return patientID != null && patientID.matches("^P\\d{12}$");
+    }
+    
+    /* Validates if the doctor ID follows the expected format */
+    public boolean hasValidDoctorID() {
+        return doctorID != null && doctorID.matches("^D\\d{12}$");
+    }
+    
+    /* Validates if the consultation ID follows the expected format */
+    public boolean hasValidConsultationID() {
+        return consultationID == null || consultationID.matches("^C\\d{12}$");
+    }
+    
+    /* Validates if all IDs in the appointment are properly formatted */
+    public boolean hasValidIDs() {
+        return hasValidAppointmentID() && hasValidPatientID() && hasValidDoctorID() && hasValidConsultationID();
+    }
+    
+    /* Gets a summary of ID validation status*/
+    public String getIDValidationSummary() {
+        StringBuilder summary = new StringBuilder();
+        summary.append("=== Appointment ID Validation Summary ===\n");
+        summary.append("Appointment ID: ").append(hasValidAppointmentID() ? "✓ Valid" : "✗ Invalid").append("\n");
+        summary.append("Patient ID: ").append(hasValidPatientID() ? "✓ Valid" : "✗ Invalid").append("\n");
+        summary.append("Doctor ID: ").append(hasValidDoctorID() ? "✓ Valid" : "✗ Invalid").append("\n");
+        summary.append("Consultation ID: ").append(hasValidConsultationID() ? "✓ Valid" : "✗ Invalid").append("\n");
+        return summary.toString();
+    }
+    
+    /* ---------- Utility Methods ---------- */
+    
+    /* Checks if the appointment is in the future */
+    public boolean isUpcoming() {
+        return appointmentDateTime.isAfter(LocalDateTime.now());
+    }
+    
+    /* Checks if the appointment is overdue (past scheduled time but not completed/cancelled)*/
+    public boolean isOverdue() {
+        return appointmentDateTime.isBefore(LocalDateTime.now()) && 
+               (status == AppointmentStatus.SCHEDULED || status == AppointmentStatus.CONFIRMED);
+    }
+    
+    /* Gets the time until appointment in minutes (negative if overdue)*/
+    public long getMinutesUntilAppointment() {
+        return java.time.Duration.between(LocalDateTime.now(), appointmentDateTime).toMinutes();
+    }
     
     @Override
     public String toString() {
