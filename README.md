@@ -13,12 +13,13 @@ Modules Overview
 1. Patient Management Module
 	- Register new patients with validation (Name, Gender, Email, Contact, IC Number).
 	- Patient records stored in multiple AVL indexes (by ID, Name, Contact, Email).
-	- Manage patients: search, update, delete, list.
+	- Manage patients profiles: search, update, delete, view.
 	- Patients are enqueued for visits in a LinkedQueue<PatientVisit>.
+ 	- Manage patients visits: serve, find, view, delete.
 
    Reports:
 	- Visit Queue Analysis Report: Queue snapshot, wait-time distribution, longest waiting patients.
-	- Patient Summary Report: Demographics (gender/age), visit frequency, most/least visits.
+	- Patient Summary Report: Demographics (gender/age), visit frequency.
 
 2. Doctor Management Module
 	- Manage doctor profiles: add, update, remove, search.
