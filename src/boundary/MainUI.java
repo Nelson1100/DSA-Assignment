@@ -11,9 +11,12 @@ public class MainUI {
     public static void main(String[] args) {
         PatientManagement pm = new PatientManagement();
         DoctorManagement dm = new DoctorManagement();
-        //MedicalTreatmentManagement tm = new MedicalTreatmentManagement();
+        DoctorUI tempDoctorUI = new DoctorUI(dm);
+        tempDoctorUI.initializeDoctors();
         ConsultationManagement cm = new ConsultationManagement(pm, dm);
         cm.initializeData(); // Initialize consultation data
+        
+        //MedicalTreatmentManagement tm = new MedicalTreatmentManagement();
         
         String welcome = 
                 """
@@ -53,13 +56,9 @@ public class MainUI {
             
             switch (choice) {
                 case 0 -> new PatientUI(pm).run();
-                case 1 -> new DoctorUI().taskSelection();
+                case 1 -> new DoctorUI(dm).taskSelection();
                 case 2 -> new ConsultationUI(cm, pm, dm).run();
-                case 3 -> { 
-                    PatientHistoryManagement phm = new PatientHistoryManagement(); 
-                    MedicalTreatmentManagement mtm = new MedicalTreatmentManagement(pm, phm); 
-                    phm.preloadSampleTreatments(pm); new MedicalTreatmentUI(mtm).run(); 
-                }
+                case 3 -> JOptionPane.showMessageDialog(null, "Medical Treatment Module: Not yet implemented.");
                 case 4 -> new PharmacyModuleUI().run();
             }
         } while (choice != 5 && choice != -1);
