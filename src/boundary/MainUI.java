@@ -13,6 +13,7 @@ public class MainUI {
         DoctorManagement dm = new DoctorManagement();
         //MedicalTreatmentManagement tm = new MedicalTreatmentManagement();
         ConsultationManagement cm = new ConsultationManagement(pm, dm);
+        cm.initializeData(); // Initialize consultation data
         
         String welcome = 
                 """

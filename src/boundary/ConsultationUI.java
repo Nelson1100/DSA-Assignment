@@ -68,7 +68,10 @@ public class ConsultationUI {
     private void startNewConsultation() {
         try {
             String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
-            if (patientID == null || patientID.trim().isEmpty()) {
+            if (patientID == null) {
+                return; // User cancelled, just return silently
+            }
+            if (patientID.trim().isEmpty()) {
                 JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
                 return;
             }
@@ -140,7 +143,10 @@ public class ConsultationUI {
     
     private void updateConsultationDetails() {
         String consultationID = JOptionPaneConsoleIO.readNonEmpty("Enter Consultation ID:");
-        if (consultationID == null || consultationID.trim().isEmpty()) {
+        if (consultationID == null) {
+            return; // User cancelled
+        }
+        if (consultationID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Consultation ID cannot be empty.");
             return;
         }
@@ -180,7 +186,10 @@ public class ConsultationUI {
     
     private void completeConsultation() {
         String consultationID = JOptionPaneConsoleIO.readNonEmpty("Enter Consultation ID:");
-        if (consultationID == null || consultationID.trim().isEmpty()) {
+        if (consultationID == null) {
+            return; // User cancelled
+        }
+        if (consultationID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Consultation ID cannot be empty.");
             return;
         }
@@ -204,9 +213,12 @@ public class ConsultationUI {
         JOptionPaneConsoleIO.showPlain(consultation.toString(), "Current Consultation");
         
         String finalDiagnosis = JOptionPaneConsoleIO.readNonEmpty("Enter Final Diagnosis:");
+        if (finalDiagnosis == null) {
+            return; // User cancelled
+        }
         String treatmentNotes = JOptionPane.showInputDialog("Enter Treatment Notes:");
         
-        if (finalDiagnosis == null || finalDiagnosis.trim().isEmpty()) {
+        if (finalDiagnosis.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Final diagnosis is required to complete consultation.");
             return;
         }
@@ -224,7 +236,10 @@ public class ConsultationUI {
     
     private void cancelConsultation() {
         String consultationID = JOptionPaneConsoleIO.readNonEmpty("Enter Consultation ID:");
-        if (consultationID == null || consultationID.trim().isEmpty()) {
+        if (consultationID == null) {
+            return; // User cancelled
+        }
+        if (consultationID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Consultation ID cannot be empty.");
             return;
         }
@@ -289,7 +304,10 @@ public class ConsultationUI {
     
     private void searchByConsultationID() {
         String consultationID = JOptionPaneConsoleIO.readNonEmpty("Enter Consultation ID:");
-        if (consultationID == null || consultationID.trim().isEmpty()) {
+        if (consultationID == null) {
+            return; // User cancelled
+        }
+        if (consultationID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Consultation ID cannot be empty.");
             return;
         }
@@ -309,7 +327,10 @@ public class ConsultationUI {
     
     private void searchByPatientID() {
         String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
-        if (patientID == null || patientID.trim().isEmpty()) {
+        if (patientID == null) {
+            return; // User cancelled
+        }
+        if (patientID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
             return;
         }
@@ -333,7 +354,10 @@ public class ConsultationUI {
     
     private void searchByDoctorID() {
         String doctorID = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID:");
-        if (doctorID == null || doctorID.trim().isEmpty()) {
+        if (doctorID == null) {
+            return; // User cancelled
+        }
+        if (doctorID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Doctor ID cannot be empty.");
             return;
         }
@@ -383,33 +407,38 @@ public class ConsultationUI {
     }
     
     private void viewReports() {
-        String[] reportOptions = {
-            "Consultation Summary",
-            "Doctor Consultation Report",
-            "Patient Consultation Report",
-            "Back"
-        };
+        boolean repeat = true;
         
-        int choice = JOptionPaneConsoleIO.readOption(
-            "Select report type:", "Consultation Reports", reportOptions
-        );
-        
-        switch (choice) {
-            case 0:
-                showConsultationSummary();
-                break;
-            case 1:
-                showDoctorReport();
-                break;
-            case 2:
-                showPatientReport();
-                break;
-            case 3:
-            case -1:
-                return;
-            default:
-                JOptionPaneConsoleIO.showError("Please choose a valid option.");
-                break;
+        while (repeat) {
+            String[] reportOptions = {
+                "Consultation Summary",
+                "Doctor Consultation Report",
+                "Patient Consultation Report",
+                "Back"
+            };
+            
+            int choice = JOptionPaneConsoleIO.readOption(
+                "Select report type:", "Consultation Reports", reportOptions
+            );
+            
+            switch (choice) {
+                case 0:
+                    showConsultationSummary();
+                    break;
+                case 1:
+                    showDoctorReport();
+                    break;
+                case 2:
+                    showPatientReport();
+                    break;
+                case 3:
+                case -1:
+                    repeat = false;
+                    break;
+                default:
+                    JOptionPaneConsoleIO.showError("Please choose a valid option.");
+                    break;
+            }
         }
     }
     
@@ -420,7 +449,10 @@ public class ConsultationUI {
     
     private void showDoctorReport() {
         String doctorID = JOptionPaneConsoleIO.readNonEmpty("Enter Doctor ID:");
-        if (doctorID == null || doctorID.trim().isEmpty()) {
+        if (doctorID == null) {
+            return; // User cancelled
+        }
+        if (doctorID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Doctor ID cannot be empty.");
             return;
         }
@@ -431,7 +463,10 @@ public class ConsultationUI {
     
     private void showPatientReport() {
         String patientID = JOptionPaneConsoleIO.readNonEmpty("Enter Patient ID:");
-        if (patientID == null || patientID.trim().isEmpty()) {
+        if (patientID == null) {
+            return; // User cancelled
+        }
+        if (patientID.trim().isEmpty()) {
             JOptionPaneConsoleIO.showError("Patient ID cannot be empty.");
             return;
         }
@@ -439,4 +474,6 @@ public class ConsultationUI {
         String patientReport = reportGenerator.generatePatientReport(patientID.trim());
         JOptionPaneConsoleIO.showPlain(patientReport, "Patient Consultation Report");
     }
+    
+
 }
