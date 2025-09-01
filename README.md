@@ -11,7 +11,7 @@ This project demonstrates the application of custom-built collection ADTs (AVLTr
 Modules Overview
 
 1. Patient Management Module
-	- Register new patients with validation (Name, Gender, Email, Contact, IC Number).
+	- Register new patients with validation (Name, Gender, Email, Contact, Age).
 	- Patient records stored in multiple AVL indexes (by ID, Name, Contact, Email).
 	- Manage patients profiles: search, update, delete, view.
 	- Patients are enqueued for visits in a LinkedQueue<PatientVisit>.
