@@ -33,14 +33,15 @@ Modules Overview
 	- Specialization Inventory Report: Count and percentage of doctors by specialization.
 
 3. Consultation Management Module
-	- Add, list, update, delete consultation records.
-	- Booking requires Patient ID, Doctor ID, and Date/Shift.
-	- System checks doctor availability before booking.
+	- Add, Order, Update, Delete (Cancel) consultation records.
+	- Consultation requires existing Patient ID and Doctor ID.
+	- System checks patient and doctor availability before booking.
 	- Each consultation assigned a unique Consultation ID.
 
    Reports:
-	- Consultation by Timeslot Report: Popularity of timeslots (morning/afternoon/night).
-	- Consultation by Doctor Report: Percentage of consultations per doctor.
+	- Consultation Summary: The summary of the Consultation statuses for all existing Patient and Doctor.
+	- Doctor Consultation Report: The summary of consultation and it's statuses for each doctor.
+    - Patient Consultation Report: The summary of consultation and it's statuses for each patient.
 
 4. Medical Treatment Management Module
 	- Needs valid / registered patient to proceed with treatments (exists)
@@ -82,7 +83,7 @@ Project Flow
 2. Patients register and receive a unique Patient ID.
 3. Patients enqueue for consultations, recording symptoms.
 4. Doctors are managed in the system and assigned duty schedules.
-5. Patients book consultations based on doctor availability.
+5. Patients book consultations based on doctor and patient's own availability.
 6. Doctors record treatments and prescribe medicines.
 7. Pharmacy dispenses medicines according to prescriptions, updating stock levels.
 8. Pharmacists and duty schedules are managed.
